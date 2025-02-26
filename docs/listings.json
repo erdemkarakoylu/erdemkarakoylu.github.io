@@ -1,0 +1,31 @@
+[
+  {
+    "listing": "/blog.html",
+    "items": [
+      "/blog/causailty_in_observation_data/index.html",
+      "/blog/crouching_desk_hidden_benefits/index.html"
+    ]
+  },
+  {
+    "listing": "/assets/musings/projects.html",
+    "items": [
+      "/assets/musings/posts/hyper_param_optim/Untitled-1.html",
+      "/assets/musings/posts/crouching_desk_hidden_benefits/index.html",
+      "/assets/musings/posts/causailty_in_observation_data/index.html"
+    ]
+  },
+  {
+    "listing": "/assets/musings/index.html",
+    "items": [
+      "/assets/musings/posts/hyper_param_optim/Untitled-1.html",
+      "/assets/musings/posts/crouching_desk_hidden_benefits/index.html",
+      "/assets/musings/posts/causailty_in_observation_data/index.html"
+    ]
+  },
+  {
+    "listing": "/portfolio.html",
+    "items": [
+      "/portfolio/elections_estonia/index.html"
+    ]
+  }
+]

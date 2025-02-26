@@ -1,0 +1,16 @@
+---
+title: "Erdem Karaköylü"
+subtitle: "Welcome!"
+image: assets/erdem_bodrum.jpg
+about:
+  template: jolla
+  links:
+    - icon: envelope-at
+      href: mailto:erdemk@protonmail.com
+    - icon: linkedin
+      href: https://www.linkedin.com/in/your_username
+    - icon: github
+      href: https://github.com/erdemkarakoylu
+---
+
+Machine Learning Researcher -- Probabilistic Programmer -- All-around Bayesian Enthusiast!

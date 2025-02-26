@@ -1,0 +1,26 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "Erdem Karaköylü"
+  navbar:
+    left:
+      - href: index.qmd
+        text: About
+      
+      - href: portfolio.qmd
+        text: Portfolio
+      - href: resume.qmd
+        text: Resume
+      - href: blog.qmd
+        text: Blog
+
+format:
+  html:
+    theme: darkly
+    css: styles.css
+    toc: true
+
+
+

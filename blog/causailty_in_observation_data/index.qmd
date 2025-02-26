@@ -1,0 +1,221 @@
+---
+title: "Evaluating causality in observational data"
+author: "Erdem Karaköylü"
+date: "2022-08-08"
+categories: [causality, propensity score, R]
+image: "effect-1.webp"
+---
+
+**Preamble**
+
+In the real world, we often want to understand if something (a new medicine, a marketing campaign, a policy change) truly causes an outcome.  In ideal experiments (like Randomized Control Trials or RCTs), we can control all factors, making it easier to determine cause and effect.
+
+But what if we only have observational data, where things weren't neatly controlled? Establishing a causal link becomes tricky.  There might be hidden factors, called confounders, that influence both the treatment and the outcome, making it hard to tell if the treatment is the real cause. This post explores ways to tackle this challenge.
+
+**Example: Does Exercise Cause Weight Loss?**
+
+Imagine a study on the impact of a new exercise program on weight loss. Participants with higher fitness levels might be more likely to choose the program.  This becomes a confounder – fitness level influences both program participation and weight loss outcomes.  Propensity score matching can help – it pairs individuals with similar fitness levels but different program participation, isolating the program's true effect.
+
+**Using the Lalonde Dataset**
+
+To illustrate how matching and propensity scores can help with causal analysis, I'll use a dataset from a study by [Lalonde (1986)](https://www.researchgate.net/publication/4900843_Evaluating_the_Econometric_Evaluations_of_Training_Programs_with_Experiment_Data) evaluating an employment and training program. The study aimed to understand if the program truly caused better employment outcomes. Let's load the data from the 'Matching' R library and take a closer look:
+
+```{r, warning=FALSE, message=FALSE}
+library(MatchIt)
+data(lalonde)
+```
+The loaded data includes a number of covariates, an outcome variable and a treatment flag indicating whether the subject was part of the control or the treatment group. These variables are named and summarized in the table below.
+
+
+| Variable    | Summary                         |
+|-------------|---------------------------------|
+| age^1^      | in floating point years         |
+| race^1^     | One of Black, Hispanic, White   |
+| educ^1^     | years of schooling              |
+| married^1^  | Boolean for marital status      |
+| nodegree^1^ | Boolean for high school diploma |
+| re74^1^     | real earnings in 1974           |
+| re75^1^     | real earnings in 1975           |
+| re78^2^     | real earnings in 1978           |
+| treat^3^    | Boolean for treatment status    |
+
+For convenience, I one-hot encode the race variable, and cast it in its new format along with the rest of the data in a new table that follows. Note that in the present subset of this data, only black and white subjects were available. I therefore do not include hispanic as a covariate in the analysis that follows. For convenience, I also change the outcome variable, $re78$ to the more meaningful name $outcome$.
+```{r}
+hispan<-as.numeric(lalonde$race=='hispan')
+black<-as.numeric(lalonde$race=='black')
+white<-as.numeric(lalonde$race=='white')
+age<-lalonde$age
+educ<-lalonde$educ
+married<-lalonde$married
+nodegree<-lalonde$nodegree
+re74<-lalonde$re74
+re75<-lalonde$re75
+treat<-lalonde$treat
+outcome<-lalonde$re78
+mydata<-cbind(age, educ, married, nodegree, black, white, hispan, 
+              re74, re75, treat, outcome)
+mydata<-data.frame(mydata)
+```
+All covariates are expected to be confounders. Thus it is important to evaluate whether the data is balanced between treatment and control groups; i.e. whether the covariates are similarly distributed between the two groups. If they are then the analysis can proceed. Otherwise, the data needs to be balanced. One way to balance data is to use *matching*; another will use something called propensity score. Next, I will illustrate both appraoches.
+
+## Matching
+### To match or not to match?
+
+A first step is whether the data on hand is appropriate for causal inferrence, in particular, whether it should be balanced. A commonly used metric to figure out whether balancing the data is required is Standardized Mean Difference ($SMD$), defined as the difference between group means divided by the pooled standard deviation, like so:
+
+$$
+SMD = \frac{\bar{X}_{treatment}-\bar{X}_{control}}
+{\sqrt{\frac{s^2_{treatment}+s^2_{control}}{2}}}
+$$
+An easy way to examine covariates is to cast them into what is know as a `Table 1`, after a common pattern in the biomedical research litterature to feature patient attributes in the first table of published papers. The *R* library tableone is commonly used for this purpose, with the added benefit that the SMD is given out of the box as shown below. Here the data is stratified by treatment group and only the covariates are tabulated.
+```{r}
+library(tableone)
+
+# Make a vector of the variable names to be used
+xvars <-c("hispan", "black", "white", "age", "educ", "married", "nodegree", 
+              "re74", "re75")
+# load to a table 1
+table1 <- CreateTableOne(vars=xvars, strata="treat", data=mydata, test=FALSE)
+# show table, in particular display SMDs corresponding to each covariate. 
+print(table1, smd=TRUE)
+```
+Note that an alternative would be to conduct two-tailed t-tests to assess difference between group (treated and control) means for each covariate, and evaluate their corresponding p-value. This is however not without drawbacks; most importantly the resulting p-value will depend on the sample size. I therefore use $SMD$ in this post.
+
+By convention, an $SMD$ greater than 0.1 suggest an imbalance with respect to the corresponding covariate. Here $SMD>0.1$ for all covariates except *education*. Treated subjects need each to be match via greedy matching to as close as possible a control subject. Matching between subjects is done on the basis of a distance metric indicating how separated they are in the covariate space. The specific metric used in this case is the **Mahalanobis distance**, which is a kind of standardized difference, computed as follows:
+$$d = \sqrt{(X_i-X_j)^T C^{-1} (X_i-X_j) }$$
+where $X$ is a covariate, $i$ and $j$ are treated and control subjects, and $C$ is the covariance matrix
+
+```{r, warning=FALSE, message=FALSE}
+library(Matching)
+# Below M=1 refers to pairwise matching. Even so if "ties" is left as TRUE (default)
+# multiple subjects within the tolerance threshold will all be matched. 
+# In this case, e.g. not setting ties=TRUE yields 207 pairs, even though there are only # 185 treated subjects.
+greedymatch<-Match(Tr=treat, M=1, X=mydata[xvars], ties=FALSE) 
+greedymatched<-mydata[unlist(greedymatch[c("index.treated", "index.control")]), ]
+```
+
+I create another *Table 1* with the matched data check the SMDs.
+
+```{r}
+matchedtab1<-CreateTableOne(vars=xvars, strata="treat", data=greedymatched, test=FALSE)
+print(matchedtab1, smd=TRUE)
+```
+Greedy pairwise matching yields, as expected, a reduced data set with 185 subjects in each group. This time all but the variable $re75$ have corresponding $SMD<0.1$. This is not entirely satisfactory and I will attempt to balance the data set using propensity scores next 
+
+
+
+## Propensity score matching
+
+A propensity score denoted here $\pi$ is defined as the probability that a subject $i$ received treatment  conditioned on the covariates $X$. I.e. $\pi_i = P(T=1|X_i)$. A $\pi_i=0.4$ means there's a 40% chance the corresponding subject will receive treatment. Covariates can increase or decrease the probability of receiving treatment. For example, if $X$, simplistically the only covariate, is a boolean variable for smoking and smokers are more likely to get a particular treatment then $P(T=1|X=1) \gt P(T=1|X=0)$.  
+
+Interestingly, two subjects may have the same propensity score in spite of having different covariate values $X$, meaning they are equally likely to receive treatment. Thus reducing the data to a subset of subjects with the same $\pi$ should balance the treated and control groups. In doing so a crucial assumption in causality, *ignorability* i.e. how a subject ended in one or the other group can be safely ignored.
+In a randomized trial, the propensity score is known. In an observational study $\pi$ is unknown. However because both $X$ and $T$ are collected, $\pi$ can be estimated. For this I will fit a logistic regression, where the covariates are the input and the treatment variable is the output. Using this model I can get the predicted probability of treatment for each subject; i.e. the estimated $\pi$.
+
+```{r}
+psmodel <- glm(treat~hispan+white+black+age+educ+married+
+                 nodegree+re74+re75,family=binomial(), data=mydata)
+```
+The model fit is summarized below.
+
+```{r}
+# show fit summary
+summary(psmodel)
+```
+Next I extract the propensity scores from the model object.
+```{r}
+# create propensity score
+pscore<-psmodel$fitted.values
+```
+Finally, I use the MatchIt package to match subjects based on their propensity scores. Note that I set a seed for reproducibility, since matching randomizes data as a first step.
+```{r}
+set.seed(42)
+m.out<-matchit(treat~hispan+white+black+age+educ+married+
+                 nodegree+re74+re75, data=mydata, method="nearest")
+```
+
+The matching results are summarized below.
+```{r, message=FALSE}
+# summarize the matching outcome
+summary(m.out)
+```
+The above is more intuitively approached with some plotting as shown below.
+```{r, message=FALSE}
+# propensity score plots
+plot(m.out, type="hist")
+```
+What I am looking for with the plot above is an improvement in the overlap between the distribution of propensity scores of matched control and treated groups, relative to the raw. There is obviously some improvement and I'll next check more concretely below how good the match is using SMD.
+```{r}
+# --> MATCHHING WITH & WITHOUT A CALIPER
+# Matching without a caliper
+# -> do greedy matching on logit (PS)
+set.seed(42)
+psmatch <- Match(Tr=mydata$treat, M=1, X=pscore, replace=FALSE)
+ps_matched <- mydata[unlist(psmatch[c("index.treated", "index.control")]), ]
+matchedtab1_pscore <- CreateTableOne(vars=xvars, strata="treat", data=ps_matched,
+                              test=FALSE)
+print(matchedtab1_pscore, smd=TRUE)
+```
+
+The table above shows marked improvement relative to the raw data. However, variables like *education* ($educ$) and *lack of high school degree* ($nodegree$) are marginal, while race-related variables ($hispan$, $black$, $white$) are still too high to safely avoid confounding. Overall it is quite a bit worse than the first attempt with greedy matching I did earlier using the Mahalanobis distance; though $re75$ is markedly better here.
+
+### Matching with a caliper
+One way to try to improve on the matching is to use a caliper; i.e. a threshold (maximum) distance beyond which matching is not allowed. In practice, though somewhat arbitrarily, (1) the propensity scores are logit-transformed, (2) the standard deviation (SD) is calculated, and (3) the caliper is set to 0.2 times the SD, finally (4) the matching is performed subject to the caliper. A smaller caliper, which results in fewer but better pairs, trades more variance for less bias. The code below performs the aforementioned steps.
+
+```{r}
+set.seed(42)
+logit_pscore = qlogis(pscore)
+psmatch_calip <-Match(Tr=mydata$treat, M=1, X=logit_pscore, replace=FALSE,
+                caliper=.2)
+# Note that the caliper is in St.Dev. units
+matched_calip <- mydata[unlist(psmatch_calip[c("index.treated", "index.control")]), ]
+matchedtab1_calip <- CreateTableOne(vars=xvars, strata="treat", data=matched_calip,
+                              test=FALSE)
+print(matchedtab1_calip, smd=TRUE)
+# NOTE the smaller number of subjects for each treatment categories, resultng
+# from dropping previously matched subjects.
+```
+Using the caliper has reduced the number of matched pairs down to 114. The high SMDs seen previously (without the caliper). However, for 1974 and 1975 real incomes $SMD > 0.1$. Thus I cannot be certain that the treatment is the only cause of the outcome. The table above suggests subjects' earning history is still a causal factor.
+With this in mind, I next run an outcome analysis for all the approaches described previously. I do this at the end rather than after each outcome as a habit to prevent [p-hacking](https://en.wikipedia.org/wiki/Data_dredging).
+
+### Outcome analyses:
+To analyze whether the difference in outcome between the treatment and the control groups are different, I run a paired t-test on the various matched data. But first a quick function to avoid some repetition.
+
+```{r}
+# function that accepts a matched data table and runs the paired t-test.
+run_matched_ttest<- function(matched_table){
+  # get outcome data for both groups
+  treated_outcome <- matched_table$outcome[matched_table$treat==1]
+  control_outcome <- matched_table$outcome[matched_table$treat==0]
+  
+  # compute pairwise difference between both groups
+  diff_outcome <- treated_outcome - control_outcome
+  
+  # paired t-test
+  t.test(diff_outcome)
+}
+```
+
+$\rightarrow$ Greedy Mahalanobis distance matching:
+```{r}
+run_matched_ttest(greedymatched)
+```
+
+$\rightarrow$ Propensity score matching (no caliper)
+```{r}
+run_matched_ttest(ps_matched)
+```
+
+$\rightarrow$ Propensity score matching with caliper
+```{r}
+run_matched_ttest(matched_calip)
+```
+Thus, from greedy Mahalanobis distance matching to propensity score matching with caliper, the statistical significance of the difference between groups does increase, with propensity score matching with caliper resulting the in the smallest p-value (0.20). This is still conventionally quite high, so that it is impossible to reject the null hypothesis, i.e. that there are no difference between the groups. Moreover, there is still a potential confounding problem in all cases. E.g. the SMD for real income in \`74 and \`75 remains above 0.1 suggesting I was not able to remove the confounding effect. Note though that I worked for a subset of the original data. Thus I would next re-run the analysis on the entire data set, which could lead to better matching. But that is a story for another day.
+
+Peaceful coding!
+
+<p align="center">
+  <img src="coding_happy.png" height=400>
+</p>
+<p align="center">
+  [image source](https://cdn.discordapp.com/attachments/1008571061119483984/1105921557945131071/Intotheblue_under_water_photo_of_a_women_using_a_mac_laptop_a_p_2c7f5b5a-6e17-4f48-bd5c-669b7685d2d3.png)
+</p>
