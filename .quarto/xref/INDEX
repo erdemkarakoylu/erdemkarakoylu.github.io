@@ -49,5 +49,14 @@
   },
   "assets/musings/about.qmd": {
     "about.html": "4f933b2d"
+  },
+  "portfolio/elections_estonia/index.qmd": {
+    "index.html": "542e4ad1"
+  },
+  "assets/elections_estonia.ipynb": {
+    "elections_estonia.html": "464c2ca6"
+  },
+  "portfolio/elections_estonia/elections_estonia.qmd": {
+    "elections_estonia.html": "70b1b8df"
   }
 }

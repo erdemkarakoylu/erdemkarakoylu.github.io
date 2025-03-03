@@ -1,6 +1,7 @@
 ---
-title: "Evaluating causality in observational data"
+title: "Causality in observational data"
 author: "Erdem Karaköylü"
+description: Using matching an propensity scores for causal inference
 date: "2022-08-08"
 categories: [causality, propensity score, R]
 image: "effect-1.webp"

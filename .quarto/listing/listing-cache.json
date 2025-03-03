@@ -1,16 +1,10 @@
 {
   "listingMap": {
-    "blog.qmd": [
-      "blog"
-    ],
-    "assets/musings/projects.qmd": [
-      "posts"
-    ],
-    "assets/musings/index.qmd": [
-      "posts"
-    ],
     "portfolio.qmd": [
       "portfolio"
+    ],
+    "blog.qmd": [
+      "blog"
     ]
   }
 }

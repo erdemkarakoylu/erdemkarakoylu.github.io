@@ -1,0 +1,942 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: Evaluating causality in observational data\n",
+        "author: Erdem Karaköylü\n",
+        "date: '2022-01-15'\n",
+        "categories:\n",
+        "  - Bayesian A/B/n\n",
+        "  - pivoting\n",
+        "  - categorical regression\n",
+        "  - ZeroSumNormal\n",
+        "  - Python\n",
+        "image: ''\n",
+        "format:\n",
+        "  html:\n",
+        "    code-fold: true\n",
+        "jupyter: python3\n",
+        "---\n",
+        "\n",
+        "\n",
+        "\n",
+        "<u>**Preamble**</u>: This is a data analysis and modeling project to predict voter party preference in Estonia on the basis of demographics. The intended process involves initial data exploration, followed by the construction, fitting, and analysis of a series of increasingly complex Bayesian categorical models. This Bayesian approach offers a robust alternative to traditional frequentist Analysis of Variance (ANOVA) methods commonly employed in scientific research and A/B/n testing in fields such as marketing, user experience (UX), and web design. A significant benefit of the Bayesian model is its inherent ability to quantify predictive uncertainty through the calculation of posterior (inferential) probability distributions, contrasting with the reliance on sampling distributions in frequentist procedures\n",
+        "\n",
+        "<u>**Contents**</u>:\n",
+        "\n",
+        "1. Exploratory Data Analysis\n",
+        "2. Modeling\n",
+        "    <br> $→$ Model Building and, Prior Elicitation and Prior Predictive Checks\n",
+        "    <br> $→$ Model Fitting and Goodness-of-Fit Analysis\n",
+        "    <br> $→$ Posterior Predictive Checks\n",
+        "    <br> $→$ Summary and Conclusion\n",
+        "\n",
+        " <u>**Data Provenance**</u>: This data is courtesy of [SALK](https://salk.ee/). SALK refers to the Liberal Citizen Foundation in Estonia; a political organization aimed at influencing Estonian policy and parliamentary elections. This foundation was established with the (ultimately attained) goal of helping liberal forces gain a majority in the 2023 Estonian parliamentary elections.\n",
+        "\n",
+        "<u>**Acknowledgments**</u>: I thank [Alex Andorra](https://topmate.io/alex_andorra) and the folks at [Intuitive Bayes](https://www.intuitivebayes.com/) for helping me understand non-identifiability and overparameterization in statistical modeling.\n"
+      ],
+      "id": "cca7f65d"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import arviz as az\n",
+        "import matplotlib.pyplot as pp\n",
+        "from matplotlib import rcParams\n",
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "\n",
+        "import pymc as pm"
+      ],
+      "id": "6119f789",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "rcParams['font.size'] = 12"
+      ],
+      "id": "b949f29e",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "#### 1. Exploratory Data Analysis\n"
+      ],
+      "id": "b0322a79"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "data = pd.read_csv('~/projex/elections/data/estonian-data.csv')"
+      ],
+      "id": "8483b2e3",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "data.head().T"
+      ],
+      "id": "2e9f8000",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "I don't like the \"Hard to say\" column name; replace below with the clearer \"Undecided\" label.\n"
+      ],
+      "id": "e6f04d1b"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "data.rename(columns={'Hard to say': 'Undecided'}, inplace=True)"
+      ],
+      "id": "3cdf4c7b",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "data.info()"
+      ],
+      "id": "5ebf6bc4",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "data.columns.tolist()"
+      ],
+      "id": "88cb1622",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "data.describe().T"
+      ],
+      "id": "251ed767",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "data.loc[:, 'EKRE':].sum(axis=1).describe().loc[['min', 'max']]"
+      ],
+      "id": "2483cdb6",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "data.loc[:, 'EKRE':].sum(axis=0).plot(kind='bar', title='Party Choice', ylabel='Counts', color='black', alpha=0.6);"
+      ],
+      "id": "37b78b42",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "data.electoral_district.unique().size, data.unit.unique().size"
+      ],
+      "id": "4c19425f",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "f, (left, right) = pp.subplots(ncols=2, figsize=(12, 6), sharey=True)\n",
+        "data.electoral_district.value_counts(normalize=True).plot(kind='bar', color=['black', 'darkgray'], ax=left)\n",
+        "data.unit.value_counts(normalize=True).plot(kind='bar', color=['darkgray', 'black'])\n",
+        "left.set_xticklabels(left.get_xticklabels(), rotation=90)\n",
+        "f.tight_layout();"
+      ],
+      "id": "e02e3fae",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "f, (left, right) = pp.subplots(ncols=2, figsize=(10, 4), sharey=True)\n",
+        "data.age_group.value_counts(normalize=True, sort=False).plot(kind='bar', color=[f'C{i}' for i in range(7)], ax=left);\n",
+        "data.gender.value_counts(normalize=True).plot(kind='bar', color= ['C7', 'C8'], ax=right)\n",
+        "left.set(ylabel='Fraction', xlabel='age group')\n",
+        "f.tight_layout()"
+      ],
+      "id": "0de28e88",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "data.education.value_counts()"
+      ],
+      "id": "93a84b5d",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "f, (left, right) = pp.subplots(ncols=2, figsize=(10, 4), sharey=True)\n",
+        "data.education.value_counts(normalize=True).plot(kind='bar', color=[f'C{i}' for i in range(0, 3)], ax=left)\n",
+        "data.nationality.value_counts(normalize=True).plot(kind='bar', color=['C3', 'C4'])\n",
+        "left.set_xticklabels(left.get_xticklabels(), rotation=50)\n",
+        "f.tight_layout();"
+      ],
+      "id": "310602a7",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "##### Preliminary summary:\n",
+        "\n",
+        "This table registers voter preference. Each row is a voter. Columns include voter demographics, the election district and unit. The rest of the columns are each dedicated to a party.  Data are in the thousands with no apparent missing value.\n",
+        "There are two types of data; (1) strings that lend themselves to categorization, and (2) binary data indicating whether a given party has received the vote of that row's  voter. There were no irregularities, i.e. more than 1 vote registered for each person;  there were no abstentions noted in this dataset either. \n",
+        "All the data is categorical with the following number of categories:\n",
+        "* Party choice $→$ 11\n",
+        "* Electoral district $\\rightarrow$ 12\n",
+        "* (Electoral) Unit $→$ 24\n",
+        "* AGe group $→$ 7\n",
+        "* Gender $→$ 2\n",
+        "* Education $→$ 3\n",
+        "* Nationality $→$ 2\n",
+        "\n",
+        "\n",
+        "##### Preliminary summary, part 2: \n",
+        "There is some imbalance in education level, with secondary education being the more proeminent. There is notable imbalance in nationality, with predictable majority of Estonian representation. Party choice, electoral district and unit are also quite imbalanced. Next is to examine party representation breakdown at the  group level. Note that I will not consider electoral district and unit hereafter as the emphasis is on demographics as a driver of party choice.\n"
+      ],
+      "id": "b85d96c0"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "def make_group_percentage(df: pd.DataFrame, category: 'str') -> pd.DataFrame:\n",
+        "    \"\"\"Computes percentage for each column in a group\"\"\"\n",
+        "    group = df.groupby(category).sum(numeric_only=True)\n",
+        "    group_percent = group.div(group.sum(axis=1), axis=0)*100\n",
+        "    return group_percent"
+      ],
+      "id": "153fdc81",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "party_names = data.loc[:, 'EKRE':].columns.tolist()\n",
+        "party_names"
+      ],
+      "id": "a25c6162",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "data.head()"
+      ],
+      "id": "4e193154",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "data.groupby('gender').sum(\n",
+        "numeric_only=True\n",
+        ")"
+      ],
+      "id": "55377bda",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "f, (left, right) = pp.subplots(ncols=2, figsize=(11, 4), sharey=True)\n",
+        "#gender = data.groupby('gender').sum(numeric_only=True)\n",
+        "#(gender.div(gender.sum(axis=1), axis=0)*100).plot(kind='bar', colormap='tab20c', ax=left, legend=False)\n",
+        "#data.groupby('nationality').sum(numeric_only=True).plot(kind='bar', colormap='tab20c', ax=right, legend=False)\n",
+        "make_group_percentage(data, 'gender').plot(kind='bar', colormap='tab20c', ax=left, legend=False)\n",
+        "make_group_percentage(data, 'nationality').plot(kind='bar', colormap='tab20c', ax=right)\n",
+        "left.set(title='Gender', ylabel='Fraction(%)', xlim=(-0.3, 1.3), xlabel='')\n",
+        "right.set(xlim=(-0.3, 1.3), title='Nationality', xlabel='')\n",
+        "right.legend(frameon=False, loc=(0.34 ,0.04), fontsize=10)\n",
+        "right.grid(axis='y', alpha=0.5, ls=':')\n",
+        "left.grid(axis='y', alpha=0.5, ls=':')\n",
+        "f.tight_layout();"
+      ],
+      "id": "7ae50635",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "f, (top, bottom) = pp.subplots(nrows=2, figsize=(12, 8))\n",
+        "#data.groupby('age_group').sum(numeric_only=True)\n",
+        "make_group_percentage(data, 'age_group').plot(kind='bar', colormap='tab20c', ax=top, legend=False)\n",
+        "#data.groupby('education').sum(numeric_only=True)\n",
+        "make_group_percentage(data, 'education').plot(kind='bar', colormap='tab20c', ax=bottom, legend=False, )\n",
+        "top.set(title='Age Group', ylabel='Fraction(%)', xlabel='')\n",
+        "top.set_xticklabels(top.get_xticklabels(), rotation=0)\n",
+        "bottom.legend(frameon=False,  loc=(0.24, 0.04), fontsize=10)\n",
+        "bottom.set_xticklabels(bottom.get_xticklabels(), rotation=0)\n",
+        "bottom.set(ylabel='Fraction(%)', title='Education', xlim=(-0.3, 2.3), xlabel='')\n",
+        "bottom.grid(axis='y', alpha=0.5, ls=':')\n",
+        "top.grid(axis='y', alpha=0.5, ls=':')\n",
+        "f.tight_layout();"
+      ],
+      "id": "d543f8fb",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "#### Grouped data summary\n",
+        "1. Overall\n",
+        "    * Reformierakond (a liberal party) is pretty popular across the board except with non-Estonians; \n",
+        "    * Non-Estonians - I'm told - is almost entirely composed up of Russians;\n",
+        "    * There is a fair amount of undecided voters;\n",
+        "    * EKRE and Keskeradon are populist parties - EKRE is right-wing, Keskerakond is center-left;\n",
+        "    * Parempoolsed, center-right party is the underdog across the board.\n",
+        "\n",
+        "2. Group-specific\n",
+        "    * *Gender*: there are some subtle  differences. \n",
+        "        * Reformierakond is slightly more popular with female voters;\n",
+        "        * There are more undecided among female voters;\n",
+        "        * The right-wing EKRE is more popular with male voters.\n",
+        "    * *Nationality*:\n",
+        "        * Reformierakond, EKRE are more popular with Estonians;\n",
+        "        * Keskerakond, Mitte ukski erakond are favored by ethnic Russians who are also more numerous to be undecided. \n",
+        "    * *Age group*:\n",
+        "        * Mitte ukski erakond and Reformierakond are the two prevaiing parties among each age group except the two older tranches;\n",
+        "        * Among 65 and over Reformierakond retains the top but Mitte recedes in favor of Keskeradond.\n",
+        "    * *Education*:\n",
+        "        * EKRE, Undecided, Mitte ukski erakond are the top 3 party choices for those with a basic education;\n",
+        "        * Reformierakond and Mitte are the top 2 party choices among those with a college degree.\n",
+        "        * High school graduates exhibit a preference for Reformierakond, Mitte, and EKRE.\n",
+        "\n",
+        "#### 2. Modeling\n",
+        "\n",
+        "The goal is to predict party preference on the basis of available demographic data. \n",
+        "I will first start with looking at two categories; education and nationality. The below is some data encoding to ease model fitting and clarity of plotted results. In particular note the model coordinate names; 'party_choice', 'education', 'nationality', 'obs_idx'. The latter is just the row index of the dataframe containing the observations; each row corresponding to one observation.\n"
+      ],
+      "id": "ef7f33a6"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# response variable encoding\n",
+        "party_choice = pd.Categorical(data[party_names].idxmax(axis=1), categories=party_names, ordered=True)\n",
+        "party_choice_label = party_choice.categories.to_list()\n",
+        "party_choice_code = party_choice.codes\n",
+        "\n",
+        "# input variables encoding\n",
+        "education_code, education_label = data.education.factorize(sort=True) \n",
+        "nationality_code, nationality_label = data.nationality.factorize(sort=True)\n",
+        "\n",
+        "# setting model coordinates\n",
+        "\n",
+        "coords = {\n",
+        "    'party_choice': party_choice_label,\n",
+        "    'education': education_label,\n",
+        "    'nationality': nationality_label,\n",
+        "    'obs_idx': data.index} # observation index, the row location of an observation in the dataframe."
+      ],
+      "id": "2633dd4e",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Below I write a first model using a baseline intercept and I use nationality and education as predictors and baseline offsets. The corresponding coefficients have 'party choice' as dimension (11 possibilities) and in the case of education and nationality, have  also a dimension of 'education' (3 possibilities) and 'nationality' (2 possibilities), respectively. These are linearly combined and passed to a softmax function to scale the output to the $(0-1)$ interval, as shown below.\n",
+        "$$ p = softmax(α_{baseline} + α_{nationality}[\\small{nationality\\_category}] + α_{education}[\\small{education\\_category}]) $$\n",
+        "\n",
+        "As prior distribution for all three coefficients, instead of using the $\\mathcal{Normal}$ distribution, I use below the $\\mathcal{Zero-sum\\ Normal}$. This distribution imposes zero sum constraints on specified axes of the fitted coefficients, thereby addressing the problem of overparameterization and identifiability that often plague categorical regression models; a subject of my blog post found [here](insert link). \n",
+        "\n",
+        "Finally I use for likelihood the $\\mathcal{Categorical}$ distribution, which is a n-dimensional $\\mathcal{Bernoulli}$ process, and through which I expose the model to the data.\n"
+      ],
+      "id": "1b1273a3"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "def build_model1(α_sigma=1, α_nat_sigma=1, α_edu_sigma=1):\n",
+        "    with pm.Model(coords=coords) as model1:\n",
+        "        # Data containers\n",
+        "        party_choice_idx = pm.Data('party_choice_index', party_choice_code, dims='obs_idx')\n",
+        "        nationality_idx = pm.Data('nationality_index', nationality_code, dims='obs_idx')\n",
+        "        education_idx = pm.Data('eductation_index', education_code, dims='obs_idx')\n",
+        "        \n",
+        "        # Model priors\n",
+        "        # baseline\n",
+        "        α = pm.ZeroSumNormal('α', sigma=α_sigma, dims='party_choice') \n",
+        "        # baseline offset due to nationality\n",
+        "        α_nationality = pm.ZeroSumNormal('α_nationality', sigma=α_nat_sigma, dims=('nationality', 'party_choice'), n_zerosum_axes=2) \n",
+        "        # baseline offset due to education\n",
+        "        α_education = pm.ZeroSumNormal('α_education', sigma=α_edu_sigma, dims=('education', 'party_choice'), n_zerosum_axes=2)\n",
+        "\n",
+        "        # Link function for choice probability\n",
+        "        p = pm.math.softmax(α + α_nationality[nationality_idx] + α_education[education_idx], axis=-1)\n",
+        "        \n",
+        "        # Likelihood\n",
+        "        _ = pm.Categorical('y', p=p, observed=party_choice_idx, dims='obs_idx')\n",
+        "    return model1"
+      ],
+      "id": "7f34721a",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "model1 = build_model1()"
+      ],
+      "id": "70f209aa",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Below is the model's diagram with dimension information included. \n"
+      ],
+      "id": "bbf8105e"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "model1.to_graphviz()"
+      ],
+      "id": "12295460",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Next is to sample model priors to see the soundness of assumptions made\n"
+      ],
+      "id": "b5a8e9c3"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "with model1:\n",
+        "    idata1 = pm.sample_prior_predictive(model=model1)\n",
+        "    idata1.extend(pm.sample(chains=4, draws=2000, random_seed=42))\n",
+        "    idata1.extend(pm.sample_posterior_predictive(idata1))"
+      ],
+      "id": "1aa4c425",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "def plot_forward_samples(\n",
+        "        idata: az.InferenceData, categories:list, categories_name:str, \n",
+        "        figsize=(12, 6), plot_prior=True, plot_posterior=True):\n",
+        "    \"\"\"A quick function to plot model predictives. \"\"\"\n",
+        "    f, (left, right) = pp.subplots(1, 2, figsize=figsize, sharey=True)\n",
+        "    xticks = [i + 0.5 for i in range(len(categories))]\n",
+        "    if plot_prior:\n",
+        "        az.plot_ppc(idata, group=\"prior\", ax=left)\n",
+        "        left.set(\n",
+        "            xticks=xticks,\n",
+        "        )\n",
+        "        left.set_xticklabels(categories, fontsize=10, rotation=30)\n",
+        "        left.set_xlabel(categories_name, fontsize=16)\n",
+        "        left.legend(frameon=True, fontsize=11)\n",
+        "    else:\n",
+        "        left.set_visible(False)\n",
+        "\n",
+        "    if plot_posterior:\n",
+        "        az.plot_ppc(idata, ax=right)\n",
+        "        right.set(\n",
+        "            xticks=xticks,\n",
+        "        )\n",
+        "        right.set_xticklabels(categories, fontsize=10, rotation=30)\n",
+        "        right.set_xlabel(categories_name, fontsize=16)\n",
+        "        right.legend(frameon=True, fontsize=11)\n",
+        "    else:\n",
+        "        right.set_visible(False)\n",
+        "    f.tight_layout()\n",
+        "    return f, (left, right)"
+      ],
+      "id": "9e5e028b",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "mean_win = pd.Series(party_choice_code).value_counts(normalize=True).round(3).sort_index()\n",
+        "f, (axl, axr) = plot_forward_samples(idata1, categories=party_choice_label, categories_name='party choice', figsize=(12, 6))\n",
+        "axl.set_xticklabels(axl.get_xticklabels(), rotation=60);\n",
+        "axl.bar(x=axl.get_xticks(), height=mean_win.values,  color='k', fill=False, lw=3, width=1, zorder=13, label='data');\n",
+        "axr.set_xticklabels(axr.get_xticklabels(), rotation=60);"
+      ],
+      "id": "589b6cdd",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Left, in blue lines are sample outcomes for each party choice, before the model has seen the data. Right, model fit results (posterior distribution for each category). The model seems to have learned the posterior distribution well. The model did take some time to fit though and in spite of the lack of difergences, one wonders if sampling could be more efficient. Domain experts have suggested a tighter variance on the coefficient priors could indeed ease sampling. Model1b integrates this domain knowledge as follows: \n"
+      ],
+      "id": "c79c0227"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "model1b = build_model1(α_sigma=0.5, α_edu_sigma=0.2, α_nat_sigma=0.3)"
+      ],
+      "id": "88395d32",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "with model1b:\n",
+        "    idata1b = pm.sample_prior_predictive()\n",
+        "    idata1b.extend(pm.sample(chains=4, draws=2000, random_seed=42))\n",
+        "    idata1b.extend(pm.sample_posterior_predictive(idata1b))"
+      ],
+      "id": "bf56b53e",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "There was some speed improvement (~ 18 seconds on a Macbook air M2.)\n",
+        "#### Assessing goodness of fit\n"
+      ],
+      "id": "0be3a10f"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.plot_trace(idata1, backend_kwargs={'tight_layout': True});"
+      ],
+      "id": "93263e60",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.plot_trace(idata1b, backend_kwargs=dict(tight_layout=True));"
+      ],
+      "id": "3439bb40",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Good mixing in the chains and lack of divergences suggest a good fit. The second model (bottom panel) has tighter posteriors, suggesting a slightly better fit.\n"
+      ],
+      "id": "11347622"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.summary(idata1, var_names='α')"
+      ],
+      "id": "668207a0",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.summary(idata1b, var_names='α')"
+      ],
+      "id": "cb516ada",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Looking at the model fit summary tables for the baseline $α$ parameter, in both cases the $\\hat{R}$ (aka *Gelman-Rubin* statistic) is 1.0. This indicates good convergence of MCMC chains (I fired up 4 of them for sampling). Interestingly however, in the case of the second model with tighter variance constraints on the priors, the *Effective Sample Size* corresponding to the sampling of the central portion of the posterior (ess_bulk) shows more efficient sampling in most cases. The posterior is therefore likelier to be better characterized. A similar pattern can be observed in the next 4 tables for $α_{nationality}$ and $α_{education}$. Note that in contrast, the tails of the posterior are sampled with similar efficiency in both cases, as noted by ess_tail. \n"
+      ],
+      "id": "0e911446"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.summary(idata1, var_names='α_education')"
+      ],
+      "id": "1bb90f26",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.summary(idata1b, var_names='α_education')"
+      ],
+      "id": "07f65557",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.summary(idata1, var_names='α_nationality')"
+      ],
+      "id": "7cfd1479",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.summary(idata1b, var_names='α_nationality')"
+      ],
+      "id": "dd04d579",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Given the above, I hereafter drop the first model with the more naive priors and continue with the second model with the more informative priors.\n",
+        "\n",
+        "\n",
+        "Now to check the impact of each predictor on voter preference by examining the posterior distribution, its central tendency and spread and how it relates to the reference value of 0, which corresponds to to effect. Note that: \n",
+        "* The orange number situates probabilistically the reference value (0=neither favorable nor unfavorable.)\n",
+        "* The black line corresponds to the 94% Highest Density Interval (HDI) - the narrowest interval containing 94% of the posterior distribution. \n",
+        "    * The choice of 94% is a reminder that there is nothing magical about this number. Analysts should determine the appropriate size of the credibility interval that works best for their use case.  \n",
+        "    * This corresponds to a proabilistic statement; i.e. there is a 94% chance that given this data and this model, a voter correponding to this category would have an an offset within the HDI.\n",
+        "\n",
+        "1. Baseline - average voter tendencies\n",
+        "    * On average there is a overwhelmingly positive outlook on EKRE, Eesti, Mitte, Reformierakond, and to a lesser extent, SDE. The average voter has also a high probability of being Undecided.\n",
+        "    * On the other hand, Isamaa, Parempoolsed, Rohelised and smaller parties grouped under the catch-all Other are not likely to be appealing to the average voter. \n"
+      ],
+      "id": "b1b4a964"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.plot_posterior(idata1b, var_names='α', ref_val=0, textsize=16);"
+      ],
+      "id": "73e4747e",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "2. Education:\n",
+        "    * Basic Education: \n",
+        "        * There is a very high probability that a voter belonging ot this category will be in favor of EKRE, Keskerakond, or Mitte\n",
+        "        * There is a very high probability against such a voter favoring Reformierakond, and to a lesser extent, SDE.\n",
+        "    * Secondary Education:\n",
+        "        * Voter have high probability of favoring EKRE and to a lesser extent Isamaa\n",
+        "        * Though not quite significant, voter are likely to be most hostile to SDE.\n",
+        "    * Higher Education:\n",
+        "        * Voters in this category are very hostile to EKRE, Mitte and Keskerakond and are unlikely to be undecided\n",
+        "        * Voters are quite sympathetic to Eesti and Reformierakond.\n"
+      ],
+      "id": "c45757f2"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.plot_posterior(idata1b, var_names='α_education', ref_val=0, backend_kwargs=dict(tight_layout=True), textsize=20);"
+      ],
+      "id": "9bd72224",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "3. Nationality\n",
+        "* Estonians are: \n",
+        "    * predominantly favorable to EKRE, Isamaa, Reformierakond;\n",
+        "    * largely unfavorable to Keskerakond and Mitte, and are less likely to be Undecided.\n",
+        "* Ethnic Russians (Other) on the other hand:\n",
+        "    * favor Keskerakond, Mitte, and are more likely to be Undecided;\n",
+        "    * are hostile to Reformierakond and to a lesser extent EKRE.\n"
+      ],
+      "id": "82a26a4f"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "f, axs = pp.subplots(ncols=3, nrows=8, figsize=(15, 40))\n",
+        "for ax in axs.ravel()[-2:]:\n",
+        "    ax.set_visible(False)\n",
+        "az.plot_posterior(idata1b, var_names='α_nationality', backend_kwargs=dict(tight_layout=True), ref_val=0, ax=axs, textsize=10);\n"
+      ],
+      "id": "7337e874",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "#### Adding gender and age group\n",
+        "In accordance with the Bayesian workflow, the next step is to build a slightly more complex model, in this case by adding gender and vote age group as predictors to nationality and education, and see if can extract further insight. The model type is the same, just with a total of 4 offsets to the baseline instead of 2. I will also use stronger informative priors as I did in the second model that I ended up using for my analysis. Finally, the prior distribution for all coefficients is again the ZeroSumNormal distribution that I use to avoid non-identifiability due to overparameterization.\n",
+        "But first, to encode the additional predictors...\n"
+      ],
+      "id": "6af888ad"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "gender_code, gender_label = data.gender.factorize(sort=True)\n",
+        "age_gp_code, age_group_label = data.age_group.factorize(sort=True)"
+      ],
+      "id": "06d9e4d0",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "coords = {\n",
+        "    'age group': age_group_label,\n",
+        "    'education': education_label,\n",
+        "    'gender': gender_label,\n",
+        "    'nationality': nationality_label,\n",
+        "    'party choice': party_choice_label,\n",
+        "    'obs_idx': data.index\n",
+        "}"
+      ],
+      "id": "23e38c19",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "def build_model2(coords, σ_baseline=1, σ_age=1, σ_edu=1, σ_gen=1, σ_nat=1):\n",
+        "    with pm.Model(coords=coords) as model2:\n",
+        "        age_gp_idx = pm.Data('age_gp', age_gp_code, dims='obs_idx')\n",
+        "        educ_idx = pm.Data('education', education_code, dims='obs_idx')\n",
+        "        gender_idx = pm.Data('gender', gender_code, dims='obs_idx')\n",
+        "        nat_idx = pm.Data('nationality', nationality_code, dims='obs_idx')\n",
+        "        party_choice_idx = pm.Data('party choice', party_choice_code, dims='obs_idx') \n",
+        "        \n",
+        "        α_baseline = pm.ZeroSumNormal('α_baseline', sigma=σ_baseline, dims='party choice')\n",
+        "        α_age_group = pm.ZeroSumNormal('α_age_group', sigma=σ_age, dims=('age group', 'party choice'), n_zerosum_axes=2)\n",
+        "        α_education = pm.ZeroSumNormal('α_education', sigma=σ_edu, dims=('education', 'party choice'), n_zerosum_axes=2)\n",
+        "        α_gender = pm.ZeroSumNormal('α_gender', sigma=σ_gen, dims=('gender', 'party choice'), n_zerosum_axes=2)\n",
+        "        α_nationality = pm.ZeroSumNormal('α_nationality', sigma=σ_nat, dims=('nationality', 'party choice'), n_zerosum_axes=2)\n",
+        "\n",
+        "        μ = α_baseline + α_age_group[age_gp_idx] + α_education[educ_idx] + α_gender[gender_idx] + α_nationality[nat_idx]\n",
+        "        p = pm.math.softmax(μ, axis=-1)\n",
+        "\n",
+        "        _ = pm.Categorical('y', p=p, observed=party_choice_idx, dims='obs_idx')\n",
+        "        \n",
+        "    return model2\n",
+        "\n",
+        "model2 = build_model2(coords=coords, σ_baseline=0.3, σ_age=0.4, σ_edu=0.3, σ_gen=0.2, σ_nat=0.2)\n",
+        "model2.to_graphviz()"
+      ],
+      "id": "c44105e7",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "with model2:\n",
+        "    idata2 = pm.sample_prior_predictive()\n",
+        "    idata2.extend(pm.sample(chains=4, draws=2000, random_seed=42))\n",
+        "    idata2.extend(pm.sample_posterior_predictive(idata2))"
+      ],
+      "id": "8a08c2d4",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.plot_trace(idata2, backend_kwargs=dict(tight_layout=True));"
+      ],
+      "id": "5cbbebb7",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.summary(idata2, var_names='α_baseline')"
+      ],
+      "id": "c2b8b858",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.summary(idata2, var_names='α_age_group')"
+      ],
+      "id": "a7629e94",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.summary(idata2, var_names='α_education')"
+      ],
+      "id": "7d396666",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.summary(idata2, var_names='α_gender')"
+      ],
+      "id": "c2edfe20",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "az.summary(idata2, var_names='α_nationality')"
+      ],
+      "id": "264c8721",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "The fit took predictably longer; 2 minutes and 20 seconds on my macbook air m2. Moreover, \n",
+        "* There were no divergences;\n",
+        "* Posteriors look sound and the traces exhibit good mixing for all chains;\n",
+        "* All $\\hat{R}$ values were 1\n",
+        "* Bulk and tail ESS are about the same as the model with two predictors and relatively informative priors suggesting sampling efficiency has not deteriorated as a result of the increased model complexity.\n"
+      ],
+      "id": "15adb498"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "f, (axl, axr) = plot_forward_samples(idata2, categories=party_choice_label, categories_name='party choice', figsize=(12, 6))\n",
+        "axl.set_xticklabels(axl.get_xticklabels(), rotation=60);\n",
+        "axl.bar(x=axl.get_xticks(), height=mean_win.values,  color='k', fill=False, lw=3, width=1, zorder=13, label='data');\n",
+        "axr.set_xticklabels(axr.get_xticklabels(), rotation=60);"
+      ],
+      "id": "f2cfc8f9",
+      "execution_count": null,
+      "outputs": []
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)",
+      "path": "/Users/erdemkarakoylu/miniconda3/envs/pymc_base/share/jupyter/kernels/python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}
