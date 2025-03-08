@@ -8,9 +8,9 @@
 
 <meta name="author" content="Erdem Karaköylü">
 <meta name="dcterms.date" content="2025-03-05">
-<meta name="description" content="A short complaint on the stubborn use of frequentism in Industry, starting with A/B testing.">
+<meta name="description" content="A commentary on the inadequacy of p-values in A/B tests">
 
-<title>On the Statistical Practices of A/B Testing – Erdem Karaköylü</title>
+<title>On Statistical Practices in A/B Testing – Erdem Karaköylü</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -126,7 +126,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">On the Statistical Practices of A/B Testing</h1>
+<h1 class="title">On Statistical Practices in A/B Testing</h1>
   <div class="quarto-categories">
     <div class="quarto-category">A/B Testing</div>
     <div class="quarto-category">Frequentist Statistics</div>
@@ -138,7 +138,7 @@ ul.task-list li input[type="checkbox"] {
 
 <div>
   <div class="description">
-    A short complaint on the stubborn use of frequentism in Industry, starting with A/B testing.
+    A commentary on the inadequacy of p-values in A/B tests
   </div>
 </div>
 
@@ -167,18 +167,18 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>I just finished watching Dr.&nbsp;Ronny Kohavi’s “Ultimate Guide to A/B Testing” <a href="https://youtu.be/hEzpiDuYFoE?si=lwkaiIYRqocL2F7B">“Ultimate Guide to A/B Testing”</a>. This was a lengthy presention made enjoyable by his enthusiasm and wealth of practical experience. I wanted to share some thoughts on the statistical practices he touches on during his presentation. Indeed, Dr.&nbsp;Kohavi’s discussion of p-values, an essential tool in Null Hypothesis Testing and a potentially consequential decision support mechanism, highlights some critical limitations of frequentist statistics in A/B testing.</p>
-<ol type="1">
-<li>P-value Misinterpretation:</li>
-</ol>
-<p>The p-value is often described as the probability of observing data as extreme or more extreme, given the null hypothesis is true. This is a subtle but crucial point. It’s a conditional probability related to the data, not the hypothesis itself.This leads to several issues: * Sampling vs.&nbsp;Inference: P-values provide a sampling probability, not an inference probability. We’re interested in the probability that our hypothesis is true, given the data, not the other way around. This is not conducive to drawing definitive conclusions about whether variant A or B is truly better. * P-hacking Vulnerability: The reliance on p-values can encourage “p-hacking”, where researchers manipulate data or analyses to achieve statistical significance, leading to unreliable results at best. * Common Misconception: As Dr.&nbsp;Kohavi correctly notes, many people mistakenly interpret (1-p) as the chance the alternative hypothesis is true. This misunderstanding is widespread and problematic.</p>
-<ol start="2" type="1">
-<li>The Importance of Priors:</li>
-</ol>
-<p>Dr.&nbsp;Kohavi touches on the concept of a “Prior” in a nod to Bayes’ theorem as a way to get a probabilistic statement about the null hypothesis. However, he states, “we don’t know the prior.” This, I believe, is where a crucial point is missed. In fact, the Prior is what we do know before seeing the data. It’s the embodiment of our existing knowledge or lack thereof, assumptions, beliefs about the situation at hand, lays these bare for all to see and critique. This is the power of Bayesian analysis – a framework that allows us to incorporate that prior knowledge into our analysis, rather than ignoring it. This leads to greater understanding of the data, and crucially, allows us to quantify the probability of variant B being better than variant A, and the magnitude of that difference.</p>
-<p>Essentially by using bayesian statistics we can answer the question “what is the probability that B is better than A?” rather than the frequentist question of “what is the probability of the observed (or more extreme) given that A and B are the same?”. Finally it renders unnecessary the dependence on an arbitrary significance level of 0.05 that hails from the obscurantism of the early 20th century. In essence, while A/B testing based on frequentist methods has been widely used, it’s essential to recognize its limitations. The frequentist approach, with its reliance on p-values, can lead to misinterpretations and unreliable conclusionn, and has led to considerable damage in the social, political, judicial, and now with the awareness raised on the crisis of replication, scientific arenas.</p>
+<p>I just finished watching Dr.&nbsp;Ronny Kohavi’s “Ultimate Guide to A/B Testing” <a href="https://youtu.be/hEzpiDuYFoE?si=lwkaiIYRqocL2F7B">“Ultimate Guide to A/B Testing”</a>. This was a lengthy presentation made enjoyable by his enthusiasm and wealth of practical experience. Dr Kohavi has had extensive experience leading A/B testing efforts in companies like Bing, Microsoft, Airbnb. During this seminar, he touched on the statistical approach and the use of p-values as a decision mechanism in A/B testing. P-values are an essential tool in Null Hypothesis Testing and other frequentist inference efforts. In my view, this potentially consequential decision support approach is the wrong framework, not just for this use case, but in fact most use cases. Rare are the instances where this approach is required. Below I justify this thinking and propose a better framework.</p>
+<p><strong>Problems arising from the use of p-values</strong> - The p-value is often described as the probability of observing data that is as extreme or more extreme than what is on hand, given the null hypothesis is true. This is a subtle but crucial point. The P in p-value refers to a conditional probability about the data, not the hypothesis itself. This leads to several issues:</p>
+<ul>
+<li><em>Sampling vs.&nbsp;Inference</em>: P-values provide a sampling probability, not an inference probability. We’re interested in the probability that our hypothesis is true, given the data, not the other way around. This is not conducive to drawing definitive conclusions about whether variant A or B is truly better.</li>
+<li><em>P-hacking Vulnerability</em>: The reliance on p-values can encourage “p-hacking”, where researchers manipulate data or analyses to achieve statistical significance, leading to unreliable results at best.</li>
+<li><em>Common Misconception</em>: As Dr.&nbsp;Kohavi correctly notes, many people mistakenly interpret (1-p) as the chance the alternative hypothesis is true. This misunderstanding is widespread and problematic.</li>
+</ul>
+<p><strong>The Importance of Priors</strong> - Dr.&nbsp;Kohavi touches on the concept of a “Prior”, in a nod to Bayes’ theorem, and says it is the way to get a probabilistic statement about the null hypothesis. However, he states, “we don’t know the prior.” This is incorrect. The Prior, to be thorough, the prior probability, is what we do know <u><em>before</em></u> seeing the data; it is the embodiment of our existing knowledge and assumption. In addition to the role they play in inference, priors are important even before running the model and fitting the data because they exposing modeling assumptions for all to see and critique. Once the model is run and the data is fit the resulting posterior distribution is a rich construct that provides greater understanding of the data, and potentially the data generation process. I also think it is a better underpinning for causal analysis, which is what A/B testing is - I’ll get into that in another post. For the A/B testing scenario specifically though Bayesian analysis can provide actual answers to the product manager’s questions.</p>
+<p><strong>Bayesian answers</strong> - Essentially, by using Bayesian statistics we can answer the question “what is the probability that B is better than A?” Contrast this with the question the frequentist p-value does answer; i.e.&nbsp;“what is the probability of the observed (or more extreme) data given that A and B are the same?”. Finally it renders unnecessary the dependence on an arbitrary significance level of 0.05 that hails from the obscurantism of the early 20th century. In essence, while A/B testing based on frequentist methods has been widely used, it’s essential to recognize its limitations. The frequentist approach, with its reliance on p-values, can lead to misinterpretations and unreliable conclusion, and has led to considerable damage in the social, political, judicial, and now with the awareness raised on the crisis of replication, scientific arenas.</p>
 <p>Especially in today’s data-driven world, the Bayesian approach provides a more robust and informative alternative. Yes, it demands more effort, but its consistent framework stands in stark contrast to the hodgepodge of case-dependent recipes inherent in traditional statistics, a complexity that often proves difficult even for classically trained statisticians.</p>
-<p>I would love to hear thoughts and experiences with A/B testing and statistical methods! Feel free to reach out if you’d like to dive deeper into these concepts or need help with your data.</p>
+<p>I will provide an example of doing A/B testing properly in a next post. In the meantime, I would love to hear thoughts and experiences with A/B testing and statistical methods! Feel free to reach out if you’d like to dive deeper into these concepts or need help with your data.</p>
+<p>Be well!</p>
 
 
 
