@@ -58,5 +58,11 @@
   },
   "portfolio/elections_estonia/elections_estonia.qmd": {
     "elections_estonia.html": "70b1b8df"
+  },
+  "blog/pivoting/index.qmd": {
+    "index.html": "3a2cbd81"
+  },
+  "blog/stats_ab_testing/index.qmd": {
+    "index.html": "18ea0403"
   }
 }

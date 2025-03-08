@@ -1,0 +1,25 @@
+---
+title: Pivoting
+author: Erdem Karaköylü
+date: '2022-01-15'
+description: A technique to solve the non-identifiability problem created by overparameterization in Bayesian models.
+categories:
+  - Python
+  - categorical regression
+  - pivoting
+  - overparameterization
+  - non-identifiability
+  - Bayesian A/B/n
+  - Bambi
+image: ''
+format:
+  html:
+    code-fold: true
+execute: 
+    cache: true
+jupyter: python3
+draft: true
+---
+
+One of the problems I often encounter when working with Bayesian categorical regression is that it is very easy to formulate what looks like a model with parameter frugality and end up nonetheless with poor or lack of convergence altogether. Often time this is the result of overparameterization. 
+

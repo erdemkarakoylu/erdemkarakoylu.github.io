@@ -47,7 +47,7 @@
 <text text-anchor="middle" x="891" y="-392.83" font-family="Times,serif" font-size="14.00">Data</text>
 </g>
 <!-- y -->
-<g id="node4" class="node">
+<g id="node6" class="node">
 <title>y</title>
 <ellipse fill="lightgrey" stroke="black" cx="696" cy="-308.98" rx="55.33" ry="40.66"/>
 <text text-anchor="middle" x="696" y="-320.43" font-family="Times,serif" font-size="14.00">y</text>
@@ -60,8 +60,36 @@
 <path fill="none" stroke="black" d="M863.11,-390.98C860.42,-389.1 857.69,-387.29 855,-385.63 822.93,-365.95 784.94,-347.71 754.14,-334.07"/>
 <polygon fill="black" stroke="black" points="755.94,-331.03 745.38,-330.23 753.13,-337.45 755.94,-331.03"/>
 </g>
-<!-- gender -->
+<!-- education -->
 <g id="node2" class="node">
+<title>education</title>
+<path fill="lightgrey" stroke="black" d="M670.25,-443.13C670.25,-443.13 625.75,-443.13 625.75,-443.13 619.75,-443.13 613.75,-437.13 613.75,-431.13 613.75,-431.13 613.75,-397.63 613.75,-397.63 613.75,-391.63 619.75,-385.63 625.75,-385.63 625.75,-385.63 670.25,-385.63 670.25,-385.63 676.25,-385.63 682.25,-391.63 682.25,-397.63 682.25,-397.63 682.25,-431.13 682.25,-431.13 682.25,-437.13 676.25,-443.13 670.25,-443.13"/>
+<text text-anchor="middle" x="648" y="-425.83" font-family="Times,serif" font-size="14.00">education</text>
+<text text-anchor="middle" x="648" y="-409.33" font-family="Times,serif" font-size="14.00">~</text>
+<text text-anchor="middle" x="648" y="-392.83" font-family="Times,serif" font-size="14.00">Data</text>
+</g>
+<!-- education&#45;&gt;y -->
+<g id="edge11" class="edge">
+<title>education&#45;&gt;y</title>
+<path fill="none" stroke="black" d="M660.99,-385.4C664.9,-376.97 669.32,-367.46 673.65,-358.12"/>
+<polygon fill="black" stroke="black" points="676.82,-359.61 677.86,-349.06 670.47,-356.66 676.82,-359.61"/>
+</g>
+<!-- α_education -->
+<g id="node9" class="node">
+<title>α_education</title>
+<ellipse fill="none" stroke="black" cx="118" cy="-308.98" rx="77.07" ry="40.66"/>
+<text text-anchor="middle" x="118" y="-320.43" font-family="Times,serif" font-size="14.00">α_education</text>
+<text text-anchor="middle" x="118" y="-303.93" font-family="Times,serif" font-size="14.00">~</text>
+<text text-anchor="middle" x="118" y="-287.43" font-family="Times,serif" font-size="14.00">ZeroSumNormal</text>
+</g>
+<!-- education&#45;&gt;α_education -->
+<g id="edge5" class="edge">
+<title>education&#45;&gt;α_education</title>
+<path fill="none" stroke="black" d="M613.34,-413.25C537.7,-412.06 352.95,-404.17 207,-357.63 197.19,-354.51 187.19,-350.3 177.62,-345.68"/>
+<polygon fill="black" stroke="black" points="179.27,-342.6 168.77,-341.22 176.12,-348.85 179.27,-342.6"/>
+</g>
+<!-- gender -->
+<g id="node3" class="node">
 <title>gender</title>
 <path fill="lightgrey" stroke="black" d="M742,-443.13C742,-443.13 712,-443.13 712,-443.13 706,-443.13 700,-437.13 700,-431.13 700,-431.13 700,-397.63 700,-397.63 700,-391.63 706,-385.63 712,-385.63 712,-385.63 742,-385.63 742,-385.63 748,-385.63 754,-391.63 754,-397.63 754,-397.63 754,-431.13 754,-431.13 754,-437.13 748,-443.13 742,-443.13"/>
 <text text-anchor="middle" x="727" y="-425.83" font-family="Times,serif" font-size="14.00">gender</text>
@@ -69,7 +97,7 @@
 <text text-anchor="middle" x="727" y="-392.83" font-family="Times,serif" font-size="14.00">Data</text>
 </g>
 <!-- gender&#45;&gt;y -->
-<g id="edge12" class="edge">
+<g id="edge13" class="edge">
 <title>gender&#45;&gt;y</title>
 <path fill="none" stroke="black" d="M718.61,-385.4C716.24,-377.49 713.59,-368.64 710.95,-359.86"/>
 <polygon fill="black" stroke="black" points="714.31,-358.88 708.09,-350.3 707.61,-360.89 714.31,-358.88"/>
@@ -83,13 +111,13 @@
 <text text-anchor="middle" x="305" y="-287.43" font-family="Times,serif" font-size="14.00">ZeroSumNormal</text>
 </g>
 <!-- gender&#45;&gt;α_gender -->
-<g id="edge6" class="edge">
+<g id="edge7" class="edge">
 <title>gender&#45;&gt;α_gender</title>
 <path fill="none" stroke="black" d="M699.63,-389.93C696.83,-388.26 693.94,-386.79 691,-385.63 567.65,-337.03 520.94,-395.91 394,-357.63 383.91,-354.59 373.65,-350.35 363.86,-345.64"/>
 <polygon fill="black" stroke="black" points="365.71,-342.65 355.2,-341.28 362.56,-348.9 365.71,-342.65"/>
 </g>
 <!-- party choice -->
-<g id="node3" class="node">
+<g id="node4" class="node">
 <title>party choice</title>
 <path fill="lightgrey" stroke="black" d="M684.38,-227.82C684.38,-227.82 625.62,-227.82 625.62,-227.82 619.62,-227.82 613.62,-221.82 613.62,-215.82 613.62,-215.82 613.62,-182.32 613.62,-182.32 613.62,-176.32 619.62,-170.32 625.62,-170.32 625.62,-170.32 684.38,-170.32 684.38,-170.32 690.38,-170.32 696.38,-176.32 696.38,-182.32 696.38,-182.32 696.38,-215.82 696.38,-215.82 696.38,-221.82 690.38,-227.82 684.38,-227.82"/>
 <text text-anchor="middle" x="655" y="-210.52" font-family="Times,serif" font-size="14.00">party choice</text>
@@ -124,14 +152,6 @@
 <path fill="none" stroke="black" d="M650.64,-170.01C648.9,-158.82 646.85,-145.57 644.87,-132.81"/>
 <polygon fill="black" stroke="black" points="648.38,-132.62 643.39,-123.28 641.46,-133.7 648.38,-132.62"/>
 </g>
-<!-- α_education -->
-<g id="node9" class="node">
-<title>α_education</title>
-<ellipse fill="none" stroke="black" cx="118" cy="-308.98" rx="77.07" ry="40.66"/>
-<text text-anchor="middle" x="118" y="-320.43" font-family="Times,serif" font-size="14.00">α_education</text>
-<text text-anchor="middle" x="118" y="-303.93" font-family="Times,serif" font-size="14.00">~</text>
-<text text-anchor="middle" x="118" y="-287.43" font-family="Times,serif" font-size="14.00">ZeroSumNormal</text>
-</g>
 <!-- party choice&#45;&gt;α_education -->
 <g id="edge4" class="edge">
 <title>party choice&#45;&gt;α_education</title>
@@ -139,7 +159,7 @@
 <polygon fill="black" stroke="black" points="158.42,-262.09 153.15,-271.27 163,-267.38 158.42,-262.09"/>
 </g>
 <!-- party choice&#45;&gt;α_gender -->
-<g id="edge7" class="edge">
+<g id="edge6" class="edge">
 <title>party choice&#45;&gt;α_gender</title>
 <path fill="none" stroke="black" d="M613.32,-203.03C549.91,-208 432.51,-219.14 394,-235.82 377.68,-242.89 361.9,-253.82 348.28,-265.06"/>
 <polygon fill="black" stroke="black" points="346.12,-262.3 340.8,-271.46 350.67,-267.61 346.12,-262.3"/>
@@ -158,34 +178,8 @@
 <path fill="none" stroke="black" d="M613.38,-227.63C609.5,-230.35 605.66,-233.11 602,-235.82 588.75,-245.63 574.75,-256.65 561.88,-267.07"/>
 <polygon fill="black" stroke="black" points="559.89,-264.18 554.34,-273.21 564.31,-269.6 559.89,-264.18"/>
 </g>
-<!-- y&#45;&gt;party choice -->
-<g id="edge1" class="edge">
-<title>y&#45;&gt;party choice</title>
-<path fill="none" stroke="black" d="M681.31,-269.32C677.57,-259.48 673.55,-248.9 669.81,-239.04"/>
-<polygon fill="black" stroke="black" points="673.09,-237.82 666.26,-229.71 666.54,-240.3 673.09,-237.82"/>
-</g>
-<!-- education -->
-<g id="node5" class="node">
-<title>education</title>
-<path fill="lightgrey" stroke="black" d="M670.25,-443.13C670.25,-443.13 625.75,-443.13 625.75,-443.13 619.75,-443.13 613.75,-437.13 613.75,-431.13 613.75,-431.13 613.75,-397.63 613.75,-397.63 613.75,-391.63 619.75,-385.63 625.75,-385.63 625.75,-385.63 670.25,-385.63 670.25,-385.63 676.25,-385.63 682.25,-391.63 682.25,-397.63 682.25,-397.63 682.25,-431.13 682.25,-431.13 682.25,-437.13 676.25,-443.13 670.25,-443.13"/>
-<text text-anchor="middle" x="648" y="-425.83" font-family="Times,serif" font-size="14.00">education</text>
-<text text-anchor="middle" x="648" y="-409.33" font-family="Times,serif" font-size="14.00">~</text>
-<text text-anchor="middle" x="648" y="-392.83" font-family="Times,serif" font-size="14.00">Data</text>
-</g>
-<!-- education&#45;&gt;y -->
-<g id="edge14" class="edge">
-<title>education&#45;&gt;y</title>
-<path fill="none" stroke="black" d="M660.99,-385.4C664.9,-376.97 669.32,-367.46 673.65,-358.12"/>
-<polygon fill="black" stroke="black" points="676.82,-359.61 677.86,-349.06 670.47,-356.66 676.82,-359.61"/>
-</g>
-<!-- education&#45;&gt;α_education -->
-<g id="edge5" class="edge">
-<title>education&#45;&gt;α_education</title>
-<path fill="none" stroke="black" d="M613.34,-413.25C537.7,-412.06 352.95,-404.17 207,-357.63 197.19,-354.51 187.19,-350.3 177.62,-345.68"/>
-<polygon fill="black" stroke="black" points="179.27,-342.6 168.77,-341.22 176.12,-348.85 179.27,-342.6"/>
-</g>
 <!-- nationality -->
-<g id="node6" class="node">
+<g id="node5" class="node">
 <title>nationality</title>
 <path fill="lightgrey" stroke="black" d="M833.88,-443.13C833.88,-443.13 784.12,-443.13 784.12,-443.13 778.12,-443.13 772.12,-437.13 772.12,-431.13 772.12,-431.13 772.12,-397.63 772.12,-397.63 772.12,-391.63 778.12,-385.63 784.12,-385.63 784.12,-385.63 833.88,-385.63 833.88,-385.63 839.88,-385.63 845.88,-391.63 845.88,-397.63 845.88,-397.63 845.88,-431.13 845.88,-431.13 845.88,-437.13 839.88,-443.13 833.88,-443.13"/>
 <text text-anchor="middle" x="809" y="-425.83" font-family="Times,serif" font-size="14.00">nationality</text>
@@ -193,7 +187,7 @@
 <text text-anchor="middle" x="809" y="-392.83" font-family="Times,serif" font-size="14.00">Data</text>
 </g>
 <!-- nationality&#45;&gt;y -->
-<g id="edge15" class="edge">
+<g id="edge18" class="edge">
 <title>nationality&#45;&gt;y</title>
 <path fill="none" stroke="black" d="M778.42,-385.4C766.08,-374.11 751.63,-360.89 738.31,-348.69"/>
 <polygon fill="black" stroke="black" points="741.05,-346.45 731.31,-342.28 736.32,-351.62 741.05,-346.45"/>
@@ -204,32 +198,38 @@
 <path fill="none" stroke="black" d="M771.66,-389.35C768.79,-387.97 765.88,-386.71 763,-385.63 694.96,-360.22 670.67,-381.3 602,-357.63 592.39,-354.32 582.56,-350.06 573.11,-345.46"/>
 <polygon fill="black" stroke="black" points="574.88,-342.43 564.38,-341.03 571.72,-348.68 574.88,-342.43"/>
 </g>
+<!-- y&#45;&gt;party choice -->
+<g id="edge1" class="edge">
+<title>y&#45;&gt;party choice</title>
+<path fill="none" stroke="black" d="M681.31,-269.32C677.57,-259.48 673.55,-248.9 669.81,-239.04"/>
+<polygon fill="black" stroke="black" points="673.09,-237.82 666.26,-229.71 666.54,-240.3 673.09,-237.82"/>
+</g>
 <!-- α_baseline&#45;&gt;y -->
-<g id="edge18" class="edge">
+<g id="edge15" class="edge">
 <title>α_baseline&#45;&gt;y</title>
 <path fill="none" stroke="black" d="M794.72,-120.64C774.35,-159.3 742.91,-218.96 721,-260.53"/>
 <polygon fill="black" stroke="black" points="717.92,-258.87 716.36,-269.35 724.11,-262.13 717.92,-258.87"/>
 </g>
 <!-- α_age_group&#45;&gt;y -->
-<g id="edge13" class="edge">
+<g id="edge16" class="edge">
 <title>α_age_group&#45;&gt;y</title>
 <path fill="none" stroke="black" d="M685.97,-112.95C693.68,-120.12 700.56,-128.44 705,-137.82 722.77,-175.33 718.36,-222.84 710.74,-258.12"/>
 <polygon fill="black" stroke="black" points="707.38,-257.11 708.52,-267.64 714.2,-258.69 707.38,-257.11"/>
 </g>
 <!-- α_education&#45;&gt;y -->
-<g id="edge17" class="edge">
+<g id="edge14" class="edge">
 <title>α_education&#45;&gt;y</title>
 <path fill="none" stroke="black" d="M160.26,-343.44C176.66,-354.73 196.23,-365.85 216,-371.63 256.21,-383.39 552.67,-382.94 593,-371.63 612.54,-366.16 632.06,-355.84 648.76,-345.13"/>
 <polygon fill="black" stroke="black" points="650.61,-348.11 656.99,-339.66 646.73,-342.28 650.61,-348.11"/>
 </g>
 <!-- α_gender&#45;&gt;y -->
-<g id="edge11" class="edge">
+<g id="edge12" class="edge">
 <title>α_gender&#45;&gt;y</title>
 <path fill="none" stroke="black" d="M347.26,-343.44C363.66,-354.73 383.23,-365.85 403,-371.63 443.53,-383.48 552.34,-383.03 593,-371.63 612.54,-366.16 632.06,-355.84 648.76,-345.13"/>
 <polygon fill="black" stroke="black" points="650.61,-348.11 656.99,-339.66 646.73,-342.28 650.61,-348.11"/>
 </g>
 <!-- α_nationality&#45;&gt;y -->
-<g id="edge16" class="edge">
+<g id="edge17" class="edge">
 <title>α_nationality&#45;&gt;y</title>
 <path fill="none" stroke="black" d="M590.56,-308.98C603.41,-308.98 616.26,-308.98 629.11,-308.98"/>
 <polygon fill="black" stroke="black" points="628.88,-312.48 638.88,-308.98 628.88,-305.48 628.88,-312.48"/>
