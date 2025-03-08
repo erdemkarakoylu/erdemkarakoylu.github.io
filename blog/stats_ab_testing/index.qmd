@@ -9,7 +9,7 @@ categories:
   - Bayesian Statistics
   - Data Science
   - Data Analysis
-image: './ab_posterior.png'
+image: './yes_no.jpg'
 format: html
 
 ---
