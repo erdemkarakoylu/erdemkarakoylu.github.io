@@ -2,7 +2,7 @@
 title: On Statistical Practices in A/B Testing
 author: Erdem Karaköylü
 date: '2025-03-5'
-description: A commentary on the inadequacy of p-values in A/B tests
+description: The inadequacy of p-values and what to do about it
 categories:
   - A/B Testing  #DataScience #BayesianStatistics #FrequentistStatistics #DataAnalysis #RonnyKohavi
   - Frequentist Statistics

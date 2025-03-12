@@ -1,0 +1,90 @@
+---
+title: Solving non-identifiability with the ZeroSumNormal Distribution
+author: Erdem Karaköylü
+description: Bayesian categorical regression
+date: '2025-03-11'
+categories: [Bayesian A/B/n testing, Pivoting, Categorical regression, ZeroSumNormal, PyMC]
+image: ./zero_sum_normal.png
+format: 
+  html: 
+    code-fold: true
+execute: 
+  cache: true
+jupyter: pymc_base
+---
+
+#### Overview
+
+*Categorical Regression* is a powerful tool when dealing with outcomes that fall seveeral distinct categories. This can be seen as an extension of the *Logistic Regression* where the goal is the prediction of one of two possible outcomes. An example of categorical regression is voter preference prediction in multi-party elections. This is closely related to Frequentist Multivariate testing in marketing, A/B/n testing. Regardless of the school of thought one subscribes to or the field one operates in categorical regression models can suffer from non-identifiability issues due to overparameterization.
+
+#### *Non-identifiability* and *Overparameterization*
+
+In categorical regression, each category is typically assigned its own set of parameter; e.g., intercepts or coefficients for each level of a predictor. Without proper constraints, these parameters can play off of each other, their values can shift collectively in a way that leaves the model's predictions unchanged. This is analogous to making relative measurements without defined axes; you can measure the distance between different points but without a fixed reference, the absolute positions are arbitrary. In other words, the model ends up making relative measurements wihtout an establised baseline, leading to redundancy and ambiguity in parameter estimates. There are two common strategies to address the problem; *Pivoting* and the *ZerosumNormal* distibution.
+
+**Pivoting** involves using one of the categories as a reference as a reference or baseline so that the effects of the remaining categories are measured relative to this reference. Pivoting is useful in scenarios where there is a natural or meaningful control group - for example, in A/B/n testing where one version, usually A, is the baseline, oft referred to as the control group. 
+
+**ZeroSumNormal Distibution** is an approach that imposes a zero-sum constraint on the parameters, effectively anchoring them by ensuring that their sum equal zero. This constraint allows for relative comparisions without arbitrarily selecting one category as the baseline; particularly beneficial in settings where all categories are of equal interest.
+
+This post focuses on the ZeroSumNormal approach. In a future post, I will disucss pivoting and its applications.
+
+#### The *ZeroSumnormal Dsitribbution*: How it Works
+
+IF you're a Bayesian modeller like me you're in luck - and if not it's never too late to convert. The *ZeroSumNormal* distribution is a Bayesian prior designed to mitigate overparameterization and non-identifiability by enforcing a zero-sum constraint on the parameters. This means that the sum of the effects across all categories is forced to equal zero, anchoring the estimates in a way that ensures they are uniquely identifiable.
+
+Consider a model that predicts product choice baed on demographic predictors such as age, eduation, nationality, etc. Without constraints the model might assign an arbitrary set of intercepts or coefficients to each category, making the parameter estimates mabiguous. The ZeroSumNormal prior anchors these enstimates, ensuring that while the differences between categories remain informative, their absolute values are constrained to a common scale. 
+
+Below is a code snippet that illustrates the use of the ZeroSumNormal prior by doing the following:
+* It defines a simple model where $zs$ is a parameter drawn from a $ZeroSumNormal$ distribution over 5 categories.
+* It sets up the coordinates for the category dimension
+* It draws prior predictive samples (a process used to assess modeling assumptions before fitting data)
+* Finally, it computes the sum of the samples across the $category$ axis.
+
+```{python}
+import pymc as pm
+import matplotlib.pyplot as pp
+
+# Define the dimensions and a simple model to sample from ZeroSumNormal
+with pm.Model() as model:
+    # For demonstration, assume we have 5 categories.
+    # The ZeroSumNormal is defined over the 'category' dimension.
+    categories = ['A', 'B', 'C', 'D', 'E']
+    # Set up coordinates so PyMC knows about the dimension.
+    model.add_coord("category", categories)
+    zs = pm.ZeroSumNormal("zs", sigma=1, dims="category")
+    
+    trace = pm.sample_prior_predictive(1000)
+```
+
+Now I can gather the results of the prior predictive sampling, sum the samples across the categories and plot their distribution. The resulting histogram shows that the sum are centered very close to zero; the zero-sum constraint.
+
+```{python}
+
+# Extract samples and verify that they sum to nearly zero across categories.
+samples = trace.prior["zs"].values  # shape: (n_samples, n_categories)
+sums = samples.sum(axis=1)
+
+# Plot the distribution of the sums
+f, ax = pp.subplots(figsize=(8, 4))
+ax.hist(sums, bins=100, edgecolor="k", alpha=0.7)
+ax.axvline(
+    sums.sum(), color='red', linestyle='--', label=r'$Σ_{categories}$ = ' + f'{sums.sum():.4f}')
+ax.set(xlabel="Categories", ylabel="Frequency", title="Distribution of ZeroSumNormal Samples", ylim=(0, 1.1))
+ax.legend(fontsize=12, loc='best')
+for s, cat in zip(sums.ravel(), categories):
+    ax.text(s, 1.05, cat)
+```
+
+#### Why Choose *ZeroSumNormal* over *Pivoting*?
+
+As I indicated earlier, pivoting is a practical method when there's a clear reference outcome. However when each category is of equal interest, selecting an arbitrary baseline can bias the interpretation of the results. The ZeroSumNormal approach avoids this by treating all categories symmetrically, ensuring that each effect is measured relative to the collective group rather than an arbitrary reference.
+
+#### In Conclusion...
+
+Overparameterization and the resulting non-identifiability problem in categorical regression can lead to models that lack interpretability and stability. By using the ZeroSumNormal prior, we effectively anchor the parameters through a zero-sum constraint, avoiding the pitfalls of relative measurements without fixed axes. This leads to more robust and interpretable models, especially in contexts like multiparty elections where every category is of equal importance. 
+
+#### References and links:
+* The ZeroSumNormal is discussed in this [podcast](https://learnbayesstats.com/episode/74-optimizing-nuts-developing-zerosumnormal-distribution-adrian-seyboldt)
+* [Here is the documentation]()https://www.pymc.io/projects/docs/en/latest/api/distributions/generated/pymc.ZeroSumNormal.html of the implementation of the ZeroSumNormal distribution in PyMC.
+* [Here is a project]() I'm working on where I use ZeroSumNormal priors in my models.
+
+

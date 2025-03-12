@@ -3,7 +3,8 @@
     "listing": "/blog.html",
     "items": [
       "/blog/causailty_in_observation_data/index.html",
-      "/blog/stats_ab_testing/index.html"
+      "/blog/stats_ab_testing/index.html",
+      "/blog/zerosumnormal/on_zero_sum_normal.html"
     ]
   },
   {

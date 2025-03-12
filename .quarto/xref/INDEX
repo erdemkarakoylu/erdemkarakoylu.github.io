@@ -64,5 +64,8 @@
   },
   "blog/stats_ab_testing/index.qmd": {
     "index.html": "18ea0403"
+  },
+  "blog/zerosumnormal/on_zero_sum_normal.qmd": {
+    "on_zero_sum_normal.html": "2a73a25b"
   }
 }
