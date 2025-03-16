@@ -1,0 +1,22 @@
+---
+title: Phytoplankton Groups from Space
+author: Erdem Karaköylü
+date: '2024-02-25'
+description: Using Satellite Data to Predict and Explain PFGs with XGBoost and Shap
+categories:
+  - Plankton
+  - Regression
+  - XGBoost
+  - Shap
+  - Shapley Values
+image: 'under_construction.jpg'
+format:
+  html:
+    code-fold: true
+execute: 
+    cache: true
+jupyter: python3
+---
+
+
+Finalizing project. Check back soon.

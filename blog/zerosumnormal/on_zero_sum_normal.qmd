@@ -1,7 +1,7 @@
 ---
-title: Solving non-identifiability with the ZeroSumNormal Distribution
+title: The ZeroSumNormal Distribution
 author: Erdem Karaköylü
-description: Bayesian categorical regression
+description: A principled approach to avoinding overparameterization and non-identifiability in categorical regression
 date: '2025-03-11'
 categories: [Bayesian A/B/n testing, Pivoting, Categorical regression, ZeroSumNormal, PyMC]
 image: ./zero_sum_normal.png
@@ -83,8 +83,8 @@ As I indicated earlier, pivoting is a practical method when there's a clear refe
 Overparameterization and the resulting non-identifiability problem in categorical regression can lead to models that lack interpretability and stability. By using the ZeroSumNormal prior, we effectively anchor the parameters through a zero-sum constraint, avoiding the pitfalls of relative measurements without fixed axes. This leads to more robust and interpretable models, especially in contexts like multiparty elections where every category is of equal importance. 
 
 #### References and links:
-* The ZeroSumNormal is discussed in this [podcast](https://learnbayesstats.com/episode/74-optimizing-nuts-developing-zerosumnormal-distribution-adrian-seyboldt)
-* [Here is the documentation]()https://www.pymc.io/projects/docs/en/latest/api/distributions/generated/pymc.ZeroSumNormal.html of the implementation of the ZeroSumNormal distribution in PyMC.
+* The ZeroSumNormal is discussed in this [podcast](https://learnbayesstats.com/episode/74-optimizing-nuts-developing-zerosumnormal-distribution-adrian-seyboldt).
+* [Here is the documentation](https://www.pymc.io/projects/docs/en/latest/api/distributions/generated/pymc.ZeroSumNormal.html) of the implementation of the ZeroSumNormal distribution in PyMC.
 * [Here is a project]() I'm working on where I use ZeroSumNormal priors in my models.
 
 

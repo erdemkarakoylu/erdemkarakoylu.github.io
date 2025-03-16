@@ -67,5 +67,11 @@
   },
   "blog/zerosumnormal/on_zero_sum_normal.qmd": {
     "on_zero_sum_normal.html": "2a73a25b"
+  },
+  "blog/bayesian_ode/npz1986_blog.qmd": {
+    "npz1986_blog.html": "ad682baf"
+  },
+  "portfolio/pfg_xgb/index.qmd": {
+    "index.html": "1186199f"
   }
 }

@@ -1,0 +1,71 @@
+---
+title: A Bayesian Approach to Marine Modeling
+author: Erdem Karaköylü
+date: '2025-03-16'
+description: Fitting data to a system of Differential Equations
+categories:
+  - Bayesian Inference
+  - Biological Oceanography
+  - Ordinary Differential Equations
+  - Nutrient-Phytoplankton-Zooplankton
+image: ./figures/plankton.jpg
+format: html
+---
+
+This is a summary of a first installment in a series that aims to demonstrate the use of Bayesian inference for marine modeling. Here, I demonstrate how parameters of a system of ordinary differential equations (ODE) used in a nitrogen-phytoplankton-zooplankton (NPZ) model can be recovered from synthetic data. These are created from the NPZ model using fixed parameters, the equations of which are as follows
+
+
+$$
+\begin{alignat}{3}
+&\frac{dN}{dt} = -μ \frac{N}{k_N + N} P + m_PP + m_ZZ \\
+&\frac{dP}{dt} = μ \frac{N}{k_N+N} P - g_{max} \frac{P^2}{k_P^2 + P^2} Z - m_PP \\
+&\frac{dZ}{dt} = τ g_{max} \frac{P^2}{k_P^2 + P^2} Z - m_ZZ \\
+\end{alignat}
+$$
+
+The above is the original mechanistic framework of [Franks *et al.* (1986)](https://link.springer.com/article/10.1007/BF00397577), which represents the dynamics of nutrients (N), phytoplankton (P), and zooplankton (Z). To recover the parameters of the simulation, I use a combination of informative priors sourced from the litterature an adaptive version of the Hamiltonian Monte Carlo (HMC), the No U-Turn Sampler (NUTS). The resulting high-dimensional posterior distribution is a rich probabilistic construct that can be mined for parameter estimation along with estimation uncertainty. The following represents the first few steps of a principled Bayesian workflow; *cf*. [Gelman et al., 2020](https://arxiv.org/abs/2011.01808). 
+
+
+1. Prior elicitation, model building.
+2. Prior predictive checks:  aimed at verifying modeling assumptions <u>before</u> data collection occurs;
+3. Data collection: simulated by running the NPZ model to account of 10 days of activity following which the signals of each compartments were then homoscedasticly noised up;
+4. Sampler setting and model fitting;
+5. Marginalization and examination of each parameter's posterior distribution to assess whether and how well the "true" parameters were recovered - recovery is deemed successful if the true value falls within a pre-specified level of significance;
+6. Posterior predictive checks: aimed at checking model fits and associated uncertainties with comparison with simulated data.
+
+A note on significance - unlike in the classical paradigm, there isn't a pre-ordained conventional level of significane. Significance here is represented as a region within the posterior distribution known as the Highest Density Interval (HDI). HDI and other uncertainty tools are touched upon in the actual study referenced at the end.
+
+The figures below summarize some of the process.
+  
+
+<figure>
+  <img src="./figures/prior_predictive_hmosce_ts.png" alt="Prior Predictive Time Series with 94% HDI" style="width:1000px;">
+  <figcaption>Figure 1: Prior Predictive Time Series with 94% HDI. This is one of the steps in checking assumption validity in the model structure and prior choices.</figcaption>
+</figure>
+
+
+
+<figure>
+  <img src="./figures/simulated_data.png" alt="Prior Predictive Time Series with 94% HDI" style="width:1000px;">
+  <figcaption>Figure 2: Simulated data. Top: mean field signal. Bottom: mean with compartment-wise homoscedastic noise added. This is the data from which the parameters will be recovered.</figcaption>
+</figure>
+
+
+
+<figure>
+  <img src="./figures/marginal_posterior_parameters.png" alt="Prior Predictive Time Series with 94% HDI" style="width:1000px;">
+  <figcaption>Figure 3: Marginal posterior distributions for each model parameters. The orange line shows the "true" values used to generate the synthetic data. The probability of the "true value" to be within the posterior is also indicated in orange. The success criterion is for the orange line to fall within the region depicted by the black HDI line. While almost all parameters are found to be withing this HDI, one is outside and a few are close to the edges of the HDI line. This indicates potential problems and suggests revisions of the model. </figcaption>
+</figure>
+
+
+
+<figure>
+  <img src="./figures/posterior_ts.png" alt="Prior Predictive Time Series with 94% HDI" style="width:1000px;">
+  <figcaption>Figure 4: The mean modeled time series for each compartment, N, P, Z along with 94% HDI. The observed (synthetic) data is overlaid for reference. This may look adequate but as indicated by the probability of </figcaption>
+</figure>
+
+This was a short demonstration of how to infer model parameters of a NPZ model given some data. The Bayesian workflow includes more steps than were shown here. In particular, more than one models are typically built with increasing complexity. The resulting high dimensional posterior distributions are rich constructs than can be mined for far greater insights than provided by alternative frameworks.  Information theoretic and probabilistic machine learning approaches can then be leveraged to decide on the better model. Thus a model is not falsified per se, rather the difference in skill between models can be quantitatively measured. I will demonstrate this in a subsequent entry. One should remember however that model performance is conditional on the data observed and the model structure itself. 
+
+The code for this effort can be found [here](https://github.com/erdemkarakoylu/bayesian_ode). For a deeper dive visit [this portfolio entry](). 
+
+
