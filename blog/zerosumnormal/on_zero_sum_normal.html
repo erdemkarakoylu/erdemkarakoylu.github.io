@@ -7,10 +7,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Erdem Karaköylü">
-<meta name="dcterms.date" content="2025-03-05">
-<meta name="description" content="The inadequacy of p-values and what to do about it">
+<meta name="dcterms.date" content="2025-03-11">
+<meta name="description" content="A principled approach to avoinding overparameterization and non-identifiability in categorical regression">
 
-<title>On Statistical Practices in A/B Testing – Erdem Karaköylü</title>
+<title>The ZeroSumNormal Distribution – Erdem Karaköylü</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,6 +22,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -70,6 +104,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -126,19 +189,19 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">On Statistical Practices in A/B Testing</h1>
+<h1 class="title">The ZeroSumNormal Distribution</h1>
   <div class="quarto-categories">
-    <div class="quarto-category">A/B Testing</div>
-    <div class="quarto-category">Frequentist Statistics</div>
-    <div class="quarto-category">Bayesian Statistics</div>
-    <div class="quarto-category">Data Science</div>
-    <div class="quarto-category">Data Analysis</div>
+    <div class="quarto-category">Bayesian A/B/n testing</div>
+    <div class="quarto-category">Pivoting</div>
+    <div class="quarto-category">Categorical regression</div>
+    <div class="quarto-category">ZeroSumNormal</div>
+    <div class="quarto-category">PyMC</div>
   </div>
   </div>
 
 <div>
   <div class="description">
-    The inadequacy of p-values and what to do about it
+    A principled approach to avoinding overparameterization and non-identifiability in categorical regression
   </div>
 </div>
 
@@ -155,7 +218,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 5, 2025</p>
+      <p class="date">March 11, 2025</p>
     </div>
   </div>
   
@@ -167,20 +230,88 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>I just finished watching Dr.&nbsp;Ronny Kohavi’s “Ultimate Guide to A/B Testing” <a href="https://youtu.be/hEzpiDuYFoE?si=lwkaiIYRqocL2F7B">“Ultimate Guide to A/B Testing”</a>. This was a lengthy presentation made enjoyable by his enthusiasm and wealth of practical experience. Dr Kohavi has had extensive experience leading A/B testing efforts in companies like Bing, Microsoft, Airbnb. During this seminar, he touched on the statistical approach and the use of p-values as a decision mechanism in A/B testing. P-values are an essential tool in Null Hypothesis Testing and other frequentist inference efforts. In my view, this potentially consequential decision support approach is the wrong framework, not just for this use case, but in fact most use cases. Rare are the instances where this approach is required. Below I justify this thinking and propose a better framework.</p>
-<p><strong>Problems arising from the use of p-values</strong> - The p-value is often described as the probability of observing data that is as extreme or more extreme than what is on hand, given the null hypothesis is true. This is a subtle but crucial point. The P in p-value refers to a conditional probability about the data, not the hypothesis itself. This leads to several issues:</p>
+<section id="overview" class="level4">
+<h4 class="anchored" data-anchor-id="overview">Overview</h4>
+<p><em>Categorical Regression</em> is a powerful tool when dealing with outcomes that fall seveeral distinct categories. This can be seen as an extension of the <em>Logistic Regression</em> where the goal is the prediction of one of two possible outcomes. An example of categorical regression is voter preference prediction in multi-party elections. This is closely related to Frequentist Multivariate testing in marketing, A/B/n testing. Regardless of the school of thought one subscribes to or the field one operates in categorical regression models can suffer from non-identifiability issues due to overparameterization.</p>
+</section>
+<section id="non-identifiability-and-overparameterization" class="level4">
+<h4 class="anchored" data-anchor-id="non-identifiability-and-overparameterization"><em>Non-identifiability</em> and <em>Overparameterization</em></h4>
+<p>In categorical regression, each category is typically assigned its own set of parameter; e.g., intercepts or coefficients for each level of a predictor. Without proper constraints, these parameters can play off of each other, their values can shift collectively in a way that leaves the model’s predictions unchanged. This is analogous to making relative measurements without defined axes; you can measure the distance between different points but without a fixed reference, the absolute positions are arbitrary. In other words, the model ends up making relative measurements wihtout an establised baseline, leading to redundancy and ambiguity in parameter estimates. There are two common strategies to address the problem; <em>Pivoting</em> and the <em>ZerosumNormal</em> distibution.</p>
+<p><strong>Pivoting</strong> involves using one of the categories as a reference as a reference or baseline so that the effects of the remaining categories are measured relative to this reference. Pivoting is useful in scenarios where there is a natural or meaningful control group - for example, in A/B/n testing where one version, usually A, is the baseline, oft referred to as the control group.</p>
+<p><strong>ZeroSumNormal Distibution</strong> is an approach that imposes a zero-sum constraint on the parameters, effectively anchoring them by ensuring that their sum equal zero. This constraint allows for relative comparisions without arbitrarily selecting one category as the baseline; particularly beneficial in settings where all categories are of equal interest.</p>
+<p>This post focuses on the ZeroSumNormal approach. In a future post, I will disucss pivoting and its applications.</p>
+</section>
+<section id="the-zerosumnormal-dsitribbution-how-it-works" class="level4">
+<h4 class="anchored" data-anchor-id="the-zerosumnormal-dsitribbution-how-it-works">The <em>ZeroSumnormal Dsitribbution</em>: How it Works</h4>
+<p>IF you’re a Bayesian modeller like me you’re in luck - and if not it’s never too late to convert. The <em>ZeroSumNormal</em> distribution is a Bayesian prior designed to mitigate overparameterization and non-identifiability by enforcing a zero-sum constraint on the parameters. This means that the sum of the effects across all categories is forced to equal zero, anchoring the estimates in a way that ensures they are uniquely identifiable.</p>
+<p>Consider a model that predicts product choice baed on demographic predictors such as age, eduation, nationality, etc. Without constraints the model might assign an arbitrary set of intercepts or coefficients to each category, making the parameter estimates mabiguous. The ZeroSumNormal prior anchors these enstimates, ensuring that while the differences between categories remain informative, their absolute values are constrained to a common scale.</p>
+<p>Below is a code snippet that illustrates the use of the ZeroSumNormal prior by doing the following: * It defines a simple model where <span class="math inline">\(zs\)</span> is a parameter drawn from a <span class="math inline">\(ZeroSumNormal\)</span> distribution over 5 categories. * It sets up the coordinates for the category dimension * It draws prior predictive samples (a process used to assess modeling assumptions before fitting data) * Finally, it computes the sum of the samples across the <span class="math inline">\(category\)</span> axis.</p>
+<div id="da35ef27" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pymc <span class="im">as</span> pm</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> pp</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the dimensions and a simple model to sample from ZeroSumNormal</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pm.Model() <span class="im">as</span> model:</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># For demonstration, assume we have 5 categories.</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># The ZeroSumNormal is defined over the 'category' dimension.</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    categories <span class="op">=</span> [<span class="st">'A'</span>, <span class="st">'B'</span>, <span class="st">'C'</span>, <span class="st">'D'</span>, <span class="st">'E'</span>]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Set up coordinates so PyMC knows about the dimension.</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    model.add_coord(<span class="st">"category"</span>, categories)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    zs <span class="op">=</span> pm.ZeroSumNormal(<span class="st">"zs"</span>, sigma<span class="op">=</span><span class="dv">1</span>, dims<span class="op">=</span><span class="st">"category"</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    trace <span class="op">=</span> pm.sample_prior_predictive(<span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Sampling: [zs]</code></pre>
+</div>
+</div>
+<p>Now I can gather the results of the prior predictive sampling, sum the samples across the categories and plot their distribution. The resulting histogram shows that the sum are centered very close to zero; the zero-sum constraint.</p>
+<div id="a3ca6f76" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract samples and verify that they sum to nearly zero across categories.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> trace.prior[<span class="st">"zs"</span>].values  <span class="co"># shape: (n_samples, n_categories)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>sums <span class="op">=</span> samples.<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the distribution of the sums</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>f, ax <span class="op">=</span> pp.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>))</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>ax.hist(sums, bins<span class="op">=</span><span class="dv">100</span>, edgecolor<span class="op">=</span><span class="st">"k"</span>, alpha<span class="op">=</span><span class="fl">0.7</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>ax.axvline(</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    sums.<span class="bu">sum</span>(), color<span class="op">=</span><span class="st">'red'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, label<span class="op">=</span><span class="vs">r'$Σ_</span><span class="sc">{categories}</span><span class="vs">$ = '</span> <span class="op">+</span> <span class="ss">f'</span><span class="sc">{</span>sums<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:.4f}</span><span class="ss">'</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>ax.<span class="bu">set</span>(xlabel<span class="op">=</span><span class="st">"Categories"</span>, ylabel<span class="op">=</span><span class="st">"Frequency"</span>, title<span class="op">=</span><span class="st">"Distribution of ZeroSumNormal Samples"</span>, ylim<span class="op">=</span>(<span class="dv">0</span>, <span class="fl">1.1</span>))</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>ax.legend(fontsize<span class="op">=</span><span class="dv">12</span>, loc<span class="op">=</span><span class="st">'best'</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> s, cat <span class="kw">in</span> <span class="bu">zip</span>(sums.ravel(), categories):</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    ax.text(s, <span class="fl">1.05</span>, cat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="on_zero_sum_normal_files/figure-html/cell-3-output-1.png" width="668" height="376" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="why-choose-zerosumnormal-over-pivoting" class="level4">
+<h4 class="anchored" data-anchor-id="why-choose-zerosumnormal-over-pivoting">Why Choose <em>ZeroSumNormal</em> over <em>Pivoting</em>?</h4>
+<p>As I indicated earlier, pivoting is a practical method when there’s a clear reference outcome. However when each category is of equal interest, selecting an arbitrary baseline can bias the interpretation of the results. The ZeroSumNormal approach avoids this by treating all categories symmetrically, ensuring that each effect is measured relative to the collective group rather than an arbitrary reference.</p>
+</section>
+<section id="in-conclusion" class="level4">
+<h4 class="anchored" data-anchor-id="in-conclusion">In Conclusion…</h4>
+<p>Overparameterization and the resulting non-identifiability problem in categorical regression can lead to models that lack interpretability and stability. By using the ZeroSumNormal prior, we effectively anchor the parameters through a zero-sum constraint, avoiding the pitfalls of relative measurements without fixed axes. This leads to more robust and interpretable models, especially in contexts like multiparty elections where every category is of equal importance.</p>
+</section>
+<section id="references-and-links" class="level4">
+<h4 class="anchored" data-anchor-id="references-and-links">References and links:</h4>
 <ul>
-<li><em>Sampling vs.&nbsp;Inference</em>: P-values provide a sampling probability, not an inference probability. We’re interested in the probability that our hypothesis is true, given the data, not the other way around. This is not conducive to drawing definitive conclusions about whether variant A or B is truly better.</li>
-<li><em>P-hacking Vulnerability</em>: The reliance on p-values can encourage “p-hacking”, where researchers manipulate data or analyses to achieve statistical significance, leading to unreliable results at best.</li>
-<li><em>Common Misconception</em>: As Dr.&nbsp;Kohavi correctly notes, many people mistakenly interpret (1-p) as the chance the alternative hypothesis is true. This misunderstanding is widespread and problematic.</li>
+<li>The ZeroSumNormal is discussed in this <a href="https://learnbayesstats.com/episode/74-optimizing-nuts-developing-zerosumnormal-distribution-adrian-seyboldt">podcast</a>.</li>
+<li><a href="https://www.pymc.io/projects/docs/en/latest/api/distributions/generated/pymc.ZeroSumNormal.html">Here is the documentation</a> of the implementation of the ZeroSumNormal distribution in PyMC.</li>
+<li><a href="">Here is a project</a> I’m working on where I use ZeroSumNormal priors in my models.</li>
 </ul>
-<p><strong>The Importance of Priors</strong> - Dr.&nbsp;Kohavi touches on the concept of a “Prior”, in a nod to Bayes’ theorem, and says it is the way to get a probabilistic statement about the null hypothesis. However, he states, “we don’t know the prior.” This is incorrect. The Prior, to be thorough, the prior probability, is what we do know <u><em>before</em></u> seeing the data; it is the embodiment of our existing knowledge and assumption. In addition to the role they play in inference, priors are important even before running the model and fitting the data because they exposing modeling assumptions for all to see and critique. Once the model is run and the data is fit the resulting posterior distribution is a rich construct that provides greater understanding of the data, and potentially the data generation process. I also think it is a better underpinning for causal analysis, which is what A/B testing is - I’ll get into that in another post. For the A/B testing scenario specifically though Bayesian analysis can provide actual answers to the product manager’s questions.</p>
-<p><strong>Bayesian answers</strong> - Essentially, by using Bayesian statistics we can answer the question “what is the probability that B is better than A?” Contrast this with the question the frequentist p-value does answer; i.e.&nbsp;“what is the probability of the observed (or more extreme) data given that A and B are the same?”. Finally it renders unnecessary the dependence on an arbitrary significance level of 0.05 that hails from the obscurantism of the early 20th century. In essence, while A/B testing based on frequentist methods has been widely used, it’s essential to recognize its limitations. The frequentist approach, with its reliance on p-values, can lead to misinterpretations and unreliable conclusion, and has led to considerable damage in the social, political, judicial, and now with the awareness raised on the crisis of replication, scientific arenas.</p>
-<p>Especially in today’s data-driven world, the Bayesian approach provides a more robust and informative alternative. Yes, it demands more effort, but its consistent framework stands in stark contrast to the hodgepodge of case-dependent recipes inherent in traditional statistics, a complexity that often proves difficult even for classically trained statisticians.</p>
-<p>I will provide an example of doing A/B testing properly in a next post. In the meantime, I would love to hear thoughts and experiences with A/B testing and statistical methods! Feel free to reach out if you’d like to dive deeper into these concepts or need help with your data.</p>
-<p>Be well!</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

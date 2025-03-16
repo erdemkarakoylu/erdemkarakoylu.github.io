@@ -7,10 +7,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Erdem Karaköylü">
-<meta name="dcterms.date" content="2025-03-05">
-<meta name="description" content="The inadequacy of p-values and what to do about it">
+<meta name="dcterms.date" content="2025-03-16">
+<meta name="description" content="Fitting data to a system of Differential Equations">
 
-<title>On Statistical Practices in A/B Testing – Erdem Karaköylü</title>
+<title>A Bayesian Approach to Marine Modeling – Erdem Karaköylü</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -70,6 +70,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -126,19 +155,18 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">On Statistical Practices in A/B Testing</h1>
+<h1 class="title">A Bayesian Approach to Marine Modeling</h1>
   <div class="quarto-categories">
-    <div class="quarto-category">A/B Testing</div>
-    <div class="quarto-category">Frequentist Statistics</div>
-    <div class="quarto-category">Bayesian Statistics</div>
-    <div class="quarto-category">Data Science</div>
-    <div class="quarto-category">Data Analysis</div>
+    <div class="quarto-category">Bayesian Inference</div>
+    <div class="quarto-category">Biological Oceanography</div>
+    <div class="quarto-category">Ordinary Differential Equations</div>
+    <div class="quarto-category">Nutrient-Phytoplankton-Zooplankton</div>
   </div>
   </div>
 
 <div>
   <div class="description">
-    The inadequacy of p-values and what to do about it
+    Fitting data to a system of Differential Equations
   </div>
 </div>
 
@@ -155,7 +183,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 5, 2025</p>
+      <p class="date">March 16, 2025</p>
     </div>
   </div>
   
@@ -167,18 +195,51 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>I just finished watching Dr.&nbsp;Ronny Kohavi’s “Ultimate Guide to A/B Testing” <a href="https://youtu.be/hEzpiDuYFoE?si=lwkaiIYRqocL2F7B">“Ultimate Guide to A/B Testing”</a>. This was a lengthy presentation made enjoyable by his enthusiasm and wealth of practical experience. Dr Kohavi has had extensive experience leading A/B testing efforts in companies like Bing, Microsoft, Airbnb. During this seminar, he touched on the statistical approach and the use of p-values as a decision mechanism in A/B testing. P-values are an essential tool in Null Hypothesis Testing and other frequentist inference efforts. In my view, this potentially consequential decision support approach is the wrong framework, not just for this use case, but in fact most use cases. Rare are the instances where this approach is required. Below I justify this thinking and propose a better framework.</p>
-<p><strong>Problems arising from the use of p-values</strong> - The p-value is often described as the probability of observing data that is as extreme or more extreme than what is on hand, given the null hypothesis is true. This is a subtle but crucial point. The P in p-value refers to a conditional probability about the data, not the hypothesis itself. This leads to several issues:</p>
-<ul>
-<li><em>Sampling vs.&nbsp;Inference</em>: P-values provide a sampling probability, not an inference probability. We’re interested in the probability that our hypothesis is true, given the data, not the other way around. This is not conducive to drawing definitive conclusions about whether variant A or B is truly better.</li>
-<li><em>P-hacking Vulnerability</em>: The reliance on p-values can encourage “p-hacking”, where researchers manipulate data or analyses to achieve statistical significance, leading to unreliable results at best.</li>
-<li><em>Common Misconception</em>: As Dr.&nbsp;Kohavi correctly notes, many people mistakenly interpret (1-p) as the chance the alternative hypothesis is true. This misunderstanding is widespread and problematic.</li>
-</ul>
-<p><strong>The Importance of Priors</strong> - Dr.&nbsp;Kohavi touches on the concept of a “Prior”, in a nod to Bayes’ theorem, and says it is the way to get a probabilistic statement about the null hypothesis. However, he states, “we don’t know the prior.” This is incorrect. The Prior, to be thorough, the prior probability, is what we do know <u><em>before</em></u> seeing the data; it is the embodiment of our existing knowledge and assumption. In addition to the role they play in inference, priors are important even before running the model and fitting the data because they exposing modeling assumptions for all to see and critique. Once the model is run and the data is fit the resulting posterior distribution is a rich construct that provides greater understanding of the data, and potentially the data generation process. I also think it is a better underpinning for causal analysis, which is what A/B testing is - I’ll get into that in another post. For the A/B testing scenario specifically though Bayesian analysis can provide actual answers to the product manager’s questions.</p>
-<p><strong>Bayesian answers</strong> - Essentially, by using Bayesian statistics we can answer the question “what is the probability that B is better than A?” Contrast this with the question the frequentist p-value does answer; i.e.&nbsp;“what is the probability of the observed (or more extreme) data given that A and B are the same?”. Finally it renders unnecessary the dependence on an arbitrary significance level of 0.05 that hails from the obscurantism of the early 20th century. In essence, while A/B testing based on frequentist methods has been widely used, it’s essential to recognize its limitations. The frequentist approach, with its reliance on p-values, can lead to misinterpretations and unreliable conclusion, and has led to considerable damage in the social, political, judicial, and now with the awareness raised on the crisis of replication, scientific arenas.</p>
-<p>Especially in today’s data-driven world, the Bayesian approach provides a more robust and informative alternative. Yes, it demands more effort, but its consistent framework stands in stark contrast to the hodgepodge of case-dependent recipes inherent in traditional statistics, a complexity that often proves difficult even for classically trained statisticians.</p>
-<p>I will provide an example of doing A/B testing properly in a next post. In the meantime, I would love to hear thoughts and experiences with A/B testing and statistical methods! Feel free to reach out if you’d like to dive deeper into these concepts or need help with your data.</p>
-<p>Be well!</p>
+<p>This is a summary of a first installment in a series that aims to demonstrate the use of Bayesian inference for marine modeling. Here, I demonstrate how parameters of a system of ordinary differential equations (ODE) used in a nitrogen-phytoplankton-zooplankton (NPZ) model can be recovered from synthetic data. These are created from the NPZ model using fixed parameters, the equations of which are as follows</p>
+<p><span class="math display">\[
+\begin{alignat}{3}
+&amp;\frac{dN}{dt} = -μ \frac{N}{k_N + N} P + m_PP + m_ZZ \\
+&amp;\frac{dP}{dt} = μ \frac{N}{k_N+N} P - g_{max} \frac{P^2}{k_P^2 + P^2} Z - m_PP \\
+&amp;\frac{dZ}{dt} = τ g_{max} \frac{P^2}{k_P^2 + P^2} Z - m_ZZ \\
+\end{alignat}
+\]</span></p>
+<p>The above is the original mechanistic framework of <a href="https://link.springer.com/article/10.1007/BF00397577">Franks <em>et al.</em> (1986)</a>, which represents the dynamics of nutrients (N), phytoplankton (P), and zooplankton (Z). To recover the parameters of the simulation, I use a combination of informative priors sourced from the litterature an adaptive version of the Hamiltonian Monte Carlo (HMC), the No U-Turn Sampler (NUTS). The resulting high-dimensional posterior distribution is a rich probabilistic construct that can be mined for parameter estimation along with estimation uncertainty. The following represents the first few steps of a principled Bayesian workflow; <em>cf</em>. <a href="https://arxiv.org/abs/2011.01808">Gelman et al., 2020</a>.</p>
+<ol type="1">
+<li>Prior elicitation, model building.</li>
+<li>Prior predictive checks: aimed at verifying modeling assumptions <u>before</u> data collection occurs;</li>
+<li>Data collection: simulated by running the NPZ model to account of 10 days of activity following which the signals of each compartments were then homoscedasticly noised up;</li>
+<li>Sampler setting and model fitting;</li>
+<li>Marginalization and examination of each parameter’s posterior distribution to assess whether and how well the “true” parameters were recovered - recovery is deemed successful if the true value falls within a pre-specified level of significance;</li>
+<li>Posterior predictive checks: aimed at checking model fits and associated uncertainties with comparison with simulated data.</li>
+</ol>
+<p>A note on significance - unlike in the classical paradigm, there isn’t a pre-ordained conventional level of significane. Significance here is represented as a region within the posterior distribution known as the Highest Density Interval (HDI). HDI and other uncertainty tools are touched upon in the actual study referenced at the end.</p>
+<p>The figures below summarize some of the process.</p>
+<figure class="figure">
+<img src="./figures/prior_predictive_hmosce_ts.png" alt="Prior Predictive Time Series with 94% HDI" style="width:1000px;" class="figure-img">
+<figcaption>
+Figure 1: Prior Predictive Time Series with 94% HDI. This is one of the steps in checking assumption validity in the model structure and prior choices.
+</figcaption>
+</figure>
+<figure class="figure">
+<img src="./figures/simulated_data.png" alt="Prior Predictive Time Series with 94% HDI" style="width:1000px;" class="figure-img">
+<figcaption>
+Figure 2: Simulated data. Top: mean field signal. Bottom: mean with compartment-wise homoscedastic noise added. This is the data from which the parameters will be recovered.
+</figcaption>
+</figure>
+<figure class="figure">
+<img src="./figures/marginal_posterior_parameters.png" alt="Prior Predictive Time Series with 94% HDI" style="width:1000px;" class="figure-img">
+<figcaption>
+Figure 3: Marginal posterior distributions for each model parameters. The orange line shows the “true” values used to generate the synthetic data. The probability of the “true value” to be within the posterior is also indicated in orange. The success criterion is for the orange line to fall within the region depicted by the black HDI line. While almost all parameters are found to be withing this HDI, one is outside and a few are close to the edges of the HDI line. This indicates potential problems and suggests revisions of the model.
+</figcaption>
+</figure>
+<figure class="figure">
+<img src="./figures/posterior_ts.png" alt="Prior Predictive Time Series with 94% HDI" style="width:1000px;" class="figure-img">
+<figcaption>
+Figure 4: The mean modeled time series for each compartment, N, P, Z along with 94% HDI. The observed (synthetic) data is overlaid for reference. This may look adequate but as indicated by the probability of
+</figcaption>
+</figure>
+<p>This was a short demonstration of how to infer model parameters of a NPZ model given some data. The Bayesian workflow includes more steps than were shown here. In particular, more than one models are typically built with increasing complexity. The resulting high dimensional posterior distributions are rich constructs than can be mined for far greater insights than provided by alternative frameworks. Information theoretic and probabilistic machine learning approaches can then be leveraged to decide on the better model. Thus a model is not falsified per se, rather the difference in skill between models can be quantitatively measured. I will demonstrate this in a subsequent entry. One should remember however that model performance is conditional on the data observed and the model structure itself.</p>
+<p>The code for this effort can be found <a href="https://github.com/erdemkarakoylu/bayesian_ode">here</a>. For a deeper dive visit <a href="">this portfolio entry</a>.</p>
 
 
 
