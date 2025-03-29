@@ -6,11 +6,11 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Erdem Karaköylü">
-<meta name="dcterms.date" content="2024-02-25">
-<meta name="description" content="Using Satellite Data to Predict and Explain PFGs with XGBoost and Shap">
+<meta name="author" content="Erdem M. Karaköylü">
+<meta name="dcterms.date" content="2025-03-29">
+<meta name="description" content="Using Satellite Data to Predict and Explain PFGs with XGBoost and SHAP">
 
-<title>Phytoplankton Groups from Space – Erdem Karaköylü</title>
+<title>Retrieving Phytoplankton Functional Groups from Hyperspectral Ocean Color using XGBoost – Erdem Karaköylü</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,7 +23,27 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -70,6 +90,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -118,27 +167,53 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a>
+  <ul class="collapse">
+  <li><a href="#remote-sensing-approaches-for-pfg-retrieval" id="toc-remote-sensing-approaches-for-pfg-retrieval" class="nav-link" data-scroll-target="#remote-sensing-approaches-for-pfg-retrieval"><span class="header-section-number">1.1</span> Remote Sensing Approaches for PFG Retrieval</a></li>
+  <li><a href="#study-contribution-and-approach" id="toc-study-contribution-and-approach" class="nav-link" data-scroll-target="#study-contribution-and-approach"><span class="header-section-number">1.2</span> Study Contribution and Approach</a></li>
+  </ul></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods"><span class="header-section-number">2</span> Methods</a>
+  <ul class="collapse">
+  <li><a href="#data-preparation-and-feature-selection" id="toc-data-preparation-and-feature-selection" class="nav-link" data-scroll-target="#data-preparation-and-feature-selection"><span class="header-section-number">2.1</span> Data Preparation and Feature Selection</a></li>
+  <li><a href="#model-choice" id="toc-model-choice" class="nav-link" data-scroll-target="#model-choice"><span class="header-section-number">2.2</span> Model Choice</a></li>
+  <li><a href="#hyperparameter-optimization-and-model-training" id="toc-hyperparameter-optimization-and-model-training" class="nav-link" data-scroll-target="#hyperparameter-optimization-and-model-training"><span class="header-section-number">2.3</span> Hyperparameter Optimization and Model Training</a></li>
+  <li><a href="#model-evaluation-and-explainable-ai-xai" id="toc-model-evaluation-and-explainable-ai-xai" class="nav-link" data-scroll-target="#model-evaluation-and-explainable-ai-xai"><span class="header-section-number">2.4</span> Model Evaluation and eXplainable AI (XAI)</a></li>
+  </ul></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><span class="header-section-number">3</span> Results</a>
+  <ul class="collapse">
+  <li><a href="#hyperparameter-optimization-hpo" id="toc-hyperparameter-optimization-hpo" class="nav-link" data-scroll-target="#hyperparameter-optimization-hpo"><span class="header-section-number">3.1</span> Hyperparameter Optimization (HPO)</a></li>
+  <li><a href="#optimized-model-validation" id="toc-optimized-model-validation" class="nav-link" data-scroll-target="#optimized-model-validation"><span class="header-section-number">3.2</span> Optimized Model Validation</a></li>
+  <li><a href="#xai-with-shapley-values" id="toc-xai-with-shapley-values" class="nav-link" data-scroll-target="#xai-with-shapley-values"><span class="header-section-number">3.3</span> XAI with Shapley Values</a></li>
+  </ul></li>
+  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion"><span class="header-section-number">4</span> Discussion</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">5</span> Conclusion</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Phytoplankton Groups from Space</h1>
+<h1 class="title">Retrieving Phytoplankton Functional Groups from Hyperspectral Ocean Color using XGBoost</h1>
   <div class="quarto-categories">
     <div class="quarto-category">Plankton</div>
     <div class="quarto-category">Regression</div>
     <div class="quarto-category">XGBoost</div>
     <div class="quarto-category">Shap</div>
-    <div class="quarto-category">Shapley Values</div>
+    <div class="quarto-category">Explainable AI</div>
   </div>
   </div>
 
 <div>
   <div class="description">
-    Using Satellite Data to Predict and Explain PFGs with XGBoost and Shap
+    Using Satellite Data to Predict and Explain PFGs with XGBoost and SHAP
   </div>
 </div>
 
@@ -148,14 +223,14 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>Erdem Karaköylü </p>
+             <p>Erdem M. Karaköylü </p>
           </div>
   </div>
     
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">February 25, 2024</p>
+      <p class="date">March 29, 2025</p>
     </div>
   </div>
   
@@ -167,11 +242,491 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>Finalizing project. Check back soon.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+📂 Code &amp; Notebooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>All code and demo notebooks are available in the <a href="https://github.com/erdemkarakoylu/toa_2_phyto_ml">GitHub repository</a>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" open="true">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Abstract
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Phytoplankton functional groups (PFGs) play a key role in ocean biogeochemical cycling, climate regulation, and marine ecosystem dynamics. Accurate quantification of these groups from satellite ocean color data remains challenging due to spectral similarities among phytoplankton types and the limitations of existing empirical and semi-analytical models.</p>
+<p>In this study, we used an extreme gradient boosting (XGBoost) tree-based regression model to retrieve multiple PFGs and total chlorophyll-a concentrations from simulated hyperspectral remote sensing top-of-atmosphere (TOA) ocean color data as well as some ancillary data. The intent is to mimic what could be gathered from the NASA Plankton, Aerosol, Cloud, ocean Ecosystem (PACE) mission and auxiliary data sources to characterize the environment.</p>
+<p>In its final form, the model, validated on an out-of-sample set, demonstrated strong predictive performance across most functional groups, with R² values exceeding 0.95. Dinoflagellate retrievals showed lower accuracy (R² = 0.53). Further analysis revealed that temperature was a key predictor alongside hyperspectral TOA radiance, suggesting that integrating external temperature data could enhance future retrieval models.</p>
+<p>Furthermore, despite using only 10% of the available hyperspectral bands, feature importance analysis showed that specific spectral regions disproportionately contributed to model predictions. These findings highlight the potential of machine learning for phytoplankton classification and inform future algorithm development for hyperspectral ocean color missions.</p>
+</div>
+</div>
+</div>
+<section id="introduction" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="introduction"><span class="header-section-number">1</span> Introduction</h2>
+<p>Phytoplankton functional groups (PFGs) play a fundamental role in marine biogeochemical cycles, influencing carbon sequestration, nutrient fluxes, and global climate feedbacks. Different functional groups contribute uniquely to these processes; for example, diatoms facilitate carbon export through rapid sinking, cyanobacteria fix atmospheric nitrogen, and coccolithophores regulate carbonate chemistry via calcification <span class="citation" data-cites="Maranon2015 Boyd2010">(<a href="#ref-Maranon2015" role="doc-biblioref">Marañón et al. 2015</a>; <a href="#ref-Boyd2010" role="doc-biblioref">Boyd and Doney 2010</a>)</span>. Identifying and quantifying these groups from space is crucial for understanding their ecological functions, detecting environmental changes, and improving ocean biogeochemical models <span class="citation" data-cites="Bopp2005 Laufkotter2015">(<a href="#ref-Bopp2005" role="doc-biblioref">Bopp et al. 2005</a>; <a href="#ref-Laufkotter2015" role="doc-biblioref">Laufkötter et al. 2015</a>)</span>. However, current satellite ocean-color products primarily provide total chlorophyll <em>a</em> concentrations, which do not directly indicate community composition. To address this gap, various remote sensing algorithms have been developed to infer phytoplankton diversity, each with limitations in distinguishing certain groups and quantifying their biomass accurately <span class="citation" data-cites="Mouw2017">(<a href="#ref-Mouw2017" role="doc-biblioref">Mouw et al. 2017</a>)</span>.</p>
+<section id="remote-sensing-approaches-for-pfg-retrieval" class="level3" data-number="1.1">
+<h3 data-number="1.1" class="anchored" data-anchor-id="remote-sensing-approaches-for-pfg-retrieval"><span class="header-section-number">1.1</span> Remote Sensing Approaches for PFG Retrieval</h3>
+<p>Phytoplankton classification from satellite remote sensing has traditionally relied on empirical and semi-analytical methods. Empirical band-ratio techniques, such as PHYSAT, classify dominant phytoplankton groups based on anomalies in spectral reflectance but are often region-specific and limited to broad functional classes <span class="citation" data-cites="Alvain2005 Alvain2008">(<a href="#ref-Alvain2005" role="doc-biblioref">Alvain et al. 2005</a>, <a href="#ref-Alvain2008" role="doc-biblioref">2008</a>)</span>. Semi-analytical models, in contrast, use inherent optical properties (IOPs) to infer phytoplankton composition from satellite reflectance, providing a more mechanistic approach <span class="citation" data-cites="Hirata2011">(<a href="#ref-Hirata2011" role="doc-biblioref">Hirata et al. 2011</a>)</span>. Hybrid models incorporate additional environmental variables, such as sea surface temperature and total chlorophyll, to infer community structure <span class="citation" data-cites="Brewin2010">(<a href="#ref-Brewin2010" role="doc-biblioref">Brewin et al. 2010</a>)</span>.</p>
+<p>More recently, hyperspectral ocean-color sensors, such as NASA’s Plankton, Aerosol, Cloud, ocean Ecosystem (PACE) mission, may have the potential to improve PFG retrieval by capturing finer spectral features associated with phytoplankton pigments <span class="citation" data-cites="Dierssen2023">(<a href="#ref-Dierssen2023" role="doc-biblioref">Dierssen et al. 2023</a>)</span>. That is not to say that hyperspectral resolution is sufficient on its own. Optical similarity between different groups, depth-related biases in surface measurements, as well as associated measurement uncertainties inherenth to the noisy marine environment will likely hinder retrieval accuracy <span class="citation" data-cites="IOCCG2014">(<a href="#ref-IOCCG2014" role="doc-biblioref">IOCCG 2014</a>)</span>. Most current models either estimate phytoplankton size classes or assign a single dominant group per pixel, often failing to capture the complexity of mixed communities <span class="citation" data-cites="Ciotti2002">(<a href="#ref-Ciotti2002" role="doc-biblioref">Ciotti, Lewis, and Cullen 2002</a>)</span>.</p>
+</section>
+<section id="study-contribution-and-approach" class="level3" data-number="1.2">
+<h3 data-number="1.2" class="anchored" data-anchor-id="study-contribution-and-approach"><span class="header-section-number">1.2</span> Study Contribution and Approach</h3>
+<p>In this study, we introduce <strong>extreme gradient boosting (XGBoost)</strong> <span class="citation" data-cites="Chen2016">(<a href="#ref-Chen2016" role="doc-biblioref">Chen and Guestrin 2016</a>)</span> as a novel approach for retrieving phytoplankton functional groups from satellite ocean color data. XGBoost is a scalable ensemble learning algorithm that has demonstrated high performance in complex classification tasks but has not yet been widely applied to PFG retrieval. XGBoost is also less opaque than neural networks, and can deal better with highly correlated (spectral) data of varying scales.</p>
+<p>Recent studies have demonstrated the potential of XGBoost in related applications, such as harmful algal bloom detection <span class="citation" data-cites="Izadi2021">(<a href="#ref-Izadi2021" role="doc-biblioref">Izadi et al. 2021</a>)</span> and phytoplankton biomass estimation <span class="citation" data-cites="Yan2025">(<a href="#ref-Yan2025" role="doc-biblioref">Yan et al. 2025</a>)</span>, highlighting its suitability for remote sensing applications. Our work aligns with the objectives of the PACE mission by contributing an advanced classification algorithm that enhances hyperspectral monitoring of phytoplankton diversity <span class="citation" data-cites="Zhang2024">(<a href="#ref-Zhang2024" role="doc-biblioref">Zhang et al. 2024</a>)</span>. To our knowledge, this is the first application of XGBoost for PFG classification in ocean color remote sensing, offering a robust alternative to traditional retrieval methods.</p>
+<p>Our approach was to leverage a large dataset of simulated hyperspectral TOA radiance and associated environmental variables to improve both the discrimination of functional groups and the quantification of their biomass. Previous remote sensing algorithms often classified only a dominant PFG or broad size class <span class="citation" data-cites="Mouw2017">(<a href="#ref-Mouw2017" role="doc-biblioref">Mouw et al. 2017</a>)</span> and relied on empirical band relationships that lacked generalizability <span class="citation" data-cites="Hirata2011">(<a href="#ref-Hirata2011" role="doc-biblioref">Hirata et al. 2011</a>)</span>. By utilizing a machine learning framework capable of integrating multiple features, our approach reduces classification errors and enhances retrieval precision. Moreover the application of eXplainable AI (XAI) techniques to relate predictions to their input may further guide future efforts to improve PFG quantification.</p>
+</section>
+</section>
+<section id="methods" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="methods"><span class="header-section-number">2</span> Methods</h2>
+<section id="data-preparation-and-feature-selection" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="data-preparation-and-feature-selection"><span class="header-section-number">2.1</span> Data Preparation and Feature Selection</h3>
+<p>We utilized a simulated dataset representing the world ocean over 31 days, corresponding to December 2021. The simulation generated hyperspectral remote sensing TOA radiance data, emulating a sensor configuration akin to that of the PACE instrument. Due to the high dimensionality of the original spectral data, we conducted an initial exploratory analysis and observed strong correlations among many of the channels. To reduce redundancy while preserving essential spectral information, we retained 51 channels by selecting one channel every ten. Note that despite this feature subsampling, spectral features are characterized by high degree of correlation we opted against applying principal component analysis for two principal reasons. The first reason is to avoid overemphasizing blue water signal contributed by the extensive oceanic regions present in a global satellite scene, and which could mask coastal processes of interest. The second reason is that tree-based algorithms such as XGBoost are resiliant to input multicollinearity. To further contextualize the ocean color signal, we also included auxiliary environmental variables such as temperature and latitude. Though not available from actual PACE measurements, climatology including temperature could be readily sourced elsewhere to augment observations on hand.</p>
+<p>The dataset was divided into training and test sets using an 80/20 split. The training set was exclusively used for model development and hyperparameter optimization (see next section), while the test set was set aside until the final validation of model performance.</p>
+</section>
+<section id="model-choice" class="level3" data-number="2.2">
+<h3 data-number="2.2" class="anchored" data-anchor-id="model-choice"><span class="header-section-number">2.2</span> Model Choice</h3>
+<p>We employed an XGBoost Regressor model with a multi-output regression head to predict simultaneously multiple phytoplankton functional groups as well as total chlorophyll-<em>a</em> concentration. XGBoost is a high-performance, scalable implementation of gradient boosting that has become a popular choice for a wide range of regression and classification tasks <span class="citation" data-cites="Chen2016">(<a href="#ref-Chen2016" role="doc-biblioref">Chen and Guestrin 2016</a>)</span>. This approach consists in building an ensemble of decision trees sequentially, where each new tree attempts to correct the errors made by the previous trees. By optimizing a regularized objective function, XGBoost effectively controls overfitting while enhancing prediction accuracy. Its efficient handling highly correlated data, support for parallel computation, and flexible regularization mechanisms make it particularly well-suited for complex modeling tasks.</p>
+</section>
+<section id="hyperparameter-optimization-and-model-training" class="level3" data-number="2.3">
+<h3 data-number="2.3" class="anchored" data-anchor-id="hyperparameter-optimization-and-model-training"><span class="header-section-number">2.3</span> Hyperparameter Optimization and Model Training</h3>
+<p>Given the complexity of the problem and the high dimensionality of the input features, it was critical to optimize the hyperparameters to achieve robust performance and prevent overfitting. To this end, we conducted hyperparameter optimization using the Optuna version 4.2.1 library <span class="citation" data-cites="Akiba2019">(<a href="#ref-Akiba2019" role="doc-biblioref">Akiba et al. 2019</a>)</span>. Specifically, we employed the efficient Tree-structured Parzen Estimator (TPE) algorithm <span class="citation" data-cites="Bergstra2011">(<a href="#ref-Bergstra2011" role="doc-biblioref">Bergstra et al. 2011</a>)</span>. TPE is a Bayesian optimization method that iteratively builds probabilistic models of the hyperparameter space based on past evaluation results. By modeling the distributions of promising and less promising hyperparameter configurations, TPE suggests new parameter sets to explore, focusing the search on regions likely to yield improved performance. To further enhance the efficiency of the optimization process, we utilized Optuna’s MedianPruner with n_warmup_steps=5. This pruner automatically stops unpromising trials during the early stages of training (after at least 5 steps) if their intermediate results indicate they are unlikely to outperform the median performance of completed trials. The optimization step used an objective function to minimize the root mean squared error (RMSE) computed via three-fold cross-validation on the training set. The hyperparameters under investigation are lthe learning rate, maximum tree depth, number of estimators, subsample ratio, column subsample ratio, and gamma (the minimum loss reduction required to make a further partition on a leaf node); <em>cf</em> <a href="#tbl-hparam" class="quarto-xref">Table&nbsp;1</a> for further details. The Bayesian optimization procedure allowed us to efficiently explore the hyperparameter space by leveraging past trial information to prune unpromising candidate parameter sets early, thereby reducing overall computational cost.</p>
+<p>Once the optimization step complete, we instantiated the XGBoost model with the best set of hyperparameters and trained it on the full training set.</p>
+<div id="tbl-hparam" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-hparam-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Hyperparameter ranges and their corresponding sampling strategy used in optimization.
+</figcaption>
+<div aria-describedby="tbl-hparam-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 18%">
+<col style="width: 20%">
+<col style="width: 35%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Hyperparameter</strong></th>
+<th style="text-align: right;"><strong>Low bound</strong></th>
+<th style="text-align: right;"><strong>High bound</strong></th>
+<th style="text-align: right;"><strong>Sampling Distribution</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Learning rate</td>
+<td style="text-align: right;"><span class="math inline">\(10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.3\)</span></td>
+<td style="text-align: right;">Log Uniform</td>
+</tr>
+<tr class="even">
+<td>Max. tree depth</td>
+<td style="text-align: right;"><span class="math inline">\(3\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(10\)</span></td>
+<td style="text-align: right;">Uniform Integer</td>
+</tr>
+<tr class="odd">
+<td>Estimator number</td>
+<td style="text-align: right;"><span class="math inline">\(50\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(500\)</span></td>
+<td style="text-align: right;">Uniform Integer</td>
+</tr>
+<tr class="even">
+<td>Row sample fraction</td>
+<td style="text-align: right;"><span class="math inline">\(0.5\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.0\)</span></td>
+<td style="text-align: right;">Uniform Float</td>
+</tr>
+<tr class="odd">
+<td>Column sample frac.</td>
+<td style="text-align: right;"><span class="math inline">\(0.5\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.0\)</span></td>
+<td style="text-align: right;">Uniform Float</td>
+</tr>
+<tr class="even">
+<td>Gamma</td>
+<td style="text-align: right;"><span class="math inline">\(10^{-8}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.0\)</span></td>
+<td style="text-align: right;">Log Uniform</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+</section>
+<section id="model-evaluation-and-explainable-ai-xai" class="level3" data-number="2.4">
+<h3 data-number="2.4" class="anchored" data-anchor-id="model-evaluation-and-explainable-ai-xai"><span class="header-section-number">2.4</span> Model Evaluation and eXplainable AI (XAI)</h3>
+<p>Once the optimal hyperparameter combination was identified, we retrained the final XGBoost model on the full training set using these optimized settings. Finally, we evaluated the performance of the retrained model on the held-out test set to assess its generalizability.</p>
+<section id="prediction-explainability" class="level4" data-number="2.4.1">
+<h4 data-number="2.4.1" class="anchored" data-anchor-id="prediction-explainability"><span class="header-section-number">2.4.1</span> Prediction Explainability</h4>
+<p>To enhance interpretability and gain insights into how different input features influence model predictions, we employed <strong>Shapley Additive Explanations (SHAP)</strong>, a widely used explainable AI (XAI) framework for interpreting complex machine learning models. SHAP is named after the concept of Shapley values, which consists in assigning importance values to each input feature by estimating its contribution to the model’s predictions across different samples. The method is rooted in cooperative game theory, and guarantees a fair distribution of importance scores among features <span class="citation" data-cites="Lundberg2017">(<a href="#ref-Lundberg2017" role="doc-biblioref">Lundberg and Lee 2017</a>)</span>.</p>
+<p>Given the computational complexity of our XGBoost model and the high dimensionality of the dataset, we conducted SHAP analysis on a <strong>random subsample of 10,000 observations from the test set</strong>. This subset was selected to balance computational feasibility while maintaining a representative sample of phytoplankton spectral diversity.</p>
+<p>We generated <strong>SHAP summary plots</strong>, which provide a comprehensive visualization of feature importance and the directionality of their influence on model outputs. These plots display the magnitude of each feature’s impact across all predictions, helping to identify the most influential spectral and environmental variables in determining phytoplankton functional group composition. The insights gained from SHAP analysis aid in validating model behavior and ensuring its ecological plausibility.</p>
+<section id="code-availability" class="level5" data-number="2.4.1.1">
+<h5 data-number="2.4.1.1" class="anchored" data-anchor-id="code-availability"><span class="header-section-number">2.4.1.1</span> Code Availability</h5>
+<p>All analysis and modeling code used in this study was written in Python 3.12. This code is <a href="https://github.com/erdemkarakoylu/toa_2_phyto_ml">publicly available on GitHub</a>.</p>
+</section>
+</section>
+</section>
+</section>
+<section id="results" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="results"><span class="header-section-number">3</span> Results</h2>
+<section id="hyperparameter-optimization-hpo" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="hyperparameter-optimization-hpo"><span class="header-section-number">3.1</span> Hyperparameter Optimization (HPO)</h3>
+<p>We performed hyperparameter optimization using a Bayesian optimization framework implemented with Optuna. The metric used for optimization was the average RMSE (in units of <span class="math inline">\(mgL^{-1} Chl_a\)</span> ) computed over the cross-validation folds and across all target compartments. The “full HPO run” best parameters indicate a relatively aggressive model, characterized by deep trees with many estimators, a moderate learning rate, and little regularization via gamma.</p>
+<p>The best trial finished with an RMSE of <span class="math inline">\(0.116mgL^{-1} Chl_a\)</span>. Below is the list of hyperparameters researched, the optimal values found, and an interpretation of these values:</p>
+<ul>
+<li><p>Learning Rate (learning_rate): <span class="math inline">\(0.083\)</span> - This moderate learning rate suggests the model takes reasonably sized steps when updating that are neither too aggressive (which might lead to overshooting the optimum) nor too conservative (which could slow down convergence).</p></li>
+<li><p>Max Depth (max_depth): <span class="math inline">\(10\)</span> - A depth of 10 allows the trees to capture complex interactions. This may indicate that the data has non-linear relationships that benefit from deeper trees. Such a depth can be associated with overfitting. The cross-validation process during HPO should minimize this however.</p></li>
+<li><p>Number of Estimators (n_estimators): <span class="math inline">\(466\)</span> -Building around 466 trees indicates the ensemble haa to tackle inherent complexity in the data that was not apparetn during the Exploratory Data Analysis phase. A larger number of trees generally improves performance—up to a point before overfitting becomse a risk. This number in conjunction with the cross validation process suggest this number strikes a balance between performance and overfitting.</p></li>
+<li><p>Subsampling (subsample): <span class="math inline">\(0.658\)</span> - This indicates each of the 466 trees is using roughly 66% of the data. This introduces randomness that helps prevent overfitting as not all samples in any cross-validation fold are used to build every tree.</p></li>
+<li><p>Features used per tree (colsample_bytree): <span class="math inline">\(0.894\)</span> - Using about 89% of the features per tree indicates that most features are informative, and the model is allowed to consider almost the full feature set at each split. - See features used in the Methods section.</p></li>
+<li><p>Gamma (gamma): <span class="math inline">\(8.63e-06\)</span> - An extremely low gamma value means that almost no minimum loss reduction is required to make a split. This implies that the algorithm will split more readily, potentially capturing fine details. Awareness of this hyperparameter values is important as low gamma can risk overfitting.</p></li>
+</ul>
+</section>
+<section id="optimized-model-validation" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="optimized-model-validation"><span class="header-section-number">3.2</span> Optimized Model Validation</h3>
+<p>The next step was to load the best set of hyperparameter (listed above) into the model and retrain the model on the entire training set. The optimized and trained model was then validated using the test set, which prior to the HPO process and until this step had been set aside.</p>
+<div id="fig-gof" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-gof-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/goodness-of-fit_rrs_env.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-gof-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Goodness-of-fit plots for all groups and total chorophyll <em>a</em>, measured on out-of-sample data set. THe model is able to predict with very good accuracy. Dinoflagellates are the notable exception.
+</figcaption>
+</figure>
+</div>
+<p>A more complete set of metrics are summarized in table <a href="#tbl-metrics" class="quarto-xref">Table&nbsp;2</a> See further below for metrics explanation.</p>
+<div id="tbl-metrics" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-metrics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: Performance metrics of optimized and trained model on hold-out set.
+</figcaption>
+<div aria-describedby="tbl-metrics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 10%">
+<col style="width: 12%">
+<col style="width: 11%">
+<col style="width: 13%">
+<col style="width: 12%">
+<col style="width: 9%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th style="text-align: right;">Diatom</th>
+<th style="text-align: right;">Chloroph.</th>
+<th style="text-align: right;">Cyanobac</th>
+<th style="text-align: right;">Coccolith.</th>
+<th style="text-align: right;">Dinoflag.</th>
+<th style="text-align: right;">Phaeo</th>
+<th>Tot. Chl_a</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>MSE</strong></td>
+<td style="text-align: right;">0.00034</td>
+<td style="text-align: right;">0.00010</td>
+<td style="text-align: right;">2.89e-06</td>
+<td style="text-align: right;">8.59e-05</td>
+<td style="text-align: right;">1.96e-05</td>
+<td style="text-align: right;">0.00011</td>
+<td>0.000193</td>
+</tr>
+<tr class="even">
+<td><strong>RMSE</strong></td>
+<td style="text-align: right;">0.0184</td>
+<td style="text-align: right;">0.0100</td>
+<td style="text-align: right;">0.0017</td>
+<td style="text-align: right;">0.00927</td>
+<td style="text-align: right;">0.00443</td>
+<td style="text-align: right;">0.0105</td>
+<td>0.0139</td>
+</tr>
+<tr class="odd">
+<td><strong>MAE</strong></td>
+<td style="text-align: right;">0.00878</td>
+<td style="text-align: right;">0.0042</td>
+<td style="text-align: right;">0.00078</td>
+<td style="text-align: right;">0.0042</td>
+<td style="text-align: right;">0.000637</td>
+<td style="text-align: right;">0.00313</td>
+<td>0.00728</td>
+</tr>
+<tr class="even">
+<td><strong>R-squared</strong></td>
+<td style="text-align: right;">0.979</td>
+<td style="text-align: right;">0.958</td>
+<td style="text-align: right;">0.996</td>
+<td style="text-align: right;">0.985</td>
+<td style="text-align: right;">0.530</td>
+<td style="text-align: right;">0.999</td>
+<td>0.999</td>
+</tr>
+<tr class="odd">
+<td><strong>MAE/StDev</strong></td>
+<td style="text-align: right;">0.0691</td>
+<td style="text-align: right;">0.0858</td>
+<td style="text-align: right;">0.0302</td>
+<td style="text-align: right;">0.0563</td>
+<td style="text-align: right;">0.0986</td>
+<td style="text-align: right;">0.00754</td>
+<td>0.0182</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<section id="explanation-of-metrics" class="level4" data-number="3.2.1">
+<h4 data-number="3.2.1" class="anchored" data-anchor-id="explanation-of-metrics"><span class="header-section-number">3.2.1</span> Explanation of metrics</h4>
+<ul>
+<li><p><strong>Mean Squared Error (MSE):</strong><br>
+MSE is the average of the squared differences between the predicted and true values. Squaring the errors emphasizes larger deviations, making MSE sensitive to outliers. In our context, MSE is expressed in units of (mg L<span class="math inline">\(^{-1}\)</span> Chl<span class="math inline">\(_a\)</span>)<span class="math inline">\(^2\)</span>. Lower MSE values indicate better model performance.</p></li>
+<li><p><strong>Root Mean Squared Error (RMSE):</strong><br>
+RMSE is the square root of the MSE, bringing the error metric back to the original units (mg L<span class="math inline">\(^{-1}\)</span> Chl<span class="math inline">\(_a\)</span>). It provides a direct measure of the average prediction error magnitude. Lower RMSE values suggest that the model’s predictions are closer to the true values.</p></li>
+<li><p><strong>Mean Absolute Error (MAE):</strong><br>
+MAE calculates the average absolute difference between predicted and true values. Unlike MSE, it does not square the errors, so it is less sensitive to large outliers. MAE is also expressed in the same units as the target variable (mg L<span class="math inline">\(^{-1}\)</span> Chl<span class="math inline">\(_a\)</span>). A lower MAE indicates better predictive accuracy.</p></li>
+<li><p><strong>Coefficient of Determination (R-squared):</strong><br>
+R-squared measures the proportion of the variance in the dependent variable that is predictable from the independent variables. It ranges from 0 to 1, where a value closer to 1 indicates that the model explains a high proportion of the variance in the data. In our results, high R-squared values generally indicate strong model performance, although lower values (e.g., for dinoflagellates) suggest room for improvement.</p></li>
+<li><p><strong>MAE/StDev<span class="math inline">\(_{true}\)</span>:</strong><br>
+This ratio compares the mean absolute error to the standard deviation of the true values. It provides a relative measure of error by indicating how the average error compares to the inherent variability in the data. A lower ratio implies that the model’s prediction error is small relative to the natural variability of the observations.</p></li>
+</ul>
+</section>
+</section>
+<section id="xai-with-shapley-values" class="level3" data-number="3.3">
+<h3 data-number="3.3" class="anchored" data-anchor-id="xai-with-shapley-values"><span class="header-section-number">3.3</span> XAI with Shapley Values</h3>
+<p>The SHAP summary plots provides insights into feature importance and their effects on model predictions for phytoplankton functional groups.</p>
+<div id="fig-shap" class="quarto-layout-panel">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-shap-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-shap" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-diatoms" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-diatoms-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/shap_rrs_env_dia.png" id="fig-diatoms" class="img-fluid figure-img" data-ref-parent="fig-shap">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-diatoms-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-shap" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-chloro" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-chloro-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/shap_rrs_env_chl.png" id="fig-chloro" class="img-fluid figure-img" data-ref-parent="fig-shap">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-chloro-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-shap" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-cyano" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-cyano-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/shap_rrs_env_cya.png" id="fig-cyano" class="img-fluid figure-img" data-ref-parent="fig-shap">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-cyano-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(c)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-shap" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-coccos" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-coccos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/shap_rrs_env_coc.png" id="fig-coccos" class="img-fluid figure-img" data-ref-parent="fig-shap">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-coccos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(d)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-shap" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-dinos" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-dinos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/shap_rrs_env_din.png" id="fig-dinos" class="img-fluid figure-img" data-ref-parent="fig-shap">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dinos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(e)
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-shap" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-phaeo" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-phaeo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/shap_rrs_env_pha.png" id="fig-phaeo" class="img-fluid figure-img" data-ref-parent="fig-shap">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-phaeo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(f)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-shap" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-tot_chl" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-tot_chl-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/shap_rrs_env_tot_cphyl.png" id="fig-tot_chl" class="img-fluid figure-img" data-ref-parent="fig-shap">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-tot_chl-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(g)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-shap-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Shapley values are shown for each functional group and for total chlorophyll. Features are ranked by most to least impactful, from top to bottom. Only the top 6 predictive features are shown. Along the x-axis, positive SHAP values indicate a positive relationship with the predicted; negative values, a negative one. Wider sections indicate greater variability. The color gradient represents feature values, with red for high values and blue for low values. The midpoint of the color bar reflects a percentile-based central value, not necessarily the mean, median, or mode, as it depends on the feature’s distribution.
+</figcaption>
+</figure>
+</div>
+<p>Most saliently, temperature was the top factor for all phytoplankton groups but is not a primordial feature in quantifying dinoflagellates.</p>
+</section>
+</section>
+<section id="discussion" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="discussion"><span class="header-section-number">4</span> Discussion</h2>
+<p>Dinoflagellates do not show a single clear biogeographical zone of dominance the way cyanobacteria (tropics), diatoms (high latitudes and upwelling regions), or coccolithophores (subpolar summer blooms) do <span class="citation" data-cites="Boyd2010 Buitenhuis2013 Gregg2019">(<a href="#ref-Boyd2010" role="doc-biblioref">Boyd and Doney 2010</a>; <a href="#ref-Buitenhuis2013" role="doc-biblioref">Buitenhuis 2013</a>; <a href="#ref-Gregg2019" role="doc-biblioref">Gregg and Rousseaux 2019</a>)</span>. Instead, they are considered ecological opportunists, often thriving in stratified, stable water columns typical of tropical and temperate regions <span class="citation" data-cites="Smayda2001 Kibler2015">(<a href="#ref-Smayda2001" role="doc-biblioref">Smayda and Reynolds 2001</a>; <a href="#ref-Kibler2015" role="doc-biblioref">Kibler 2015</a>)</span>. Their distribution is governed more by factors such as nutrient availability (particularly high N:P ratios), light regime, and water-column stability, along with their ability to exploit mixotrophic nutrition strategies, than by temperature alone <span class="citation" data-cites="Jeong2010 Glibert2001 Flynn2013">(<a href="#ref-Jeong2010" role="doc-biblioref">Jeong 2010</a>; <a href="#ref-Glibert2001" role="doc-biblioref">Glibert 2001</a>; <a href="#ref-Flynn2013" role="doc-biblioref">Flynn 2013</a>)</span>. Recent studies suggest that ongoing ocean warming and increased stratification may promote a shift from diatom- to dinoflagellate-dominated phytoplankton communities—not because dinoflagellates prefer higher temperatures per se, but because warming tends to suppress vertical mixing and nutrient resupply, creating conditions more favorable to dinoflagellates (Glibert, 2020; Peperzak, 2003; Fu et al., 2012).</p>
+</section>
+<section id="conclusion" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="conclusion"><span class="header-section-number">5</span> Conclusion</h2>
+<p>This study demonstrates the potential of machine learning, specifically XGBoost, for retrieving phytoplankton functional groups (PFGs) from hyperspectral ocean color data. Using simulated data designed to emulate NASA’s upcoming PACE mission, our model achieved high predictive accuracy for most PFGs, with R² values exceeding 0.95 for diatoms, cyanobacteria, coccolithophores, and phaeophytes. However, retrievals for dinoflagellates were less reliable, highlighting challenges in distinguishing this group based on spectral data alone. Hyperparameter optimization with Optuna improved model performance, and SHAP-based explainability analysis revealed that temperature was among the top six predictive features for all functional groups except dinoflagellates, emphasizing the need to integrate external sea surface temperature (SST) data in real-world applications. Furthermore, our findings confirm that only a subset of hyperspectral bands drive PFG retrieval, suggesting that future algorithm development should prioritize feature selection to optimize computational efficiency. These results contribute to ongoing efforts to enhance phytoplankton classification methods and provide insights for future ocean color missions seeking to leverage hyperspectral capabilities for improved ecological monitoring.</p>
+</section>
+<section id="references" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-Akiba2019" class="csl-entry" role="listitem">
+Akiba, Takuya, Shotaro Sano, Toshihiko Yanase, Takeru Ohta, and Masanori Koyama. 2019. <span>“Optuna: A Next-Generation Hyperparameter Optimization Framework.”</span> In <em>Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD)</em>, 2623–31. ACM. <a href="https://doi.org/10.1145/3292500.3330701">https://doi.org/10.1145/3292500.3330701</a>.
+</div>
+<div id="ref-Alvain2005" class="csl-entry" role="listitem">
+Alvain, S., C. Moulin, Y. Dandonneau, and F. M. Bréon. 2005. <span>“Remote Sensing of Phytoplankton Groups in Case 1 Waters from Global SeaWiFS Imagery.”</span> <em>Deep-Sea Research I</em> 52 (11): 1989–2004. <a href="https://doi.org/10.1016/j.dsr.2005.06.015">https://doi.org/10.1016/j.dsr.2005.06.015</a>.
+</div>
+<div id="ref-Alvain2008" class="csl-entry" role="listitem">
+Alvain, S., C. Moulin, Y. Dandonneau, and H. Loisel. 2008. <span>“Seasonal Distribution and Succession of Dominant Phytoplankton Groups in the Global Ocean: A Satellite View.”</span> <em>Global Biogeochemical Cycles</em> 22 (3): GB3S04. <a href="https://doi.org/10.1029/2007GB003154">https://doi.org/10.1029/2007GB003154</a>.
+</div>
+<div id="ref-Bergstra2011" class="csl-entry" role="listitem">
+Bergstra, James, Rémi Bardenet, Yoshua Bengio, and Balázs Kégl. 2011. <span>“Algorithms for Hyper-Parameter Optimization.”</span> In <em>Advances in Neural Information Processing Systems</em>, edited by J. Shawe-Taylor, R. Zemel, P. Bartlett, F. Pereira, and K. Q. Weinberger. Vol. 24. Curran Associates, Inc. <a href="https://proceedings.neurips.cc/paper_files/paper/2011/file/86e8f7ab32cfd12577bc2619bc635690-Paper.pdf">https://proceedings.neurips.cc/paper_files/paper/2011/file/86e8f7ab32cfd12577bc2619bc635690-Paper.pdf</a>.
+</div>
+<div id="ref-Bopp2005" class="csl-entry" role="listitem">
+Bopp, L., O. Aumont, P. Cadule, S. Alvain, and M. Gehlen. 2005. <span>“Response of Diatoms Distribution to Global Warming and Potential Implications: A Global Model Study.”</span> <em>Geophysical Research Letters</em> 32 (19): L19606. <a href="https://doi.org/10.1029/2005GL023653">https://doi.org/10.1029/2005GL023653</a>.
+</div>
+<div id="ref-Boyd2010" class="csl-entry" role="listitem">
+Boyd, P. W., and S. C. Doney. 2010. <span>“Modelling Regional Responses by Marine Pelagic Ecosystems to Global Climate Change.”</span> <em>Geophysical Research Letters</em> 32 (19): L19606. <a href="https://doi.org/10.1029/2005GL023653">https://doi.org/10.1029/2005GL023653</a>.
+</div>
+<div id="ref-Brewin2010" class="csl-entry" role="listitem">
+Brewin, R. J. W., S. Sathyendranath, T. Hirata, S. J. Lavender, R. Barciela, and N. J. Hardman-Mountford. 2010. <span>“A Three-Component Model of Phytoplankton Size Class for the Atlantic Ocean.”</span> <em>Ecological Modelling</em> 221 (11): 1472–83. <a href="https://doi.org/10.1016/j.ecolmodel.2010.02.014">https://doi.org/10.1016/j.ecolmodel.2010.02.014</a>.
+</div>
+<div id="ref-Buitenhuis2013" class="csl-entry" role="listitem">
+Buitenhuis, Erik T. et al. 2013. <span>“Biogeochemical Fluxes Through Microzooplankton.”</span> <em>Global Biogeochemical Cycles</em> 27 (3): 847–58. <a href="https://doi.org/10.1002/gbc.20059">https://doi.org/10.1002/gbc.20059</a>.
+</div>
+<div id="ref-Chen2016" class="csl-entry" role="listitem">
+Chen, Tianqi, and Carlos Guestrin. 2016. <span>“<span>XGBoost</span>: A Scalable Tree Boosting System.”</span> In <em>Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD)</em>, 785–94. <a href="https://doi.org/10.1145/2939672.2939785">https://doi.org/10.1145/2939672.2939785</a>.
+</div>
+<div id="ref-Ciotti2002" class="csl-entry" role="listitem">
+Ciotti, A. M., M. R. Lewis, and J. J. Cullen. 2002. <span>“Assessment of the Relationships Between Dominant Cell Size in Natural Phytoplankton Communities and the Spectral Shape of the Absorption Coefficient.”</span> <em>Limnology and Oceanography</em> 47 (2): 404–17. <a href="https://doi.org/10.4319/lo.2002.47.2.0404">https://doi.org/10.4319/lo.2002.47.2.0404</a>.
+</div>
+<div id="ref-Dierssen2023" class="csl-entry" role="listitem">
+Dierssen, H. M., M. M. Gierach, L. S. Guild, A. Mannino, J. Salisbury, S. Schollaert Uz, J. Scott, et al. 2023. <span>“Synergies Between NASA’s Hyperspectral Aquatic Missions PACE, GLIMR, and SBG: Opportunities for New Science and Applications.”</span> <em>Journal of Geophysical Research: Biogeosciences</em> 128 (5): e2023JG007574. <a href="https://doi.org/10.1029/2023JG007574">https://doi.org/10.1029/2023JG007574</a>.
+</div>
+<div id="ref-Flynn2013" class="csl-entry" role="listitem">
+Flynn, Kevin J. et al. 2013. <span>“Misuse of the Phytoplankton–Zooplankton Dichotomy: The Need to Assign Organisms as Mixotrophs Within Plankton Functional Types.”</span> <em>Journal of Plankton Research</em> 35 (1): 3–11. <a href="https://doi.org/10.1093/plankt/fbs062">https://doi.org/10.1093/plankt/fbs062</a>.
+</div>
+<div id="ref-Glibert2001" class="csl-entry" role="listitem">
+Glibert, Patricia M. et al. 2001. <span>“The Role of Eutrophication in the Global Proliferation of Harmful Algal Blooms.”</span> <em>Oceanography</em> 14 (2): 66–74. <a href="https://doi.org/10.5670/oceanog.2001.47">https://doi.org/10.5670/oceanog.2001.47</a>.
+</div>
+<div id="ref-Gregg2019" class="csl-entry" role="listitem">
+Gregg, Watson W., and Cecile S. Rousseaux. 2019. <span>“Decadal Changes in Global Phytoplankton Composition: Observations and Modeling.”</span> <em>Journal of Geophysical Research: Oceans</em> 124 (2): 983–1003. <a href="https://doi.org/10.1029/2018JC014173">https://doi.org/10.1029/2018JC014173</a>.
+</div>
+<div id="ref-Hirata2011" class="csl-entry" role="listitem">
+Hirata, T., N. J. Hardman-Mountford, R. J. W. Brewin, J. Aiken, R. G. Barlow, K. Suzuki, T. Isada, et al. 2011. <span>“Synoptic Relationships Between Surface Chlorophyll-a and Diagnostic Pigments Specific to Phytoplankton Functional Types.”</span> <em>Biogeosciences</em> 8 (2): 311–27. <a href="https://doi.org/10.5194/bg-8-311-2011">https://doi.org/10.5194/bg-8-311-2011</a>.
+</div>
+<div id="ref-IOCCG2014" class="csl-entry" role="listitem">
+IOCCG. 2014. <span>“Phytoplankton Functional Types from Space.”</span> No. 15. Edited by S. Sathyendranath. IOCCG Reports. Dartmouth, Canada: International Ocean-Colour Coordinating Group (IOCCG).
+</div>
+<div id="ref-Izadi2021" class="csl-entry" role="listitem">
+Izadi, Moein, Mohamed Sultan, Racha El Kadiri, Amin Ghannadi, and Karem Abdelmohsen. 2021. <span>“A Remote Sensing and Machine Learning-Based Approach to Forecast the Onset of Harmful Algal Bloom.”</span> <em>Remote Sensing</em> 13 (19): 3863. <a href="https://doi.org/10.3390/rs13193863">https://doi.org/10.3390/rs13193863</a>.
+</div>
+<div id="ref-Jeong2010" class="csl-entry" role="listitem">
+Jeong, Hae Jin et al. 2010. <span>“Mixotrophy in the Marine Dinoflagellate Population: Physiological Roles, Relationships, and Regulation.”</span> <em>Harmful Algae</em> 9 (2): 154–65. <a href="https://doi.org/10.1016/j.hal.2009.08.005">https://doi.org/10.1016/j.hal.2009.08.005</a>.
+</div>
+<div id="ref-Kibler2015" class="csl-entry" role="listitem">
+Kibler, Sarah R. et al. 2015. <span>“Geographic and Vertical Distribution of Dinoflagellates in the Gulf of Mexico.”</span> <em>Journal of Phycology</em> 51 (4): 606–18. <a href="https://doi.org/10.1111/jpy.12302">https://doi.org/10.1111/jpy.12302</a>.
+</div>
+<div id="ref-Laufkotter2015" class="csl-entry" role="listitem">
+Laufkötter, C., M. Vogt, N. Gruber, O. Aumont, L. Bopp, S. C. Doney, J. P. Dunne, et al. 2015. <span>“Projected Decreases in Future Marine Export Production: The Role of the Carbon Flux Through the Upper Ocean Ecosystem.”</span> <em>Biogeosciences</em> 13 (13): 4023–47. <a href="https://doi.org/10.5194/bg-13-4023-2016">https://doi.org/10.5194/bg-13-4023-2016</a>.
+</div>
+<div id="ref-Lundberg2017" class="csl-entry" role="listitem">
+Lundberg, Scott M., and Su-In Lee. 2017. <span>“A Unified Approach to Interpreting Model Predictions.”</span> In <em>Proceedings of the 31st International Conference on Neural Information Processing Systems (NeurIPS)</em>, 30:4768–77. Curran Associates, Inc. <a href="https://doi.org/10.48550/arXiv.1705.07874">https://doi.org/10.48550/arXiv.1705.07874</a>.
+</div>
+<div id="ref-Maranon2015" class="csl-entry" role="listitem">
+Marañón, E., P. Cermeno, M. Latasa, and R. D. Tadonléké. 2015. <span>“Resource Supply Overrides Temperature as a Controlling Factor of Marine Phytoplankton Growth.”</span> <em>PLoS ONE</em> 10 (6): e0130093. <a href="https://doi.org/10.1371/journal.pone.0130093">https://doi.org/10.1371/journal.pone.0130093</a>.
+</div>
+<div id="ref-Mouw2017" class="csl-entry" role="listitem">
+Mouw, Colleen B., Neil J. Hardman-Mountford, Sylvie Alvain, Astrid Bracher, Robert J. W. Brewin, Annick Bricaud, Aurea M. Ciotti, et al. 2017. <span>“A Consumer’s Guide to Satellite Remote Sensing of Multiple Phytoplankton Groups in the Global Ocean.”</span> <em>Frontiers in Marine Science</em> 4: 41. <a href="https://doi.org/10.3389/fmars.2017.00041">https://doi.org/10.3389/fmars.2017.00041</a>.
+</div>
+<div id="ref-Smayda2001" class="csl-entry" role="listitem">
+Smayda, Theodore J., and Colin S. Reynolds. 2001. <span>“Community Ecology of Harmful Algal Blooms in Coastal Upwelling Ecosystems.”</span> <em>ICES Journal of Marine Science</em> 58 (2): 374–76. <a href="https://doi.org/10.1006/jmsc.2001.1034">https://doi.org/10.1006/jmsc.2001.1034</a>.
+</div>
+<div id="ref-Yan2025" class="csl-entry" role="listitem">
+Yan, Zhaojiang, Chong Fang, Kaishan Song, Xiangyu Wang, Zhidan Wen, Yingxin Shang, Hui Tao, and Yunfeng Lyu. 2025. <span>“Spatiotemporal Variation in Biomass Abundance of Different Algal Species in Lake Hulun Using Machine Learning and Sentinel-3 Images.”</span> <em>Scientific Reports</em> 15: 2739. <a href="https://doi.org/10.1038/s41598-025-87338-4">https://doi.org/10.1038/s41598-025-87338-4</a>.
+</div>
+<div id="ref-Zhang2024" class="csl-entry" role="listitem">
+Zhang, Yuan, Fang Shen, Renhu Li, Mengyu Li, Zhaoxin Li, Songyu Chen, and Xuerong Sun. 2024. <span>“<span>AIGD-PFT</span>: The First AI-Driven Global Daily Gap-Free 4&nbsp;Km Phytoplankton Functional Type Data Product from 1998 to 2023.”</span> <em>Earth System Science Data</em> 16: 4793–4816. <a href="https://doi.org/10.5194/essd-16-4793-2024">https://doi.org/10.5194/essd-16-4793-2024</a>.
+</div>
+</div>
 
 
+</section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{m._karaköylü2025,
+  author = {M. Karaköylü, Erdem},
+  title = {Retrieving {Phytoplankton} {Functional} {Groups} from
+    {Hyperspectral} {Ocean} {Color} Using {XGBoost}},
+  date = {2025-03-29},
+  url = {https://erdemkarakoylu.github.io/portfolio/pfg_xgb/},
+  langid = {en}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-m._karaköylü2025" class="csl-entry quarto-appendix-citeas" role="listitem">
+M. Karaköylü, Erdem. 2025. <span>“Retrieving Phytoplankton Functional
+Groups from Hyperspectral Ocean Color Using XGBoost.”</span> March 29,
+2025. <a href="https://erdemkarakoylu.github.io/portfolio/pfg_xgb/">https://erdemkarakoylu.github.io/portfolio/pfg_xgb/</a>.
+</div></div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
