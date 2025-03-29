@@ -177,21 +177,14 @@ window.Quarto = {
   <li><a href="#remote-sensing-approaches-for-pfg-retrieval" id="toc-remote-sensing-approaches-for-pfg-retrieval" class="nav-link" data-scroll-target="#remote-sensing-approaches-for-pfg-retrieval"><span class="header-section-number">1.1</span> Remote Sensing Approaches for PFG Retrieval</a></li>
   <li><a href="#study-contribution-and-approach" id="toc-study-contribution-and-approach" class="nav-link" data-scroll-target="#study-contribution-and-approach"><span class="header-section-number">1.2</span> Study Contribution and Approach</a></li>
   </ul></li>
-  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods"><span class="header-section-number">2</span> Methods</a>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><span class="header-section-number">2</span> Results</a>
   <ul class="collapse">
-  <li><a href="#data-preparation-and-feature-selection" id="toc-data-preparation-and-feature-selection" class="nav-link" data-scroll-target="#data-preparation-and-feature-selection"><span class="header-section-number">2.1</span> Data Preparation and Feature Selection</a></li>
-  <li><a href="#model-choice" id="toc-model-choice" class="nav-link" data-scroll-target="#model-choice"><span class="header-section-number">2.2</span> Model Choice</a></li>
-  <li><a href="#hyperparameter-optimization-and-model-training" id="toc-hyperparameter-optimization-and-model-training" class="nav-link" data-scroll-target="#hyperparameter-optimization-and-model-training"><span class="header-section-number">2.3</span> Hyperparameter Optimization and Model Training</a></li>
-  <li><a href="#model-evaluation-and-explainable-ai-xai" id="toc-model-evaluation-and-explainable-ai-xai" class="nav-link" data-scroll-target="#model-evaluation-and-explainable-ai-xai"><span class="header-section-number">2.4</span> Model Evaluation and eXplainable AI (XAI)</a></li>
+  <li><a href="#hyperparameter-optimization-hpo" id="toc-hyperparameter-optimization-hpo" class="nav-link" data-scroll-target="#hyperparameter-optimization-hpo"><span class="header-section-number">2.1</span> Hyperparameter Optimization (HPO)</a></li>
+  <li><a href="#optimized-model-validation" id="toc-optimized-model-validation" class="nav-link" data-scroll-target="#optimized-model-validation"><span class="header-section-number">2.2</span> Optimized Model Validation</a></li>
+  <li><a href="#xai-with-shapley-values" id="toc-xai-with-shapley-values" class="nav-link" data-scroll-target="#xai-with-shapley-values"><span class="header-section-number">2.3</span> XAI with Shapley Values</a></li>
   </ul></li>
-  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><span class="header-section-number">3</span> Results</a>
-  <ul class="collapse">
-  <li><a href="#hyperparameter-optimization-hpo" id="toc-hyperparameter-optimization-hpo" class="nav-link" data-scroll-target="#hyperparameter-optimization-hpo"><span class="header-section-number">3.1</span> Hyperparameter Optimization (HPO)</a></li>
-  <li><a href="#optimized-model-validation" id="toc-optimized-model-validation" class="nav-link" data-scroll-target="#optimized-model-validation"><span class="header-section-number">3.2</span> Optimized Model Validation</a></li>
-  <li><a href="#xai-with-shapley-values" id="toc-xai-with-shapley-values" class="nav-link" data-scroll-target="#xai-with-shapley-values"><span class="header-section-number">3.3</span> XAI with Shapley Values</a></li>
-  </ul></li>
-  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion"><span class="header-section-number">4</span> Discussion</a></li>
-  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">5</span> Conclusion</a></li>
+  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion"><span class="header-section-number">3</span> Discussion</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">4</span> Conclusion</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -287,21 +280,38 @@ Abstract
 <p>In this study, we introduce <strong>extreme gradient boosting (XGBoost)</strong> <span class="citation" data-cites="Chen2016">(<a href="#ref-Chen2016" role="doc-biblioref">Chen and Guestrin 2016</a>)</span> as a novel approach for retrieving phytoplankton functional groups from satellite ocean color data. XGBoost is a scalable ensemble learning algorithm that has demonstrated high performance in complex classification tasks but has not yet been widely applied to PFG retrieval. XGBoost is also less opaque than neural networks, and can deal better with highly correlated (spectral) data of varying scales.</p>
 <p>Recent studies have demonstrated the potential of XGBoost in related applications, such as harmful algal bloom detection <span class="citation" data-cites="Izadi2021">(<a href="#ref-Izadi2021" role="doc-biblioref">Izadi et al. 2021</a>)</span> and phytoplankton biomass estimation <span class="citation" data-cites="Yan2025">(<a href="#ref-Yan2025" role="doc-biblioref">Yan et al. 2025</a>)</span>, highlighting its suitability for remote sensing applications. Our work aligns with the objectives of the PACE mission by contributing an advanced classification algorithm that enhances hyperspectral monitoring of phytoplankton diversity <span class="citation" data-cites="Zhang2024">(<a href="#ref-Zhang2024" role="doc-biblioref">Zhang et al. 2024</a>)</span>. To our knowledge, this is the first application of XGBoost for PFG classification in ocean color remote sensing, offering a robust alternative to traditional retrieval methods.</p>
 <p>Our approach was to leverage a large dataset of simulated hyperspectral TOA radiance and associated environmental variables to improve both the discrimination of functional groups and the quantification of their biomass. Previous remote sensing algorithms often classified only a dominant PFG or broad size class <span class="citation" data-cites="Mouw2017">(<a href="#ref-Mouw2017" role="doc-biblioref">Mouw et al. 2017</a>)</span> and relied on empirical band relationships that lacked generalizability <span class="citation" data-cites="Hirata2011">(<a href="#ref-Hirata2011" role="doc-biblioref">Hirata et al. 2011</a>)</span>. By utilizing a machine learning framework capable of integrating multiple features, our approach reduces classification errors and enhances retrieval precision. Moreover the application of eXplainable AI (XAI) techniques to relate predictions to their input may further guide future efforts to improve PFG quantification.</p>
-</section>
-</section>
-<section id="methods" class="level2" data-number="2">
-<h2 data-number="2" class="anchored" data-anchor-id="methods"><span class="header-section-number">2</span> Methods</h2>
-<section id="data-preparation-and-feature-selection" class="level3" data-number="2.1">
-<h3 data-number="2.1" class="anchored" data-anchor-id="data-preparation-and-feature-selection"><span class="header-section-number">2.1</span> Data Preparation and Feature Selection</h3>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Methods
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<section id="data-preparation-and-feature-selection" class="level3" data-number="1.3">
+<h3 data-number="1.3" class="anchored" data-anchor-id="data-preparation-and-feature-selection"><span class="header-section-number">1.3</span> Data Preparation and Feature Selection</h3>
 <p>We utilized a simulated dataset representing the world ocean over 31 days, corresponding to December 2021. The simulation generated hyperspectral remote sensing TOA radiance data, emulating a sensor configuration akin to that of the PACE instrument. Due to the high dimensionality of the original spectral data, we conducted an initial exploratory analysis and observed strong correlations among many of the channels. To reduce redundancy while preserving essential spectral information, we retained 51 channels by selecting one channel every ten. Note that despite this feature subsampling, spectral features are characterized by high degree of correlation we opted against applying principal component analysis for two principal reasons. The first reason is to avoid overemphasizing blue water signal contributed by the extensive oceanic regions present in a global satellite scene, and which could mask coastal processes of interest. The second reason is that tree-based algorithms such as XGBoost are resiliant to input multicollinearity. To further contextualize the ocean color signal, we also included auxiliary environmental variables such as temperature and latitude. Though not available from actual PACE measurements, climatology including temperature could be readily sourced elsewhere to augment observations on hand.</p>
 <p>The dataset was divided into training and test sets using an 80/20 split. The training set was exclusively used for model development and hyperparameter optimization (see next section), while the test set was set aside until the final validation of model performance.</p>
 </section>
-<section id="model-choice" class="level3" data-number="2.2">
-<h3 data-number="2.2" class="anchored" data-anchor-id="model-choice"><span class="header-section-number">2.2</span> Model Choice</h3>
+<section id="model-choice" class="level3" data-number="1.4">
+<h3 data-number="1.4" class="anchored" data-anchor-id="model-choice"><span class="header-section-number">1.4</span> Model Choice</h3>
 <p>We employed an XGBoost Regressor model with a multi-output regression head to predict simultaneously multiple phytoplankton functional groups as well as total chlorophyll-<em>a</em> concentration. XGBoost is a high-performance, scalable implementation of gradient boosting that has become a popular choice for a wide range of regression and classification tasks <span class="citation" data-cites="Chen2016">(<a href="#ref-Chen2016" role="doc-biblioref">Chen and Guestrin 2016</a>)</span>. This approach consists in building an ensemble of decision trees sequentially, where each new tree attempts to correct the errors made by the previous trees. By optimizing a regularized objective function, XGBoost effectively controls overfitting while enhancing prediction accuracy. Its efficient handling highly correlated data, support for parallel computation, and flexible regularization mechanisms make it particularly well-suited for complex modeling tasks.</p>
-</section>
-<section id="hyperparameter-optimization-and-model-training" class="level3" data-number="2.3">
-<h3 data-number="2.3" class="anchored" data-anchor-id="hyperparameter-optimization-and-model-training"><span class="header-section-number">2.3</span> Hyperparameter Optimization and Model Training</h3>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Hyperparameter Optimization and Model Training
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
 <p>Given the complexity of the problem and the high dimensionality of the input features, it was critical to optimize the hyperparameters to achieve robust performance and prevent overfitting. To this end, we conducted hyperparameter optimization using the Optuna version 4.2.1 library <span class="citation" data-cites="Akiba2019">(<a href="#ref-Akiba2019" role="doc-biblioref">Akiba et al. 2019</a>)</span>. Specifically, we employed the efficient Tree-structured Parzen Estimator (TPE) algorithm <span class="citation" data-cites="Bergstra2011">(<a href="#ref-Bergstra2011" role="doc-biblioref">Bergstra et al. 2011</a>)</span>. TPE is a Bayesian optimization method that iteratively builds probabilistic models of the hyperparameter space based on past evaluation results. By modeling the distributions of promising and less promising hyperparameter configurations, TPE suggests new parameter sets to explore, focusing the search on regions likely to yield improved performance. To further enhance the efficiency of the optimization process, we utilized Optuna’s MedianPruner with n_warmup_steps=5. This pruner automatically stops unpromising trials during the early stages of training (after at least 5 steps) if their intermediate results indicate they are unlikely to outperform the median performance of completed trials. The optimization step used an objective function to minimize the root mean squared error (RMSE) computed via three-fold cross-validation on the training set. The hyperparameters under investigation are lthe learning rate, maximum tree depth, number of estimators, subsample ratio, column subsample ratio, and gamma (the minimum loss reduction required to make a further partition on a leaf node); <em>cf</em> <a href="#tbl-hparam" class="quarto-xref">Table&nbsp;1</a> for further details. The Bayesian optimization procedure allowed us to efficiently explore the hyperparameter space by leveraging past trial information to prune unpromising candidate parameter sets early, thereby reducing overall computational cost.</p>
 <p>Once the optimization step complete, we instantiated the XGBoost model with the best set of hyperparameters and trained it on the full training set.</p>
 <div id="tbl-hparam" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -367,26 +377,33 @@ Table&nbsp;1: Hyperparameter ranges and their corresponding sampling strategy us
 </div>
 </figure>
 </div>
+</div>
+</div>
+</div>
 </section>
-<section id="model-evaluation-and-explainable-ai-xai" class="level3" data-number="2.4">
-<h3 data-number="2.4" class="anchored" data-anchor-id="model-evaluation-and-explainable-ai-xai"><span class="header-section-number">2.4</span> Model Evaluation and eXplainable AI (XAI)</h3>
+<section id="model-evaluation-and-explainable-ai-xai" class="level3" data-number="1.5">
+<h3 data-number="1.5" class="anchored" data-anchor-id="model-evaluation-and-explainable-ai-xai"><span class="header-section-number">1.5</span> Model Evaluation and eXplainable AI (XAI)</h3>
 <p>Once the optimal hyperparameter combination was identified, we retrained the final XGBoost model on the full training set using these optimized settings. Finally, we evaluated the performance of the retrained model on the held-out test set to assess its generalizability.</p>
-<section id="prediction-explainability" class="level4" data-number="2.4.1">
-<h4 data-number="2.4.1" class="anchored" data-anchor-id="prediction-explainability"><span class="header-section-number">2.4.1</span> Prediction Explainability</h4>
+<section id="prediction-explainability" class="level4" data-number="1.5.1">
+<h4 data-number="1.5.1" class="anchored" data-anchor-id="prediction-explainability"><span class="header-section-number">1.5.1</span> Prediction Explainability</h4>
 <p>To enhance interpretability and gain insights into how different input features influence model predictions, we employed <strong>Shapley Additive Explanations (SHAP)</strong>, a widely used explainable AI (XAI) framework for interpreting complex machine learning models. SHAP is named after the concept of Shapley values, which consists in assigning importance values to each input feature by estimating its contribution to the model’s predictions across different samples. The method is rooted in cooperative game theory, and guarantees a fair distribution of importance scores among features <span class="citation" data-cites="Lundberg2017">(<a href="#ref-Lundberg2017" role="doc-biblioref">Lundberg and Lee 2017</a>)</span>.</p>
 <p>Given the computational complexity of our XGBoost model and the high dimensionality of the dataset, we conducted SHAP analysis on a <strong>random subsample of 10,000 observations from the test set</strong>. This subset was selected to balance computational feasibility while maintaining a representative sample of phytoplankton spectral diversity.</p>
 <p>We generated <strong>SHAP summary plots</strong>, which provide a comprehensive visualization of feature importance and the directionality of their influence on model outputs. These plots display the magnitude of each feature’s impact across all predictions, helping to identify the most influential spectral and environmental variables in determining phytoplankton functional group composition. The insights gained from SHAP analysis aid in validating model behavior and ensuring its ecological plausibility.</p>
-<section id="code-availability" class="level5" data-number="2.4.1.1">
-<h5 data-number="2.4.1.1" class="anchored" data-anchor-id="code-availability"><span class="header-section-number">2.4.1.1</span> Code Availability</h5>
+<section id="code-availability" class="level5" data-number="1.5.1.1">
+<h5 data-number="1.5.1.1" class="anchored" data-anchor-id="code-availability"><span class="header-section-number">1.5.1.1</span> Code Availability</h5>
 <p>All analysis and modeling code used in this study was written in Python 3.12. This code is <a href="https://github.com/erdemkarakoylu/toa_2_phyto_ml">publicly available on GitHub</a>.</p>
 </section>
 </section>
 </section>
+</div>
+</div>
+</div>
 </section>
-<section id="results" class="level2" data-number="3">
-<h2 data-number="3" class="anchored" data-anchor-id="results"><span class="header-section-number">3</span> Results</h2>
-<section id="hyperparameter-optimization-hpo" class="level3" data-number="3.1">
-<h3 data-number="3.1" class="anchored" data-anchor-id="hyperparameter-optimization-hpo"><span class="header-section-number">3.1</span> Hyperparameter Optimization (HPO)</h3>
+</section>
+<section id="results" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="results"><span class="header-section-number">2</span> Results</h2>
+<section id="hyperparameter-optimization-hpo" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="hyperparameter-optimization-hpo"><span class="header-section-number">2.1</span> Hyperparameter Optimization (HPO)</h3>
 <p>We performed hyperparameter optimization using a Bayesian optimization framework implemented with Optuna. The metric used for optimization was the average RMSE (in units of <span class="math inline">\(mgL^{-1} Chl_a\)</span> ) computed over the cross-validation folds and across all target compartments. The “full HPO run” best parameters indicate a relatively aggressive model, characterized by deep trees with many estimators, a moderate learning rate, and little regularization via gamma.</p>
 <p>The best trial finished with an RMSE of <span class="math inline">\(0.116mgL^{-1} Chl_a\)</span>. Below is the list of hyperparameters researched, the optimal values found, and an interpretation of these values:</p>
 <ul>
@@ -398,8 +415,8 @@ Table&nbsp;1: Hyperparameter ranges and their corresponding sampling strategy us
 <li><p>Gamma (gamma): <span class="math inline">\(8.63e-06\)</span> - An extremely low gamma value means that almost no minimum loss reduction is required to make a split. This implies that the algorithm will split more readily, potentially capturing fine details. Awareness of this hyperparameter values is important as low gamma can risk overfitting.</p></li>
 </ul>
 </section>
-<section id="optimized-model-validation" class="level3" data-number="3.2">
-<h3 data-number="3.2" class="anchored" data-anchor-id="optimized-model-validation"><span class="header-section-number">3.2</span> Optimized Model Validation</h3>
+<section id="optimized-model-validation" class="level3" data-number="2.2">
+<h3 data-number="2.2" class="anchored" data-anchor-id="optimized-model-validation"><span class="header-section-number">2.2</span> Optimized Model Validation</h3>
 <p>The next step was to load the best set of hyperparameter (listed above) into the model and retrain the model on the entire training set. The optimized and trained model was then validated using the test set, which prior to the HPO process and until this step had been set aside.</p>
 <div id="fig-gof" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
@@ -497,8 +514,18 @@ Table&nbsp;2: Performance metrics of optimized and trained model on hold-out set
 </div>
 </figure>
 </div>
-<section id="explanation-of-metrics" class="level4" data-number="3.2.1">
-<h4 data-number="3.2.1" class="anchored" data-anchor-id="explanation-of-metrics"><span class="header-section-number">3.2.1</span> Explanation of metrics</h4>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Explanation of metrics
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
 <ul>
 <li><p><strong>Mean Squared Error (MSE):</strong><br>
 MSE is the average of the squared differences between the predicted and true values. Squaring the errors emphasizes larger deviations, making MSE sensitive to outliers. In our context, MSE is expressed in units of (mg L<span class="math inline">\(^{-1}\)</span> Chl<span class="math inline">\(_a\)</span>)<span class="math inline">\(^2\)</span>. Lower MSE values indicate better model performance.</p></li>
@@ -511,10 +538,12 @@ R-squared measures the proportion of the variance in the dependent variable that
 <li><p><strong>MAE/StDev<span class="math inline">\(_{true}\)</span>:</strong><br>
 This ratio compares the mean absolute error to the standard deviation of the true values. It provides a relative measure of error by indicating how the average error compares to the inherent variability in the data. A lower ratio implies that the model’s prediction error is small relative to the natural variability of the observations.</p></li>
 </ul>
+</div>
+</div>
+</div>
 </section>
-</section>
-<section id="xai-with-shapley-values" class="level3" data-number="3.3">
-<h3 data-number="3.3" class="anchored" data-anchor-id="xai-with-shapley-values"><span class="header-section-number">3.3</span> XAI with Shapley Values</h3>
+<section id="xai-with-shapley-values" class="level3" data-number="2.3">
+<h3 data-number="2.3" class="anchored" data-anchor-id="xai-with-shapley-values"><span class="header-section-number">2.3</span> XAI with Shapley Values</h3>
 <p>The SHAP summary plots provides insights into feature importance and their effects on model predictions for phytoplankton functional groups.</p>
 <div id="fig-shap" class="quarto-layout-panel">
 <figure class="quarto-float quarto-float-fig figure">
@@ -620,12 +649,12 @@ Figure&nbsp;2: Shapley values are shown for each functional group and for total 
 <p>Most saliently, temperature was the top factor for all phytoplankton groups but is not a primordial feature in quantifying dinoflagellates.</p>
 </section>
 </section>
-<section id="discussion" class="level2" data-number="4">
-<h2 data-number="4" class="anchored" data-anchor-id="discussion"><span class="header-section-number">4</span> Discussion</h2>
+<section id="discussion" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="discussion"><span class="header-section-number">3</span> Discussion</h2>
 <p>Dinoflagellates do not show a single clear biogeographical zone of dominance the way cyanobacteria (tropics), diatoms (high latitudes and upwelling regions), or coccolithophores (subpolar summer blooms) do <span class="citation" data-cites="Boyd2010 Buitenhuis2013 Gregg2019">(<a href="#ref-Boyd2010" role="doc-biblioref">Boyd and Doney 2010</a>; <a href="#ref-Buitenhuis2013" role="doc-biblioref">Buitenhuis 2013</a>; <a href="#ref-Gregg2019" role="doc-biblioref">Gregg and Rousseaux 2019</a>)</span>. Instead, they are considered ecological opportunists, often thriving in stratified, stable water columns typical of tropical and temperate regions <span class="citation" data-cites="Smayda2001 Kibler2015">(<a href="#ref-Smayda2001" role="doc-biblioref">Smayda and Reynolds 2001</a>; <a href="#ref-Kibler2015" role="doc-biblioref">Kibler 2015</a>)</span>. Their distribution is governed more by factors such as nutrient availability (particularly high N:P ratios), light regime, and water-column stability, along with their ability to exploit mixotrophic nutrition strategies, than by temperature alone <span class="citation" data-cites="Jeong2010 Glibert2001 Flynn2013">(<a href="#ref-Jeong2010" role="doc-biblioref">Jeong 2010</a>; <a href="#ref-Glibert2001" role="doc-biblioref">Glibert 2001</a>; <a href="#ref-Flynn2013" role="doc-biblioref">Flynn 2013</a>)</span>. Recent studies suggest that ongoing ocean warming and increased stratification may promote a shift from diatom- to dinoflagellate-dominated phytoplankton communities—not because dinoflagellates prefer higher temperatures per se, but because warming tends to suppress vertical mixing and nutrient resupply, creating conditions more favorable to dinoflagellates (Glibert, 2020; Peperzak, 2003; Fu et al., 2012).</p>
 </section>
-<section id="conclusion" class="level2" data-number="5">
-<h2 data-number="5" class="anchored" data-anchor-id="conclusion"><span class="header-section-number">5</span> Conclusion</h2>
+<section id="conclusion" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="conclusion"><span class="header-section-number">4</span> Conclusion</h2>
 <p>This study demonstrates the potential of machine learning, specifically XGBoost, for retrieving phytoplankton functional groups (PFGs) from hyperspectral ocean color data. Using simulated data designed to emulate NASA’s upcoming PACE mission, our model achieved high predictive accuracy for most PFGs, with R² values exceeding 0.95 for diatoms, cyanobacteria, coccolithophores, and phaeophytes. However, retrievals for dinoflagellates were less reliable, highlighting challenges in distinguishing this group based on spectral data alone. Hyperparameter optimization with Optuna improved model performance, and SHAP-based explainability analysis revealed that temperature was among the top six predictive features for all functional groups except dinoflagellates, emphasizing the need to integrate external sea surface temperature (SST) data in real-world applications. Furthermore, our findings confirm that only a subset of hyperspectral bands drive PFG retrieval, suggesting that future algorithm development should prioritize feature selection to optimize computational efficiency. These results contribute to ongoing efforts to enhance phytoplankton classification methods and provide insights for future ocean color missions seeking to leverage hyperspectral capabilities for improved ecological monitoring.</p>
 </section>
 <section id="references" class="level2 unnumbered">
