@@ -8,7 +8,7 @@ about:
     - icon: envelope-at
       href: mailto:erdemk@protonmail.com
     - icon: linkedin
-      href: linkedin.com/in/erdem-karaköylü-49487455
+      href: https://www.linkedin.com/in/erdem-karak%C3%B6yl%C3%BC-49487455/
     - icon: github
       href: https://github.com/erdemkarakoylu
 ---
