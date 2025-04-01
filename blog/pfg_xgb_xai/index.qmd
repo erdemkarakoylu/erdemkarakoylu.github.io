@@ -1,0 +1,79 @@
+---
+title: "Peeking into the Black Box: Explaining Plankton Predictions from Space"
+author: Erdem Karaköylü
+date: "2025-03-29"
+description: Using SHAP values to uncover how a machine learning model predicts ocean life from satellite data
+categories:
+  - XAI
+  - SHAP
+  - Ocean Color
+  - Machine Learning
+  - Remote Sensing
+image: "shap_dinoflagellates.png"   # Replace with your actual plot image
+format:
+  html:
+    toc: true
+    code-fold: true
+---
+
+> **Can we trust a machine learning model that predicts phytoplankton from satellite data? Only if we understand how it thinks.**
+
+## Background
+
+::: {.callout-tip title="🌊 Meet the Ocean's Invisible Powerhouse"}
+Phytoplankton are microscopic algae that drift near the ocean’s surface — and they’re quietly responsible for producing **at least half of the oxygen** we breathe.
+
+Though tiny, they punch far above their weight: these photosynthetic drifters form the **foundation of marine food webs**, support global fisheries, and help regulate Earth’s climate by drawing down carbon dioxide.
+
+Think of them as **invisible forests of the sea** — floating, blooming, and even glowing in the dark.
+:::
+
+
+We trained a machine learning model (XGBoost) to predict concentrations of phytoplankton functional groups — including diatoms, cyanobacteria, and dinoflagellates — using simulated satellite top-of-atmosphere (TOA) radiance data, similar to what NASA's upcoming **PACE** mission will collect.
+
+The model worked surprisingly well. But one challenge remained: *Why was it working?* And *what was it learning?*
+
+![Bioluminescent wave caused by dinoflagellates](biolum_wave.webp)
+
+*Above: A wave glows blue at night from bioluminescent dinoflagellates — microscopic organisms that react to turbulence by lighting up the sea.*
+
+## Enter SHAP: A Window into Model Logic
+
+We used **SHAP** (SHapley Additive exPlanations), a method from game theory that assigns credit (or blame) to each input feature based on how it contributes to a model's prediction.
+
+Think of it this way: if your model says “There are likely lots of diatoms here,” SHAP tells you *what input features pushed it toward that conclusion.*
+
+Here’s a summary plot of SHAP values for one phytoplankton group:
+
+![SHAP Summary Plot for Diatoms](shap_diatoms.png)
+
+> The further to the right, the more a feature increases the prediction; blue means low values of the feature, red means high.
+
+## What We Learned
+
+- **Temperature** was a strong predictor — for almost all groups.
+- **Not for dinoflagellates.** Their SHAP profile looked completely different.
+
+This made ecological sense. Unlike other plankton that follow clear temperature gradients, dinoflagellates are mixotrophic opportunists. They dominate in nutrient-poor, stratified waters — which aren’t always tied directly to temperature. SHAP picked up on that.
+
+![Scanning electron microscope images of various dinoflagellate species](dinoflagellates-images.jpeg)
+
+*Above: SEM images of dinoflagellates — a highly diverse group with complex behaviors and forms.*
+
+
+## Why This Matters
+
+Machine learning in Earth science is powerful — but models aren’t useful if they’re black boxes. With SHAP, we not only got accurate predictions, but also *insight* into what’s driving them.
+In Biological Oceanography, explainable machine learning predictions can tell us **how environmental features like temperature and light structure marine ecosystems**. It’s not just about matching numbers — it’s about using models to discover and verify biological patterns.
+
+In fact, recent research suggests that these tools can help predict **how phytoplankton communities will shift** as the ocean warms and stratifies in the coming decades. Understanding what drives groups like dinoflagellates today could help us anticipate how ocean life will respond tomorrow.
+
+Want to explore the model and data?  
+
+👉 [See the full project repo](https://github.com/erdemkarakoylu/toa_2_phyto_ml)
+
+👉 [See the manuscript we're working on](https://erdemkarakoylu.github.io/portfolio/pfg_xgb/)
+
+---
+
+**Coming soon:** Do we need hyperspectral sensors to resolve biological processes? How well will this model perform when we throw away most of the input data — and try to match older sensors like MODIS and VIIRS that resolve far fewer colors? Stay tuned for these and other cool insights...

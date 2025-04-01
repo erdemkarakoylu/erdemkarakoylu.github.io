@@ -1,6 +1,6 @@
 ---
 title: BayEstonia!
-author: Erdem Karaköylü
+author: Erdem M. Karaköylü 
 date: '2022-01-15'
 description: A Bayesian analysis of voting tendencies in Estonia
 categories:
@@ -14,7 +14,7 @@ format:
     code-fold: true
 execute: 
     cache: true
-jupyter: python3
+jupyter: pymc_base
 ---
 
 

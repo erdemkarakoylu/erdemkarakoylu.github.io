@@ -73,5 +73,8 @@
   },
   "portfolio/pfg_xgb/index.qmd": {
     "index.html": "1186199f"
+  },
+  "blog/pfg_xgb_xai/index.qmd": {
+    "index.html": "87b282a3"
   }
 }

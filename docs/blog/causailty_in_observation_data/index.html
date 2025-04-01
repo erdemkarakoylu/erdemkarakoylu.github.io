@@ -373,7 +373,7 @@ SMD = \frac{\bar{X}_{treatment}-\bar{X}_{control}}
   hispan (mean (SD))      0.06 (0.24)       0.06 (0.24)    &lt;0.001
   black (mean (SD))       0.84 (0.37)       0.84 (0.36)     0.015
   white (mean (SD))       0.10 (0.30)       0.10 (0.30)     0.018
-  age (mean (SD))        25.36 (8.29)      25.82 (7.16)     0.059
+  age (mean (SD))        25.34 (8.30)      25.82 (7.16)     0.062
   educ (mean (SD))       10.45 (1.96)      10.35 (2.01)     0.054
   married (mean (SD))     0.19 (0.39)       0.19 (0.39)    &lt;0.001
   nodegree (mean (SD))    0.71 (0.46)       0.71 (0.46)    &lt;0.001
@@ -599,13 +599,13 @@ Discarded       0       0</code></pre>
     One Sample t-test
 
 data:  diff_outcome
-t = 0.31797, df = 184, p-value = 0.7509
+t = 0.12325, df = 184, p-value = 0.902
 alternative hypothesis: true mean is not equal to 0
 95 percent confidence interval:
- -1132.506  1567.675
+ -1281.347  1452.107
 sample estimates:
 mean of x 
- 217.5848 </code></pre>
+  85.3802 </code></pre>
 </div>
 </div>
 <p><span class="math inline">\(\rightarrow\)</span> Propensity score matching (no caliper)</p>
@@ -655,7 +655,7 @@ mean of x
 </section>
 </section>
 
-</main> <!-- /main -->
+<script async="" defer="" src="https://scripts.simpleanalyticscdn.com/latest.js"></script></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -746,7 +746,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp('/' + window.location.host + '/');
+      var filterRegex = new RegExp("https:\/\/erdemkarakoylu\.github\.io\/");
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
