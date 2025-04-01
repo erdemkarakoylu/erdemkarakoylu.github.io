@@ -2,4 +2,6 @@
 /_site/
 blog/.DS_Store
 ./.DS_Store
+.DS*
+.DS_Store
 .DS_Store
