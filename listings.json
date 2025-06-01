@@ -6,13 +6,13 @@
       "/blog/causailty_in_observation_data/index.html",
       "/blog/stats_ab_testing/index.html",
       "/blog/pfg_xgb_xai/index.html",
+      "/blog/bayesian_power/bayesian_power.html",
       "/blog/zerosumnormal/on_zero_sum_normal.html"
     ]
   },
   {
     "listing": "/portfolio.html",
     "items": [
-      "/portfolio/elections_estonia/elections_estonia.html",
       "/portfolio/pfg_xgb/index.html"
     ]
   }
