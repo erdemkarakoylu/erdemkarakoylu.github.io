@@ -6,8 +6,11 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Erdem Karaköylü">
+<meta name="dcterms.date" content="2025-05-16">
+<meta name="description" content="A bayesian approach to sample size planning for A/B testing.">
 
-<title>Porfolio – Erdem Karaköylü</title>
+<title>Bayesian Power Analysis for A/B Testing – Erdem Karaköylü</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,24 +26,22 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b53751a350365c71b6c909e95f209ed1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-22381ab97ffb8a420d3841344730e94d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b53751a350365c71b6c909e95f209ed1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-22381ab97ffb8a420d3841344730e94d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -68,35 +69,6 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-title','listing-author','listing-date','listing-image','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-title","listing-author","listing-date","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -128,7 +100,7 @@ window.Quarto = {
 };
 </script>
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../../styles.css">
 </head>
 
 <body class="nav-fixed">
@@ -138,7 +110,7 @@ window.Quarto = {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Erdem Karaköylü</span>
     </a>
   </div>
@@ -149,19 +121,19 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./index.html"> 
+    <a class="nav-link" href="../../index.html"> 
 <span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="./portfolio.html" aria-current="page"> 
+    <a class="nav-link" href="../../portfolio.html"> 
 <span class="menu-text">Portfolio</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./resume.html"> 
+    <a class="nav-link" href="../../resume.html"> 
 <span class="menu-text">Resume</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./blog.html"> 
+    <a class="nav-link" href="../../blog.html"> 
 <span class="menu-text">Blog</span></a>
   </li>  
 </ul>
@@ -175,22 +147,59 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#background" id="toc-background" class="nav-link active" data-scroll-target="#background">Background</a></li>
+  <li><a href="#step-1-define-goal-and-metrics" id="toc-step-1-define-goal-and-metrics" class="nav-link" data-scroll-target="#step-1-define-goal-and-metrics">Step 1: Define goal and metric(s)</a></li>
+  <li><a href="#step-2-eliciting-prior-beliefs" id="toc-step-2-eliciting-prior-beliefs" class="nav-link" data-scroll-target="#step-2-eliciting-prior-beliefs">Step 2: Eliciting prior beliefs</a></li>
+  <li><a href="#step-3-defining-the-minimum-detectable-effect-mde" id="toc-step-3-defining-the-minimum-detectable-effect-mde" class="nav-link" data-scroll-target="#step-3-defining-the-minimum-detectable-effect-mde">Step 3: Defining the Minimum Detectable Effect (MDE)</a></li>
+  <li><a href="#step-4-prospective-sample-size-planning-bayesian-power-analysis" id="toc-step-4-prospective-sample-size-planning-bayesian-power-analysis" class="nav-link" data-scroll-target="#step-4-prospective-sample-size-planning-bayesian-power-analysis">Step 4: Prospective Sample Size Planning (Bayesian “Power Analysis”)</a></li>
+  <li><a href="#power-analysis-interpretation" id="toc-power-analysis-interpretation" class="nav-link" data-scroll-target="#power-analysis-interpretation">Power Analysis Interpretation</a></li>
+  <li><a href="#running-the-actual-experiment." id="toc-running-the-actual-experiment." class="nav-link" data-scroll-target="#running-the-actual-experiment.">Running The Actual Experiment.</a></li>
+  <li><a href="#in-conclusion" id="toc-in-conclusion" class="nav-link" data-scroll-target="#in-conclusion">In conclusion</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Porfolio</h1>
-</div>
+<h1 class="title">Bayesian Power Analysis for A/B Testing</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Power Analysis</div>
+    <div class="quarto-category">Bayesian A/B testing</div>
+    <div class="quarto-category">Minimum Detectable Effect</div>
+    <div class="quarto-category">Region of Practical Equivalence</div>
+    <div class="quarto-category">Prospective sample size planning</div>
+  </div>
+  </div>
 
+<div>
+  <div class="description">
+    A bayesian approach to sample size planning for A/B testing.
+  </div>
+</div>
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Erdem Karaköylü </p>
+          </div>
+  </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 16, 2025</p>
+    </div>
+  </div>
   
     
   </div>
@@ -200,42 +209,117 @@ window.Quarto = {
 </header>
 
 
+<section id="background" class="level3">
+<h3 class="anchored" data-anchor-id="background">Background</h3>
+<p>A/B testing is an essential approach to inform decision making. The idea is to compare two versions of a webpage, app feature, or even marketing campaign to determine which performs better in terms of a chosen metric - conversion rate, click-through rate, revenue, etc. For frequentists, this is essentially the application in a business setting of Null Hypothesis Significance Testing, NHST. As such concepts like, <span class="math inline">\(α\)</span>, <span class="math inline">\(p-\text{value}\)</span>, power analysis are central to planning and running such experiments. My focus here is on power analysis.</p>
+<p>In Frequentist Statistics power analysis is essential for the planning phase. <strong>Frequentist power</strong> is defined as the probability of correctly rejecting a false null hypothesis, which is equated to the probability of correctly identifyin a true effect. Thus it is used to determine the minimum sample size required for a study to have a reasonable chance (typically 80% or higher) of detecting a statistically significant effect of a given size at a predetermined significance level (alpha, often 0.05). This helps researchers avoid underpowered studies that might fail to detect real effects and informs decisions about resource allocation. The standard definition of frequentist power (the probability of rejecting a false null hypothesis) is framed within this P(D∣H) perspective. It asks, “If the null hypothesis is indeed false (meaning a true effect exists), what is the probability that statistical testing will produce data that leads to rejecting that null hypothesis?”. This is a risky and often wrong approach to take in my opinion due to the incorrect use of probabilily. This is beyond the scope of this post and interested readers are invited to consult Aubrey Clayton’s “Bernoulli’s Fallacy” for a deep dive on this issue. The point is that Bayesian analysis offers a compelling alternative to the frequentist approach for A/B testing, providing more direct and intuitive interpretations of results; no stopping issues, no p-hacking concerns, no corrections to worry about. Instead of focusing on the probability of observing data under a null hypothesis, Bayesian methods yield the probability distribution of the parameters of interest (e.g., the conversion rates of each variant and their difference). This allows for direct statements about the probability that one variant is better than the other, or the probability that the difference exceeds a practically significant threshold. Nevertheless, power analysis can still be important in the Bayesian paradigm, and while it takes on an altered meaning, it does remain essential in experiment planning. Specifically, the goal is to determine the sample size - and therefore adequate resource allocation - to ensure the experiment has a high probability of yielding informative results. Typically, this means assessing the probability of obtaining posterior distributions with sufficient precision (e.g., narrow credible intervals) or the probability that the effect size (the difference between the variants) exceeds a Minimum Detectable Effect (MDE). In practice this means simulating potential outcomes of experiments for a variety of sample sizes and analyzing the resulting posterior distributions.</p>
+<blockquote class="blockquote">
+<p>👉 <a href="blog/bayesian_power/bayesian_power.ipynb">Here is the notebook with all the code</a></p>
+</blockquote>
+</section>
+<section id="step-1-define-goal-and-metrics" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-define-goal-and-metrics">Step 1: Define goal and metric(s)</h3>
+<p>Company X wants to increase the conversion rate on its landing page. To do so a new landing page is proposed. Thus we have * Current landing page; hereafter referred to as <code>A</code> * Proposed landing page; hereafter referred to as <code>B</code> * A single primary metric, <code>conversion rate</code> (number of conversions / total landings )</p>
+<p>Obviously this is an oversimplified example but will serve to illustrate the approach.</p>
+</section>
+<section id="step-2-eliciting-prior-beliefs" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-eliciting-prior-beliefs">Step 2: Eliciting prior beliefs</h3>
+<p>To compute posteriors I need to combine likelihoods obtained with data with priors. Unlike Frequentist settings, Bayesian experiments are not conducted in a vaccum. Instead the paradigm encourages the incorporation of prior knowledge. While it is often the case that data will swamp out priors, there is value in carefully constructing them.</p>
+<p>Company X data scientists should therefore base their priors on any relevant existing knowledge. This could include:</p>
+<ol type="1">
+<li><p><strong>Historical Data:</strong> If Company X has run similar A/B tests in the past on the same website or for similar features, the results of those tests can provide valuable information for setting priors. For example, if previous versions of the landing page had conversion rates consistently around 4-6%, this could inform the prior for variant A.</p></li>
+<li><p><strong>Industry Benchmarks:</strong> Depending on the industry, there might be typical conversion rate ranges that can inform the priors.</p></li>
+<li><p><strong>Expert Opinions:</strong> Marketing experts or product managers within Company X might have intuitions or expectations about the performance of the new variant B. These subjective beliefs can be formalized into a prior distribution.</p></li>
+<li><p><strong>A “Skeptical” or Weakly Informative Prior:</strong> If Company X has little to no prior information, they might choose a weakly informative prior. This is a prior that doesn’t strongly favor any particular outcome but still provides some regularization.</p></li>
+</ol>
+<p>The outcome is binary, thus the natural likelihood to model the data is the Binomial distribution. There a few distributions that can be used to encode priors. To keep things simple and avoid reaching to my favorite MCMC sampler, I define priors in terms of Beta distributions. A Beta distribution is a conjugate prior to the Binomial, meaning that updating the posterior has a closed form and does not require approximation. The parameters <span class="math inline">\(α\)</span> and <span class="math inline">\(β\)</span> of the Beta distribution represent prior “successes” and “failures,” respectively. A higher <span class="math inline">\(α\)</span> relative to <span class="math inline">\(β\)</span> shifts the distribution towards higher values, and vice versa. The sum of <span class="math inline">\(α\)</span> and <span class="math inline">\(β\)</span> influences the “strength” or concentration of the prior belief (higher sum means more certainty). Below I show what this might look like.</p>
+<ul>
+<li>Here I’m assume a pre-existing conversion rate of 5% for variant <span class="math inline">\(A\)</span>, so that is what I’ll use for <span class="math inline">\(A\)</span>’s prior.</li>
+<li>Without any additional information and to keep things simple a reasonable prior for <span class="math inline">\(A\)</span> is therefore <span class="math inline">\(prior_A=Beta(α=5, β=95)\)</span>.</li>
+<li>I also expect a lift of 1% from variant B so an acceptable prior is <span class="math inline">\(prior_B=Beta(α=6, β=94)\)</span>.</li>
+<li>Note that <span class="math inline">\(Beta(1, 1)\)</span> means 0 successes and 0 failures, the parameterization above isn’t bumped by 1 to make it and sums to 100 for readability.</li>
+</ul>
+<figure class="figure">
+<img src="./figures/figure1.png" alt="Beta Priors for A and B variants" style="width:800px;" class="figure-img">
+<figcaption>
+Figure 1: Beta Priors for A and B variants.
+</figcaption>
+</figure>
+<ul>
+<li>Updating the Beta prior to get the posterior is trivial as it boils down to adding new successes and new failures to the existing <span class="math inline">\(α\)</span> and <span class="math inline">\(β\)</span> parameters, respectively.</li>
+<li>The function <code>run_analytical_ab_test</code>, (see <a href="">notebook</a>blog/bayesian_power/bayesian_power.ipynb) generates the data based on the true conversion rates (A is known)</li>
+</ul>
+</section>
+<section id="step-3-defining-the-minimum-detectable-effect-mde" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-defining-the-minimum-detectable-effect-mde">Step 3: Defining the Minimum Detectable Effect (MDE)</h3>
+<ul>
+<li><p>Question: what is the smallest <u>practically significant</u> difference in conversion rates that Company X would want to detect?</p></li>
+<li><p>The answer is the Minimum Detectable Effect, hereafter MDE.</p></li>
+<li><p>Note the actual effect would need to be greater than the MDE; the greater the actual effect relative to the MDE, the smaller the number of samples needed to detect a difference at the MDE level.</p></li>
+<li><p>Let’s assume Company X is interested in detecting an absolute difference of at least 1% in the conversion rate, that’s our MDE</p></li>
+<li><p>If the baseline conversion rate is around 5%, stakeholders then want to be able to reliably detect if variant B increases it to 6% or more.</p></li>
+<li><p>Given the above and to make it easy on me, let’s say that the as of yet still unknown true effect of Variant B will be 7% - Obviously several such scenarios coould be simulated, but to keep it short we’ll just envisage one Variant B conversion rate.</p></li>
+</ul>
+</section>
+<section id="step-4-prospective-sample-size-planning-bayesian-power-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="step-4-prospective-sample-size-planning-bayesian-power-analysis">Step 4: Prospective Sample Size Planning (Bayesian “Power Analysis”)</h3>
+<ul>
+<li>We are not trying to calculate the probability of rejecting a null hypothesis (which wouldn’t tell you all that much about the alternative, BTW).</li>
+<li>The focus is on the probability of achieving a desired level of certainty about the difference in conversion rates.</li>
+<li>This often involves simulating potential outcomes for different sample sizes and evaluating the resulting posterior distribution.</li>
+<li>Thus, we want to determine the sample size that gives us a high probability if B is better than A under the following two conditions:
+<ul>
+<li>The posterior probability that variant B is better than variant A (i.e., conversion rate of B &gt; conversion rate of A) being above a certain threshold (e.g., 95%).</li>
+<li>The posterior probability that the difference in conversion rates (B - A) is greater than the MDE being above a certain threshold (e.g., 80%).</li>
+</ul></li>
+<li>The function below will evaluate the posterior difference for a given number of samples in view of these criteria.</li>
+</ul>
+<figure class="figure">
+<img src="./figures/figure2.png" alt="Power Analysis Curve" style="width:800px;" class="figure-img">
+<figcaption>
+Figure 2: Power curve showing showing expected power given the number of samples for each variant. Red line indicates desired threshold probability of detecting that stipulated MDE is satisfied; in this case 80%.
+</figcaption>
+</figure>
+</section>
+<section id="power-analysis-interpretation" class="level3">
+<h3 class="anchored" data-anchor-id="power-analysis-interpretation">Power Analysis Interpretation</h3>
+<ul>
+<li>The figure above suggests 3500 FOR EACH variant would be a sufficient size.</li>
+<li>I recommend running it a bunch of times and get uncertainty envelopes around these numbers for added credibility to threshold surpassing; this is skipped for expediency.</li>
+</ul>
+</section>
+<section id="running-the-actual-experiment." class="level3">
+<h3 class="anchored" data-anchor-id="running-the-actual-experiment.">Running The Actual Experiment.</h3>
+<ul>
+<li>Armed with this information we can actually run an A/B test and see what kind of posterior we get.</li>
+<li>Note that unlike Frequentists we don’t have traditionally accepted significance levels. How to come to a decision is an important discussion point between the data scientist and the stakeholder/decision maker.</li>
+<li>As a decision guide as to whether the difference is significantly greater than 0, I propose a Region of Pratical Equivalence (ROPE).</li>
+<li>Determining a good ROPE is beyond the scope of this post. But the power analysis had two criteria so for illustration, I will use these as follows</li>
+<li>First ROPE will be between (-1 and 0.005) and I will visually evaluate whether 95% of the Highest Density Interval (HDI) of the posterior of the difference (B-A) is greater</li>
+<li>Second rope will be between (0 and 0.015) and I will visually evaluate whether 80% of the HDI of the same posterior is greater.</li>
+<li>Note that for both I left some wiggle room and bumped the ROPE’s upper limits by half a percent relative to the Power Analysis criteria</li>
+</ul>
+<figure class="figure">
+<img src="./figures/figure3.png" alt="Experiment posterior" style="width:800px;" class="figure-img">
+<figcaption>
+Figure 3: Experiment outcome depicted as the posterior distribution of the difference, B-A, in terms of conversion between variants. Posterior statistics in black. Left panel includes Region of Practical Equivalence (ROPE) for absolute difference criterion, Right includes ROPE for minimum detectability criterion. See text for more.
+</figcaption>
+</figure>
+<p>Figure above: * Both plots above show the same posterior with different ROPEs * In black, the chosen HDI - 94% in this case as a reminder to be practical, not religious about these numbers * Numbers in black are lower and upper HDI bounds, and posterior mean.</p>
+<ul>
+<li><p>Left panel shows 0% of the posterior overlaps with the ROPE, which satisfies the condition that <span class="math inline">\(P((B-A)&gt;0) &gt; 95\%\)</span>.</p></li>
+<li><p>Right panel shows shows 2.1% of the posterior overlaps with the ROPE, meaning <span class="math inline">\(P((B-A)&gt;0.01)=97.1\%&gt;80\%\)</span></p></li>
+</ul>
+</section>
+<section id="in-conclusion" class="level3">
+<h3 class="anchored" data-anchor-id="in-conclusion">In conclusion</h3>
+<p>Power analysis is not a strict necessity for Bayesians. It’s OK for us to go and collect more data if the posterior is not what we want it to be - data snooping or p-hacking is not a thing here. Nevertheless it can still be a useful tool for experiment planning and adequate resource allocation.</p>
+<p>Thanks for reading &amp; happy (probabilistic) coding!</p>
 
 
+</section>
 
-
-<div class="quarto-listing quarto-listing-container-grid" id="listing-listing">
-<div class="list grid quarto-listing-cols-3">
-<div class="g-col-1" data-index="0" data-categories="UGxhbmt0b24lMkNSZWdyZXNzaW9uJTJDWEdCb29zdCUyQ1NoYXAlMkNFeHBsYWluYWJsZSUyMEFJ" data-listing-date-sort="1743220800000" data-listing-file-modified-sort="1743291273651" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="19" data-listing-word-count-sort="3711">
-<a href="./portfolio/pfg_xgb/index.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top">
-<img loading="lazy" src="./portfolio/pfg_xgb/noctiluca_bloom.png" class="thumbnail-image card-img" style="height: 150px;">
-</p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Retrieving Phytoplankton Functional Groups from Hyperspectral Ocean Color using XGBoost
-</h5>
-<div class="card-text listing-description">
-Using Satellite Data to Predict and Explain PFGs with XGBoost and SHAP
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Erdem M. Karaköylü &amp; Susanne E. Craig
-</div>
-<div class="listing-date">
-Mar 29, 2025
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div><script async="" defer="" src="https://scripts.simpleanalyticscdn.com/latest.js"></script></main> <!-- /main -->
+<script async="" defer="" src="https://scripts.simpleanalyticscdn.com/latest.js"></script></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

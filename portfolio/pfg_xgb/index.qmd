@@ -43,26 +43,24 @@ In its final form, the model, validated on an out-of-sample set, demonstrated st
 Furthermore, despite using only 10% of the available hyperspectral bands, feature importance analysis showed that specific spectral regions disproportionately contributed to model predictions. These findings highlight the potential of machine learning for phytoplankton classification and inform future algorithm development for hyperspectral ocean color missions.
 :::
 
-
 ## Introduction
 
-Phytoplankton functional groups (PFGs) play a fundamental role in marine biogeochemical cycles, influencing carbon sequestration, nutrient fluxes, and global climate feedbacks. Different functional groups contribute uniquely to these processes; for example, diatoms facilitate carbon export through rapid sinking, cyanobacteria fix atmospheric nitrogen, and coccolithophores regulate carbonate chemistry via calcification [@Maranon2015; @Boyd2010]. Identifying and quantifying these groups from space is crucial for understanding their ecological functions, detecting environmental changes, and improving ocean biogeochemical models [@Bopp2005; @Laufkotter2015]. However, current satellite ocean-color products primarily provide total chlorophyll *a* concentrations, which do not directly indicate community composition. To address this gap, various remote sensing algorithms have been developed to infer phytoplankton diversity, each with limitations in distinguishing certain groups and quantifying their biomass accurately [@Mouw2017].
+Phytoplankton community composition (PCCs) play a fundamental role in marine biogeochemical cycles, influencing carbon sequestration, nutrient fluxes, and global climate feedbacks. Different functional groups contribute uniquely to these processes; for example, diatoms facilitate carbon export through rapid sinking, cyanobacteria fix atmospheric nitrogen, and coccolithophores regulate carbonate chemistry via calcification [@Maranon2015; @Boyd2002]. Identifying and quantifying these groups from space is crucial for understanding their ecological functions, detecting environmental changes, and improving ocean biogeochemical models [@Bopp2005; @Laufkotter2016]. However, current satellite ocean-color products primarily provide total chlorophyll *a* concentrations, which do not directly indicate community composition. To address this gap, various remote sensing algorithms have been developed to infer phytoplankton diversity, each with limitations in distinguishing certain groups and quantifying their biomass accurately [@Mouw2017].
 
-### Remote Sensing Approaches for PFG Retrieval
+### Remote Sensing Approaches for PCC Retrieval
 
 Phytoplankton classification from satellite remote sensing has traditionally relied on empirical and semi-analytical methods. Empirical band-ratio techniques, such as PHYSAT, classify dominant phytoplankton groups based on anomalies in spectral reflectance but are often region-specific and limited to broad functional classes [@Alvain2005; @Alvain2008]. Semi-analytical models, in contrast, use inherent optical properties (IOPs) to infer phytoplankton composition from satellite reflectance, providing a more mechanistic approach [@Hirata2011]. Hybrid models incorporate additional environmental variables, such as sea surface temperature and total chlorophyll, to infer community structure [@Brewin2010].
 
-More recently, hyperspectral ocean-color sensors, such as NASA’s Plankton, Aerosol, Cloud, ocean Ecosystem (PACE) mission, may have the potential to improve PFG retrieval by capturing finer spectral features associated with phytoplankton pigments [@Dierssen2023]. That is not to say that hyperspectral resolution is sufficient on its own. Optical similarity between different groups, depth-related biases in surface measurements, as well as associated measurement uncertainties inherenth to the noisy marine environment will likely hinder retrieval accuracy [@IOCCG2014]. Most current models either estimate phytoplankton size classes or assign a single dominant group per pixel, often failing to capture the complexity of mixed communities [@Ciotti2002].
+Hyperspectral ocean-color sensors, such as NASA’s Plankton, Aerosol, Cloud, ocean Ecosystem (PACE) mission, may have the potential to improve PCC retrieval by capturing finer spectral features associated with phytoplankton pigments [@Dierssen2023]. That is not to say that hyperspectral resolution is sufficient on its own. Optical similarity between different groups, depth-related biases in surface measurements, as well as associated measurement uncertainties inherenth to the noisy marine environment will likely hinder retrieval accuracy [@IOCCG2014]. Most current models either estimate phytoplankton size classes or assign a single dominant group per pixel, often failing to capture the complexity of mixed communities [@Ciotti2002].
 
 ### Study Contribution and Approach
 
-In this study, we introduce **extreme gradient boosting (XGBoost)** [@Chen2016] as a novel approach for retrieving phytoplankton functional groups from satellite ocean color data. XGBoost is a scalable ensemble learning algorithm that has demonstrated high performance in complex classification tasks but has not yet been widely applied to PFG retrieval. XGBoost is also less opaque than neural networks, and can deal better with highly correlated (spectral) data of varying scales.
+In this study, we use a scalable, high-performance ensemble learning algorithm;  **extreme gradient boosting (XGBoost)** [@Chen2016] to identify phytoplankton community composition from satellite ocean color data. The ensemble aspect of this algorithm makes it more resistant to overfitting. XGBoost is less opaque than neural networks. Finally, XGBoost is robust to data issues that are problematic for other machine learning models such as Neural Networks, including highly correlated (spectral) data or data of varying scales.
 
-Recent studies have demonstrated the potential of XGBoost in related applications, such as harmful algal bloom detection [@Izadi2021] and phytoplankton biomass estimation [@Yan2025], highlighting its suitability for remote sensing applications. Our work aligns with the objectives of the PACE mission by contributing an advanced classification algorithm that enhances hyperspectral monitoring of phytoplankton diversity [@Zhang2024]. To our knowledge, this is the first application of XGBoost for PFG classification in ocean color remote sensing, offering a robust alternative to traditional retrieval methods.
+XGBoost outperformed alternative approaches in applications such as harmful algal bloom detection [@Izadi2021] and phytoplankton biomass estimation [@Yan2025], which highlight the suitability of the approach1 for remote sensing applications. Our work aligns with the objectives of the PACE mission by contributing an advanced classification algorithm that enhances hyperspectral monitoring of phytoplankton diversity [@Zhang2024]. To our knowledge, this is the first application of XGBoost for PCC classification in ocean color remote sensing, offering a robust alternative to traditional retrieval methods.
 
-Our approach was to leverage a large dataset of simulated hyperspectral TOA radiance and associated environmental variables to improve both the discrimination of functional groups and the quantification of their biomass. Previous remote sensing algorithms often classified only a dominant PFG or broad size class [@Mouw2017] and relied on empirical band relationships that lacked generalizability [@Hirata2011]. By utilizing a machine learning framework capable of integrating multiple features, our approach reduces classification errors and enhances retrieval precision. Moreover the application of eXplainable AI (XAI) techniques to relate predictions to their input may further guide future efforts to improve PFG quantification.
+Our approach was to leverage a large dataset of simulated hyperspectral TOA radiance and associated environmental variables to improve both the discrimination of functional groups and the quantification of their biomass. Previous remote sensing algorithms often classified only a dominant PCC or broad size class [@Mouw2017] and relied on empirical band relationships that lacked generalizability [@Hirata2011]. By utilizing a machine learning framework capable of integrating multiple features, our approach reduces classification errors and enhances retrieval precision. Moreover the application of eXplainable AI (XAI) techniques to relate predictions to their input may further guide future efforts to improve PCC quantification.
 
-::: {.callout-note collapse=true}
 ## Methods
 
 ### Data Preparation and Feature Selection
@@ -75,11 +73,9 @@ The dataset was divided into training and test sets using an 80/20 split. The tr
 
 We employed an XGBoost Regressor model with  a multi-output regression head to predict simultaneously multiple phytoplankton functional groups as well as total chlorophyll-*a* concentration. XGBoost is a high-performance, scalable implementation of gradient boosting that has become a popular choice for a wide range of regression and classification tasks [@Chen2016]. This approach consists in building an ensemble of decision trees sequentially, where each new tree attempts to correct the errors made by the previous trees. By optimizing a regularized objective function, XGBoost effectively controls overfitting while enhancing prediction accuracy. Its efficient handling highly correlated data, support for parallel computation, and flexible regularization mechanisms make it particularly well-suited for complex modeling tasks.
 
-::: {.callout-tip collapse=true}
-
 ### Hyperparameter Optimization and Model Training
 
-Given the complexity of the problem and the high dimensionality of the input features, it was critical to optimize the hyperparameters to achieve robust performance and prevent overfitting. To this end, we conducted hyperparameter optimization using the Optuna version 4.2.1 library [@Akiba2019]. Specifically, we employed the efficient Tree-structured Parzen Estimator (TPE) algorithm [@Bergstra2011]. TPE is a Bayesian optimization method that iteratively builds probabilistic models of the hyperparameter space based on past evaluation results. By modeling the distributions of promising and less promising hyperparameter configurations, TPE suggests new parameter sets to explore, focusing the search on regions likely to yield improved performance. To further enhance the efficiency of the optimization process, we utilized Optuna's MedianPruner with n_warmup_steps=5. This pruner automatically stops unpromising trials during the early stages of training (after at least 5 steps) if their intermediate results indicate they are unlikely to outperform the median performance of completed trials. The optimization step used an objective function to minimize the root mean squared error (RMSE) computed via three-fold cross-validation on the training set. The hyperparameters under investigation are lthe learning rate, maximum tree depth, number of estimators, subsample ratio, column subsample ratio, and gamma (the minimum loss reduction required to make a further partition on a leaf node); *cf* @tbl-hparam for further details. The Bayesian optimization procedure allowed us to efficiently explore the hyperparameter space by leveraging past trial information to prune unpromising candidate parameter sets early, thereby reducing overall computational cost. 
+Given the complexity of the problem and the high dimensionality of the input features, it was critical to optimize the hyperparameters to achieve robust performance and prevent overfitting. To this end, we conducted hyperparameter optimization using the Optuna library [@Akiba2019]. Specifically, we employed the efficient Tree-structured Parzen Estimator (TPE) algorithm [@Bergstra2011]. TPE is a Bayesian optimization method that iteratively builds probabilistic models of the hyperparameter space based on past evaluation results. By modeling the distributions of promising and less promising hyperparameter configurations, TPE suggests new parameter sets to explore, focusing the search on regions likely to yield improved performance. To further enhance the efficiency of the optimization process, we utilized Optuna's MedianPruner with n_warmup_steps=5. This pruner automatically stops unpromising trials during the early stages of training (after at least 5 steps) if their intermediate results indicate they are unlikely to outperform the median performance of completed trials. The optimization step used an objective function to minimize the root mean squared error (RMSE) computed via three-fold cross-validation on the training set. The hyperparameters under investigation are lthe learning rate, maximum tree depth, number of estimators, subsample ratio, column subsample ratio, and gamma (the minimum loss reduction required to make a further partition on a leaf node); *cf* @tbl-hparam for further details. The Bayesian optimization procedure allowed us to efficiently explore the hyperparameter space by leveraging past trial information to prune unpromising candidate parameter sets early, thereby reducing overall computational cost. 
 
 Once the optimization step complete, we instantiated the XGBoost model with the best set of hyperparameters and trained it on the full training set. 
 
@@ -98,11 +94,12 @@ Hyperparameter ranges and their corresponding sampling strategy used in optimiza
 
 :::
 
-:::
+### Sensitiviy Analysis to Spectral Resolution through Band Downsampling
+
+To assess the impact of spectral resolution on model performance, we conducted a sensitivity analysis by subsampling the hyperspectral input data to approximate the band configurations of MODIS and VIIRS sensors. Specifically, we selected the closest available channels in our simulated dataset to match the central wavelengths of MODIS and VIIRS ocean color bands (limited to <750 nm), while retaining temperature as an auxiliary predictor. For both sensor configurations, we trained new models using the original set of hyperparameters optimized for the full hyperspectral dataset. This approach enabled a controlled comparison in which only the input features were varied, allowing us to isolate the impact of reduced spectral resolution on predictive skill. The same train/test split used in the initial model development was retained to ensure comparability of performance metrics across configurations, with the goal of measuring sensitivity rather than generalizability.
 
 ### Model Evaluation and eXplainable AI (XAI)
 Once the optimal hyperparameter combination was identified, we retrained the final XGBoost model on the full training set using these optimized settings. Finally, we evaluated the performance of the retrained model on the held-out test set to assess its generalizability.
-
 
 #### Prediction Explainability 
 
@@ -115,9 +112,6 @@ We generated **SHAP summary plots**, which provide a comprehensive visualization
 
 ##### Code Availability
 All analysis and modeling code used in this study was written in Python 3.12. This code is [publicly available on GitHub](https://github.com/erdemkarakoylu/toa_2_phyto_ml).
-
-
-:::
 
 ## Results
 
@@ -167,8 +161,6 @@ Performance metrics of optimized and trained model on hold-out set.
 
 :::
 
-::: {.callout-tip collapse=true}
-
 #### Explanation of metrics
 
 - **Mean Squared Error (MSE):**  
@@ -186,11 +178,10 @@ Performance metrics of optimized and trained model on hold-out set.
 - **MAE/StDev$_{true}$:**  
   This ratio compares the mean absolute error to the standard deviation of the true values. It provides a relative measure of error by indicating how the average error compares to the inherent variability in the data. A lower ratio implies that the model’s prediction error is small relative to the natural variability of the observations.
 
-:::
 
 ### XAI with Shapley Values
 
-The SHAP summary plots provides insights into feature importance and their effects on model predictions for phytoplankton functional groups.
+The SHAP summary plots provides insights into feature importance and their effects on model predictions for phytoplankton community composition.
 
 
 
@@ -217,17 +208,51 @@ Shapley values are shown for each functional group and for total chlorophyll. Fe
 Most saliently, temperature was the top factor for all phytoplankton groups but is not a primordial feature in quantifying dinoflagellates. 
 
 
+### Spectral Resolution Sensitivity Analysis
+
+To evaluate the sensitivity of model performance to spectral input resolution, we conducted additional experiments using reduced-band versions of the input data, corresponding to the band configurations of the MODIS and VIIRS ocean color sensors. For each sensor-specific dataset, we selected the closest matching channels from the original simulated hyperspectral inputs (limited to <750 nm), while retaining temperature as an auxiliary predictor.
+
+All modeling conditions—hyperparameters, training procedure, and the original 80/20 train-test split—were held constant to isolate the effect of spectral resolution. Model performance was evaluated using multiple regression metrics across PCCs, including diatoms, chlorophytes, cyanobacteria, coccolithophores, dinoflagellates, and prasinophytes, as well as total chlorophyll-a.
+
+Figure @fig-rmse-sensor summarizes the RMSE values for each model configuration. As expected, both band-limited models showed increased prediction error relative to the full hyperspectral model. The MODIS-band model exhibited an RMSE increase of 1.5–2.5× across most groups, with declines in R² particularly evident for diatoms, coccolithophores, and total chlorophyll. The VIIRS-band model showed consistently lower errors and higher explained variance than the MODIS counterpart, indicating better preservation of model skill under reduced spectral input.
+
+::: {#fig-rmse-sensor}
+
+![](images/pcc_rmse_comparison_full_modis_viirs.png)
+
+RMSE across functional groups for three input configurations: full hyperspectral (PACE-like), MODIS-band subset, and VIIRS-band subset. The full model consistently outperforms both reduced-band versions.
+
+:::
+
+To complement the aggregated metrics, Figures @fig-scatter-modis and @fig-scatter-viirs show predicted versus true values for each group using the MODIS and VIIRS subsets, respectively. While both reduced models show reasonable alignment along the 1:1 line, greater scatter and bias are evident relative to the hyperspectral model, particularly for diatoms and dinoflagellates.
+
+::: {#fig-scatter-modis}
+
+![](images/goodness-of-fit_MODIS.png)
+
+Predicted vs. true phytoplankton concentrations using the MODIS-band subset. A dashed 1:1 line indicates perfect prediction. Wider spread around the diagonal reflects increased prediction error due to reduced spectral input.
+
+:::
+
+::: {#fig-scatter-viirs}
+
+![](images/goodness-of-fit_VIIRS.png)
+
+Predicted vs. true phytoplankton concentrations using the VIIRS-band subset. Despite limited input features, the model maintains good predictive performance across most groups, particularly compared to the MODIS configuration.
+
+:::
+
 ## Discussion
 
-The results presented here demonstrate that machine learning, particularly XGBoost, can effectively retrieve phytoplankton functional group (PFG) concentrations and total chlorophyll-a from hyperspectral top-of-atmosphere (TOA) data and auxiliary variables. The model performed well across most PFGs, with root mean squared error (RMSE) values under 0.02 mg m⁻³ and R² values exceeding 0.95. The exception was dinoflagellates, which exhibited significantly lower predictive accuracy (R² ≈ 0.53), a result also reflected in their higher normalized MAE and MAPE values.
+The results presented here demonstrate that machine learning, particularly XGBoost, can effectively retrieve phytoplankton functional group (PCC) concentrations and total chlorophyll-a from hyperspectral top-of-atmosphere (TOA) data and auxiliary variables. The model performed well across most PCCs, with root mean squared error (RMSE) values under 0.02 mg m⁻³ and R² values exceeding 0.95. The exception was dinoflagellates, which exhibited significantly lower predictive accuracy (R² ≈ 0.53), a result also reflected in their higher normalized MAE and MAPE values.
 
-Feature importance analysis using SHAP values revealed that temperature was among the top six predictors for all groups except dinoflagellates, for which no strong dependence on any single environmental feature emerged. These patterns point to functional differences in ecological drivers between PFGs. In particular, the centrality of temperature for most groups highlights its role as a proxy for environmental gradients, biogeography, and metabolic scaling.
+Feature importance analysis using SHAP values revealed that temperature was among the top six predictors for all groups except dinoflagellates, for which no strong dependence on any single environmental feature emerged. These patterns point to functional differences in ecological drivers between PCCs. In particular, the centrality of temperature for most groups highlights its role as a proxy for environmental gradients, biogeography, and metabolic scaling.
 
-Dinoflagellates do not exhibit a single, well-defined biogeographical zone of dominance the way cyanobacteria (tropical oligotrophic waters), diatoms (high latitudes and upwelling systems), or coccolithophores (subpolar blooms) do [@Boyd2010; @Buitenhuis2013; @Gregg2019]. Instead, they are often considered ecological opportunists, occupying a broad range of regions, particularly stratified, nutrient-depleted, and temperate to tropical environments [@Smayda2001; @Kibler2015]. Their distribution is governed less by temperature per se than by water column stability, nutrient availability (especially high N:P conditions), and their ability to exploit mixotrophic strategies [@Jeong2010; @Glibert2001; @Flynn2013]. Several studies suggest that warming-driven increases in stratification may promote shifts from diatom- to dinoflagellate-dominated systems—not because dinoflagellates prefer warmer temperatures, but because they thrive in the low-nutrient, low-turbulence conditions that warming often produces [@Glibert2020; @Peperzak2003; @Fu2012].
+Dinoflagellates do not exhibit a single, well-defined biogeographical zone of dominance the way cyanobacteria (tropical oligotrophic waters), diatoms (high latitudes and upwelling systems), or coccolithophores (subpolar blooms) do [@@Buitenhuis2013; @Gregg2019]. Instead, they are often considered ecological opportunists, occupying a broad range of regions, particularly stratified, nutrient-depleted, and temperate to tropical environments [@Smayda2001; @Kibler2015]. Their distribution is governed less by temperature per se than by water column stability, nutrient availability (especially high N:P conditions), and their ability to exploit mixotrophic strategies [@Jeong2010; @Glibert2001; @Flynn2013]. Several studies suggest that warming-driven increases in stratification may promote shifts from diatom- to dinoflagellate-dominated systems—not because dinoflagellates prefer warmer temperatures, but because they thrive in the low-nutrient, low-turbulence conditions that warming often produces [@Glibert2020; @Peperzak2003; @Fu2012].
 
-These ecological patterns are further supported by physiological observations. Anderson et al. [@Anderson2021] demonstrated that dinoflagellates exhibit shallower thermal performance curves compared to other PFGs, with lower maximum growth rates and broader thermal tolerance. In contrast, diatoms and cyanobacteria display distinct thermal optima and strong growth responses to temperature. This generalist thermal profile likely explains why temperature was not a dominant predictor for dinoflagellates in our model. Instead, their success appears linked to emergent ecosystem conditions—such as stratification, irradiance, and nutrient regime—that are only partially captured by the input features used here. Our SHAP-based feature interpretation supports this ecological understanding and underscores the need to include more nuanced environmental predictors in future modeling efforts.
+These ecological patterns are further supported by physiological observations. Anderson et al. [@Anderson2021] demonstrated that dinoflagellates exhibit shallower thermal performance curves compared to other PCCs, with lower maximum growth rates and broader thermal tolerance. In contrast, diatoms and cyanobacteria display distinct thermal optima and strong growth responses to temperature. This generalist thermal profile offers a plausible interpretation for  temperature not being a dominant feature for dinoflagellate prediction in our model. Other important factors linked to their distribution, such as stratification, irradiance, and nutrient regime are only partially, or not at all, captured by the input features used here. The SHAP-based feature interpretation supports this ecological understanding and underscores the need to include more nuanced environmental predictors in future modeling efforts.
 
-The strength of the model, particularly for diatoms, coccolithophores, and phaeocystis, suggests that important spectral and environmental signals are being captured despite substantial dimensionality reduction. This supports the feasibility of operational PFG retrieval using compressed hyperspectral data, especially when paired with interpretable machine learning models.
+The strength of the model, particularly for diatoms, coccolithophores, and phaeocystis, suggests that important spectral and environmental signals are being captured despite substantial dimensionality reduction. This supports the feasibility of operational PCC retrieval using compressed hyperspectral data, especially when paired with interpretable machine learning models.
 
 However, this study is based on simulated TOA radiance data, and real-world deployment will depend on atmospheric correction, instrument fidelity, and access to reliable ancillary predictors. Future work should validate the model on actual PACE observations and incorporate additional features—such as nutrient proxies, light attenuation, and mixed layer depth—to better capture ecological dynamics across all functional groups.
 
@@ -237,6 +262,7 @@ However, this study is based on simulated TOA radiance data, and real-world depl
 This study presents a novel, explainable machine learning framework for retrieving phytoplankton functional group concentrations from simulated hyperspectral top-of-atmosphere radiance data. Using an XGBoost model trained on reduced spectral features and auxiliary inputs such as temperature and latitude, we achieved high predictive performance across most functional groups and total chlorophyll-a. Model interpretation using SHAP values revealed that temperature was a key predictor for all groups except dinoflagellates, whose distribution appears to be driven by a broader suite of ecological factors such as stratification, nutrient limitation, and mixotrophy.
 
 These findings reinforce the importance of tailoring remote sensing algorithms to the ecological and physiological diversity of phytoplankton groups. They also demonstrate that physically interpretable, high-performing models can be built even when using compressed hyperspectral inputs. However, the data tested is still simulated. Confirmation studies focusing on real sensor data (e.g., from the PACE mission) and incorporating additional oceanographic predictors to improve performance across all functional groups—especially those, like dinoflagellates, whose success is governed by indirect or emergent environmental conditions.
+
 
 
 ## References {.unnumbered}

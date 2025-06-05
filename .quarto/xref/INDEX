@@ -76,5 +76,15 @@
   },
   "blog/pfg_xgb_xai/index.qmd": {
     "index.html": "87b282a3"
+  },
+  "portfolio/clv_case_study/index.qmd": {
+    "index.html": "74624d65"
+  },
+  "blog/bayesian_power/bayesian_power.ipynb": {
+    "bayesian_power.html": "9c1337f8"
+  },
+  "blog/bayesian_power/bayesian_power.qmd": {
+    "bayesian_power.md": "53274108",
+    "bayesian_power.html": "4ade87fa"
   }
 }
