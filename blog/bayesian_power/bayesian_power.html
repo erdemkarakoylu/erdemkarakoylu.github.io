@@ -153,12 +153,8 @@ window.Quarto = {
    
   <ul>
   <li><a href="#background" id="toc-background" class="nav-link active" data-scroll-target="#background">Background</a></li>
-  <li><a href="#step-1-define-goal-and-metrics" id="toc-step-1-define-goal-and-metrics" class="nav-link" data-scroll-target="#step-1-define-goal-and-metrics">Step 1: Define goal and metric(s)</a></li>
-  <li><a href="#step-2-eliciting-prior-beliefs" id="toc-step-2-eliciting-prior-beliefs" class="nav-link" data-scroll-target="#step-2-eliciting-prior-beliefs">Step 2: Eliciting prior beliefs</a></li>
-  <li><a href="#step-3-defining-the-minimum-detectable-effect-mde" id="toc-step-3-defining-the-minimum-detectable-effect-mde" class="nav-link" data-scroll-target="#step-3-defining-the-minimum-detectable-effect-mde">Step 3: Defining the Minimum Detectable Effect (MDE)</a></li>
-  <li><a href="#step-4-prospective-sample-size-planning-bayesian-power-analysis" id="toc-step-4-prospective-sample-size-planning-bayesian-power-analysis" class="nav-link" data-scroll-target="#step-4-prospective-sample-size-planning-bayesian-power-analysis">Step 4: Prospective Sample Size Planning (Bayesian “Power Analysis”)</a></li>
+  <li><a href="#brief-demonstration-of-bayesian-power-analysis" id="toc-brief-demonstration-of-bayesian-power-analysis" class="nav-link" data-scroll-target="#brief-demonstration-of-bayesian-power-analysis">Brief Demonstration of Bayesian Power Analysis</a></li>
   <li><a href="#power-analysis-interpretation" id="toc-power-analysis-interpretation" class="nav-link" data-scroll-target="#power-analysis-interpretation">Power Analysis Interpretation</a></li>
-  <li><a href="#running-the-actual-experiment." id="toc-running-the-actual-experiment." class="nav-link" data-scroll-target="#running-the-actual-experiment.">Running The Actual Experiment.</a></li>
   <li><a href="#in-conclusion" id="toc-in-conclusion" class="nav-link" data-scroll-target="#in-conclusion">In conclusion</a></li>
   </ul>
 </nav>
@@ -211,19 +207,30 @@ window.Quarto = {
 
 <section id="background" class="level3">
 <h3 class="anchored" data-anchor-id="background">Background</h3>
-<p>A/B testing is an essential approach to inform decision making. The idea is to compare two versions of a webpage, app feature, or even marketing campaign to determine which performs better in terms of a chosen metric - conversion rate, click-through rate, revenue, etc. For frequentists, this is essentially the application in a business setting of Null Hypothesis Significance Testing, NHST. As such concepts like, <span class="math inline">\(α\)</span>, <span class="math inline">\(p-\text{value}\)</span>, power analysis are central to planning and running such experiments. My focus here is on power analysis.</p>
-<p>In Frequentist Statistics power analysis is essential for the planning phase. <strong>Frequentist power</strong> is defined as the probability of correctly rejecting a false null hypothesis, which is equated to the probability of correctly identifyin a true effect. Thus it is used to determine the minimum sample size required for a study to have a reasonable chance (typically 80% or higher) of detecting a statistically significant effect of a given size at a predetermined significance level (alpha, often 0.05). This helps researchers avoid underpowered studies that might fail to detect real effects and informs decisions about resource allocation. The standard definition of frequentist power (the probability of rejecting a false null hypothesis) is framed within this P(D∣H) perspective. It asks, “If the null hypothesis is indeed false (meaning a true effect exists), what is the probability that statistical testing will produce data that leads to rejecting that null hypothesis?”. This is a risky and often wrong approach to take in my opinion due to the incorrect use of probabilily. This is beyond the scope of this post and interested readers are invited to consult Aubrey Clayton’s “Bernoulli’s Fallacy” for a deep dive on this issue. The point is that Bayesian analysis offers a compelling alternative to the frequentist approach for A/B testing, providing more direct and intuitive interpretations of results; no stopping issues, no p-hacking concerns, no corrections to worry about. Instead of focusing on the probability of observing data under a null hypothesis, Bayesian methods yield the probability distribution of the parameters of interest (e.g., the conversion rates of each variant and their difference). This allows for direct statements about the probability that one variant is better than the other, or the probability that the difference exceeds a practically significant threshold. Nevertheless, power analysis can still be important in the Bayesian paradigm, and while it takes on an altered meaning, it does remain essential in experiment planning. Specifically, the goal is to determine the sample size - and therefore adequate resource allocation - to ensure the experiment has a high probability of yielding informative results. Typically, this means assessing the probability of obtaining posterior distributions with sufficient precision (e.g., narrow credible intervals) or the probability that the effect size (the difference between the variants) exceeds a Minimum Detectable Effect (MDE). In practice this means simulating potential outcomes of experiments for a variety of sample sizes and analyzing the resulting posterior distributions.</p>
-<blockquote class="blockquote">
-<p>👉 <a href="blog/bayesian_power/bayesian_power.ipynb">Here is the notebook with all the code</a></p>
-</blockquote>
+<p>A/B testing is a critical tool for informing decisions, whether comparing webpages, app features, or marketing campaigns. The goal is to identify which version performs best based on a chosen metric like conversion rate, click-through rate, or revenue. For frequentists, A/B testing often involves Null Hypothesis Significance Testing (NHST), where concepts such as <span class="math inline">\(α\)</span>, <span class="math inline">\(p-\text{value}\)</span>, and power analysis are central. My focus here is on power analysis.</p>
+<section id="frequentist-power-analysis-a-brief-critique" class="level4">
+<h4 class="anchored" data-anchor-id="frequentist-power-analysis-a-brief-critique">Frequentist power analysis: a brief critique</h4>
+<p>In Frequentist Statistics, power analysis is essential during the planning phase of an experiment. Frequentist power is defined as the probability of correctly rejecting a false null hypothesis, which is often equated to the probability of correctly identifying a true effect. It’s used to determine the minimum sample size required for a study to have a reasonable chance (typically 80% or higher) of detecting a statistically significant effect of a given size at a predetermined significance level (α, often 0.05). This helps researchers avoid underpowered studies that might fail to detect real effects and informs decisions about resource allocation.</p>
+<p>The standard definition of frequentist power (the probability of rejecting a false null hypothesis) is framed within a <span class="math inline">\(P(D∣H)\)</span> perspective. It asks: “If the null hypothesis is indeed false (meaning a true effect exists), what is the probability that statistical testing will produce data that leads to rejecting that null hypothesis?” In my opinion, this is a risky and often flawed approach due to its incorrect use of probability for inference. This topic is beyond the scope of this post, but interested readers are invited to consult Aubrey Clayton’s “Bernoulli’s Fallacy” for a deeper technical and historical dive into this issue.</p>
 </section>
-<section id="step-1-define-goal-and-metrics" class="level3">
-<h3 class="anchored" data-anchor-id="step-1-define-goal-and-metrics">Step 1: Define goal and metric(s)</h3>
+<section id="the-bayesian-alternative" class="level4">
+<h4 class="anchored" data-anchor-id="the-bayesian-alternative">The Bayesian Alternative</h4>
+<p>The point is that Bayesian analysis offers a compelling alternative to the frequentist approach for A/B testing. It provides more direct and intuitive interpretations of results, without concerns about stopping issues, p-hacking, or needing multiple comparison corrections. Instead of focusing on the probability of observing data under a null hypothesis, Bayesian methods yield the probability distribution of the parameters of interest (e.g., the conversion rates of each variant and their difference). This allows for direct statements about the probability that one variant is better than the other, or the probability that the difference exceeds a practically significant threshold.</p>
+<p>Nevertheless, power analysis can still be important in the Bayesian paradigm. While it takes on an altered meaning, it remains essential in experiment planning. Specifically, the goal is to determine the sample size, and consequently, adequate resource allocation to collect so that the experiment has a high probability of yielding informative results. Typically, this means assessing the probability of obtaining posterior distributions with sufficient precision (e.g., narrow credible intervals) or the probability that the effect size (the difference between the variants) exceeds a Minimum Detectable Effect (MDE). In practice, this means simulating potential experiment outcomes for a variety of sample sizes and analyzing the resulting posterior distributions.</p>
+</section>
+</section>
+<section id="brief-demonstration-of-bayesian-power-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="brief-demonstration-of-bayesian-power-analysis">Brief Demonstration of Bayesian Power Analysis</h3>
+<blockquote class="blockquote">
+<p>👉 <a href="https://github.com/erdemkarakoylu/erdemkarakoylu.github.io/blob/main/blog/bayesian_power/bayesian_power.ipynb">Here is the notebook with all the code</a></p>
+</blockquote>
+<section id="step-1-define-goal-and-metrics" class="level4">
+<h4 class="anchored" data-anchor-id="step-1-define-goal-and-metrics">Step 1: Define Goal and Metric(s)</h4>
 <p>Company X wants to increase the conversion rate on its landing page. To do so a new landing page is proposed. Thus we have * Current landing page; hereafter referred to as <code>A</code> * Proposed landing page; hereafter referred to as <code>B</code> * A single primary metric, <code>conversion rate</code> (number of conversions / total landings )</p>
 <p>Obviously this is an oversimplified example but will serve to illustrate the approach.</p>
 </section>
-<section id="step-2-eliciting-prior-beliefs" class="level3">
-<h3 class="anchored" data-anchor-id="step-2-eliciting-prior-beliefs">Step 2: Eliciting prior beliefs</h3>
+<section id="step-2-eliciting-prior-beliefs" class="level4">
+<h4 class="anchored" data-anchor-id="step-2-eliciting-prior-beliefs">Step 2: Eliciting Prior Beliefs</h4>
 <p>To compute posteriors I need to combine likelihoods obtained with data with priors. Unlike Frequentist settings, Bayesian experiments are not conducted in a vaccum. Instead the paradigm encourages the incorporation of prior knowledge. While it is often the case that data will swamp out priors, there is value in carefully constructing them.</p>
 <p>Company X data scientists should therefore base their priors on any relevant existing knowledge. This could include:</p>
 <ol type="1">
@@ -232,13 +239,14 @@ window.Quarto = {
 <li><p><strong>Expert Opinions:</strong> Marketing experts or product managers within Company X might have intuitions or expectations about the performance of the new variant B. These subjective beliefs can be formalized into a prior distribution.</p></li>
 <li><p><strong>A “Skeptical” or Weakly Informative Prior:</strong> If Company X has little to no prior information, they might choose a weakly informative prior. This is a prior that doesn’t strongly favor any particular outcome but still provides some regularization.</p></li>
 </ol>
-<p>The outcome is binary, thus the natural likelihood to model the data is the Binomial distribution. There a few distributions that can be used to encode priors. To keep things simple and avoid reaching to my favorite MCMC sampler, I define priors in terms of Beta distributions. A Beta distribution is a conjugate prior to the Binomial, meaning that updating the posterior has a closed form and does not require approximation. The parameters <span class="math inline">\(α\)</span> and <span class="math inline">\(β\)</span> of the Beta distribution represent prior “successes” and “failures,” respectively. A higher <span class="math inline">\(α\)</span> relative to <span class="math inline">\(β\)</span> shifts the distribution towards higher values, and vice versa. The sum of <span class="math inline">\(α\)</span> and <span class="math inline">\(β\)</span> influences the “strength” or concentration of the prior belief (higher sum means more certainty). Below I show what this might look like.</p>
+<p>The outcome is binary, thus the natural likelihood to model the data is the Binomial distribution, which aggregates binary Bernoulli trials. There a few distributions that can be used to encode priors in this case. To keep things simple and avoid reaching for my favorite MCMC sampler, I define priors in terms of Beta distributions. A Beta distribution is a conjugate prior to the Binomial, meaning that updating the posterior has a closed form and does not require approximation. The parameters <span class="math inline">\(α\)</span> and <span class="math inline">\(β\)</span> of the Beta distribution represent prior “successes” and “failures,” respectively. A higher <span class="math inline">\(α\)</span> relative to <span class="math inline">\(β\)</span> shifts the distribution towards higher values, and vice versa. The sum of <span class="math inline">\(α\)</span> and <span class="math inline">\(β\)</span> influences the “strength” or concentration of the prior belief (higher sum means more certainty). Below I show what this might look like.</p>
 <ul>
-<li>Here I’m assume a pre-existing conversion rate of 5% for variant <span class="math inline">\(A\)</span>, so that is what I’ll use for <span class="math inline">\(A\)</span>’s prior.</li>
+<li>Let’s assume historical data suggest a current conversion rate of 5% for variant <span class="math inline">\(A\)</span>.</li>
 <li>Without any additional information and to keep things simple a reasonable prior for <span class="math inline">\(A\)</span> is therefore <span class="math inline">\(prior_A=Beta(α=5, β=95)\)</span>.</li>
-<li>I also expect a lift of 1% from variant B so an acceptable prior is <span class="math inline">\(prior_B=Beta(α=6, β=94)\)</span>.</li>
-<li>Note that <span class="math inline">\(Beta(1, 1)\)</span> means 0 successes and 0 failures, the parameterization above isn’t bumped by 1 to make it and sums to 100 for readability.</li>
+<li>For one reason or another, I also expect a lift of 1% from variant B so an acceptable prior is <span class="math inline">\(prior_B=Beta(α=6, β=94)\)</span>. Importantly, this does not discard the possibility that variant B is worse or better. The point is that my assumptions are made explicit, open to critique, and certainly revisable.</li>
+<li></li>
 </ul>
+<p>These priors can be seen in Figure 1.</p>
 <figure class="figure">
 <img src="./figures/figure1.png" alt="Beta Priors for A and B variants" style="width:800px;" class="figure-img">
 <figcaption>
@@ -247,32 +255,32 @@ Figure 1: Beta Priors for A and B variants.
 </figure>
 <ul>
 <li>Updating the Beta prior to get the posterior is trivial as it boils down to adding new successes and new failures to the existing <span class="math inline">\(α\)</span> and <span class="math inline">\(β\)</span> parameters, respectively.</li>
-<li>The function <code>run_analytical_ab_test</code>, (see <a href="">notebook</a>blog/bayesian_power/bayesian_power.ipynb) generates the data based on the true conversion rates (A is known)</li>
+<li>The function <code>run_analytical_ab_test</code> in the <a href="https://github.com/erdemkarakoylu/erdemkarakoylu.github.io/blob/main/blog/bayesian_power/bayesian_power.ipynb">notebook</a> simulates the Data Generation Process with a know conversion rate for variant A and a latent (not yet known) conversion rate for variant B.</li>
 </ul>
 </section>
-<section id="step-3-defining-the-minimum-detectable-effect-mde" class="level3">
-<h3 class="anchored" data-anchor-id="step-3-defining-the-minimum-detectable-effect-mde">Step 3: Defining the Minimum Detectable Effect (MDE)</h3>
+<section id="step-3-defining-the-minimum-detectable-effect-mde" class="level4">
+<h4 class="anchored" data-anchor-id="step-3-defining-the-minimum-detectable-effect-mde">Step 3: Defining the Minimum Detectable Effect (MDE)</h4>
 <ul>
 <li><p>Question: what is the smallest <u>practically significant</u> difference in conversion rates that Company X would want to detect?</p></li>
 <li><p>The answer is the Minimum Detectable Effect, hereafter MDE.</p></li>
 <li><p>Note the actual effect would need to be greater than the MDE; the greater the actual effect relative to the MDE, the smaller the number of samples needed to detect a difference at the MDE level.</p></li>
 <li><p>Let’s assume Company X is interested in detecting an absolute difference of at least 1% in the conversion rate, that’s our MDE</p></li>
 <li><p>If the baseline conversion rate is around 5%, stakeholders then want to be able to reliably detect if variant B increases it to 6% or more.</p></li>
-<li><p>Given the above and to make it easy on me, let’s say that the as of yet still unknown true effect of Variant B will be 7% - Obviously several such scenarios coould be simulated, but to keep it short we’ll just envisage one Variant B conversion rate.</p></li>
+<li><p>Given the above and to make it easier, let’s say that the latent true conversion rate of Variant B will be 7% - Obviously several scenarios with different conversion rates coould be simulated. To keep it short, however, we’ll just limit the simulation to a single case.</p></li>
 </ul>
 </section>
-<section id="step-4-prospective-sample-size-planning-bayesian-power-analysis" class="level3">
-<h3 class="anchored" data-anchor-id="step-4-prospective-sample-size-planning-bayesian-power-analysis">Step 4: Prospective Sample Size Planning (Bayesian “Power Analysis”)</h3>
+<section id="step-4-prospective-sample-size-planning-bayesian-power-analysis" class="level4">
+<h4 class="anchored" data-anchor-id="step-4-prospective-sample-size-planning-bayesian-power-analysis">Step 4: Prospective Sample Size Planning (Bayesian “Power Analysis”)</h4>
 <ul>
-<li>We are not trying to calculate the probability of rejecting a null hypothesis (which wouldn’t tell you all that much about the alternative, BTW).</li>
+<li>We are not trying to calculate the probability of rejecting a null hypothesis - this wouldn’t tell us much about the alternative anyway.</li>
 <li>The focus is on the probability of achieving a desired level of certainty about the difference in conversion rates.</li>
 <li>This often involves simulating potential outcomes for different sample sizes and evaluating the resulting posterior distribution.</li>
-<li>Thus, we want to determine the sample size that gives us a high probability if B is better than A under the following two conditions:
-<ul>
-<li>The posterior probability that variant B is better than variant A (i.e., conversion rate of B &gt; conversion rate of A) being above a certain threshold (e.g., 95%).</li>
-<li>The posterior probability that the difference in conversion rates (B - A) is greater than the MDE being above a certain threshold (e.g., 80%).</li>
-</ul></li>
-<li>The function below will evaluate the posterior difference for a given number of samples in view of these criteria.</li>
+<li>We assess the following conditions
+<ol type="1">
+<li>The posterior probability that variant B is better than variant A (i.e., conversion rate of B &gt; conversion rate of A) is above a certain threshold; set here at 95%.</li>
+<li>The posterior probability that the difference in conversion rates (B - A) is greater than the MDE is above a certain threshold; set here at 80%.</li>
+</ol></li>
+<li>The function <code>evaluate_analytica_power</code> in the <a href="https://github.com/erdemkarakoylu/erdemkarakoylu.github.io/blob/main/blog/bayesian_power/bayesian_power.ipynb">notebook</a> is used to evaluate the posterior difference for a given number of samples in view of these criteria. Now we can build a <code>power curve</code> against sample size</li>
 </ul>
 <figure class="figure">
 <img src="./figures/figure2.png" alt="Power Analysis Curve" style="width:800px;" class="figure-img">
@@ -281,15 +289,15 @@ Figure 2: Power curve showing showing expected power given the number of samples
 </figcaption>
 </figure>
 </section>
+</section>
 <section id="power-analysis-interpretation" class="level3">
 <h3 class="anchored" data-anchor-id="power-analysis-interpretation">Power Analysis Interpretation</h3>
 <ul>
 <li>The figure above suggests 3500 FOR EACH variant would be a sufficient size.</li>
 <li>I recommend running it a bunch of times and get uncertainty envelopes around these numbers for added credibility to threshold surpassing; this is skipped for expediency.</li>
 </ul>
-</section>
-<section id="running-the-actual-experiment." class="level3">
-<h3 class="anchored" data-anchor-id="running-the-actual-experiment.">Running The Actual Experiment.</h3>
+<section id="running-the-actual-experiment." class="level4">
+<h4 class="anchored" data-anchor-id="running-the-actual-experiment.">Running The Actual Experiment.</h4>
 <ul>
 <li>Armed with this information we can actually run an A/B test and see what kind of posterior we get.</li>
 <li>Note that unlike Frequentists we don’t have traditionally accepted significance levels. How to come to a decision is an important discussion point between the data scientist and the stakeholder/decision maker.</li>
@@ -310,6 +318,7 @@ Figure 3: Experiment outcome depicted as the posterior distribution of the diffe
 <li><p>Left panel shows 0% of the posterior overlaps with the ROPE, which satisfies the condition that <span class="math inline">\(P((B-A)&gt;0) &gt; 95\%\)</span>.</p></li>
 <li><p>Right panel shows shows 2.1% of the posterior overlaps with the ROPE, meaning <span class="math inline">\(P((B-A)&gt;0.01)=97.1\%&gt;80\%\)</span></p></li>
 </ul>
+</section>
 </section>
 <section id="in-conclusion" class="level3">
 <h3 class="anchored" data-anchor-id="in-conclusion">In conclusion</h3>
