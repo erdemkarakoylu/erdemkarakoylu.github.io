@@ -17,16 +17,23 @@ format: html
 
 ### Background
 
-A/B testing is an essential approach to inform decision making. The idea is to compare two versions of a webpage, app feature, or even marketing campaign to determine which performs better in terms of a chosen metric - conversion rate, click-through rate, revenue, etc. For frequentists, this is essentially the application in a business setting of Null Hypothesis Significance Testing, NHST. As such concepts like, $α$, $p-\text{value}$, power analysis are central to planning and running such experiments. My focus here is on power analysis.
+A/B testing is a critical tool for informing decisions, whether comparing webpages, app features, or marketing campaigns. The goal is to identify which version performs best based on a chosen metric like conversion rate, click-through rate, or revenue. For frequentists, A/B testing often involves Null Hypothesis Significance Testing (NHST), where concepts such as  $α$, $p-\text{value}$, and power analysis are central. My focus here is on power analysis.
 
-In Frequentist Statistics power analysis is essential for the planning phase. **Frequentist power** is defined as the probability of correctly rejecting a false null hypothesis, which is equated to the probability of correctly identifyin a true effect. Thus it is used to determine the minimum sample size required for a study to have a reasonable chance (typically 80% or higher) of detecting a statistically significant effect of a given size at a predetermined significance level (alpha, often 0.05). This helps researchers avoid underpowered studies that might fail to detect real effects and informs decisions about resource allocation. The standard definition of frequentist power (the probability of rejecting a false null hypothesis) is framed within this P(D∣H) perspective. It asks, "If the null hypothesis is indeed false (meaning a true effect exists), what is the probability that statistical testing will produce data that leads to rejecting that null hypothesis?". This is a risky and often wrong approach to take in my opinion due to the incorrect use of probabilily. This is beyond the scope of this post and interested readers are invited to consult Aubrey Clayton's "Bernoulli's Fallacy" for a deep dive on this issue. 
-The point is that Bayesian analysis offers a compelling alternative to the frequentist approach for A/B testing, providing more direct and intuitive interpretations of results; no stopping issues, no p-hacking concerns, no corrections to worry about. Instead of focusing on the probability of observing data under a null hypothesis, Bayesian methods yield the probability distribution of the parameters of interest (e.g., the conversion rates of each variant and their difference). This allows for direct statements about the probability that one variant is better than the other, or the probability that the difference exceeds a practically significant threshold.
-Nevertheless, power analysis can still be important in the Bayesian paradigm, and while it takes on an altered meaning, it does remain essential in experiment planning. Specifically, the goal is to determine the sample size - and therefore adequate resource allocation - to ensure the experiment has a high probability of yielding informative results. Typically, this means assessing the probability of obtaining posterior distributions with sufficient precision (e.g., narrow credible intervals) or the probability that the effect size (the difference between the variants) exceeds a Minimum Detectable Effect (MDE).
-In practice this means simulating potential outcomes of experiments for a variety of sample sizes and analyzing the resulting posterior distributions. 
 
->👉 [Here is the notebook with all the code](blog/bayesian_power/bayesian_power.ipynb)
+#### Frequentist power analysis: a brief critique
+In Frequentist Statistics, power analysis is essential during the planning phase of an experiment. Frequentist power is defined as the probability of correctly rejecting a false null hypothesis, which is often equated to the probability of correctly identifying a true effect. It's used to determine the minimum sample size required for a study to have a reasonable chance (typically 80% or higher) of detecting a statistically significant effect of a given size at a predetermined significance level (α, often 0.05). This helps researchers avoid underpowered studies that might fail to detect real effects and informs decisions about resource allocation.
 
-### Step 1: Define goal and metric(s)
+The standard definition of frequentist power (the probability of rejecting a false null hypothesis) is framed within a $P(D∣H)$ perspective. It asks: "If the null hypothesis is indeed false (meaning a true effect exists), what is the probability that statistical testing will produce data that leads to rejecting that null hypothesis?" In my opinion, this is a risky and often flawed approach due to its incorrect use of probability for inference. This topic is beyond the scope of this post, but interested readers are invited to consult Aubrey Clayton's "Bernoulli's Fallacy" for a deeper technical and historical dive into this issue.
+
+#### The Bayesian Alternative
+The point is that Bayesian analysis offers a compelling alternative to the frequentist approach for A/B testing. It provides more direct and intuitive interpretations of results, without concerns about stopping issues, p-hacking, or needing multiple comparison corrections. Instead of focusing on the probability of observing data under a null hypothesis, Bayesian methods yield the probability distribution of the parameters of interest (e.g., the conversion rates of each variant and their difference). This allows for direct statements about the probability that one variant is better than the other, or the probability that the difference exceeds a practically significant threshold.
+
+Nevertheless, power analysis can still be important in the Bayesian paradigm. While it takes on an altered meaning, it remains essential in experiment planning. Specifically, the goal is to determine the sample size, and consequently, adequate resource allocation to collect so that the experiment has a high probability of yielding informative results. Typically, this means assessing the probability of obtaining posterior distributions with sufficient precision (e.g., narrow credible intervals) or the probability that the effect size (the difference between the variants) exceeds a Minimum Detectable Effect (MDE). In practice, this means simulating potential experiment outcomes for a variety of sample sizes and analyzing the resulting posterior distributions.
+
+### Brief Demonstration of Bayesian Power Analysis
+>👉 [Here is the notebook with all the code](https://github.com/erdemkarakoylu/erdemkarakoylu.github.io/blob/main/blog/bayesian_power/bayesian_power.ipynb)
+
+#### Step 1: Define Goal and Metric(s)
 
 Company X wants to increase the conversion rate on its landing page. To do so a new landing page is proposed.  Thus we have
 * Current landing page; hereafter referred to as `A`
@@ -35,7 +42,7 @@ Company X wants to increase the conversion rate on its landing page. To do so a 
 
 Obviously this is an oversimplified example but will serve to illustrate the approach.
 
-### Step 2: Eliciting prior beliefs
+#### Step 2: Eliciting Prior Beliefs
 
 To compute posteriors I need to combine likelihoods obtained with data with priors. Unlike  Frequentist settings, Bayesian experiments are not conducted in a vaccum. Instead the paradigm encourages the incorporation of prior knowledge. While it is often the case that data will swamp out priors, there is value in carefully constructing them.   
 
@@ -50,12 +57,14 @@ Company X data scientists should therefore base their priors on any relevant exi
 4. **A "Skeptical" or Weakly Informative Prior:** If Company X has little to no prior information, they might choose a weakly informative prior. This is a prior that doesn't strongly favor any particular outcome but still provides some regularization. 
 
 
-The outcome is binary, thus the natural likelihood to model the data is the Binomial distribution. There a few distributions that can be used to encode priors. To keep things simple and avoid reaching to my favorite MCMC sampler, I define priors in terms of Beta distributions. A Beta distribution is a conjugate prior to the Binomial, meaning that updating the posterior has a closed form and does not require approximation. The parameters $α$ and $β$ of the Beta distribution represent prior "successes" and "failures," respectively. A higher $α$ relative to $β$ shifts the distribution towards higher values, and vice versa. The sum of $α$ and $β$ influences the "strength" or concentration of the prior belief (higher sum means more certainty). Below I show what this might look like.
+The outcome is binary, thus the natural likelihood to model the data is the Binomial distribution, which aggregates binary Bernoulli trials. There a few distributions that can be used to encode priors in this case. To keep things simple and avoid reaching for my favorite MCMC sampler, I define priors in terms of Beta distributions. A Beta distribution is a conjugate prior to the Binomial, meaning that updating the posterior has a closed form and does not require approximation. The parameters $α$ and $β$ of the Beta distribution represent prior "successes" and "failures," respectively. A higher $α$ relative to $β$ shifts the distribution towards higher values, and vice versa. The sum of $α$ and $β$ influences the "strength" or concentration of the prior belief (higher sum means more certainty). Below I show what this might look like.
 
-* Here I'm assume a pre-existing conversion rate  of 5% for variant $A$, so that is what I'll use for $A$'s prior. 
+* Let's assume historical data suggest a current conversion rate of 5% for variant $A$.
 * Without any additional information and to keep things simple a reasonable prior for $A$ is therefore $prior_A=Beta(α=5, β=95)$. 
-* I also expect a lift of 1% from variant B so an acceptable prior is $prior_B=Beta(α=6, β=94)$.
-* Note that $Beta(1, 1)$ means 0 successes and 0 failures, the parameterization above isn't bumped by 1 to make it and sums to 100 for readability.
+* For one reason or another, I also expect a lift of 1% from variant B so an acceptable prior is $prior_B=Beta(α=6, β=94)$. Importantly, this does not discard the possibility that variant B is worse or better. The point is that my assumptions are made explicit, open to critique, and certainly revisable. 
+* 
+
+These priors can be seen in Figure 1.
 
 <figure>
   <img src="./figures/figure1.png" alt="Beta Priors for A and B variants" style="width:800px;">
@@ -63,9 +72,9 @@ The outcome is binary, thus the natural likelihood to model the data is the Bino
 </figure>
 
 * Updating the Beta prior to get the posterior is trivial as it boils down to adding new successes and new failures to the existing $α$ and $β$ parameters, respectively. 
-* The function `run_analytical_ab_test`, (see [notebook]()blog/bayesian_power/bayesian_power.ipynb) generates the data based on the true conversion rates (A is known)
+* The function `run_analytical_ab_test` in the [notebook](https://github.com/erdemkarakoylu/erdemkarakoylu.github.io/blob/main/blog/bayesian_power/bayesian_power.ipynb) simulates the Data Generation Process with a know conversion rate for variant A and a latent (not yet known) conversion rate for variant B.
 
-### Step 3: Defining the Minimum Detectable Effect (MDE)
+#### Step 3: Defining the Minimum Detectable Effect (MDE)
 
 * Question: what is the smallest <u>practically significant</u> difference in conversion rates that Company X would want to detect?
 * The answer is the Minimum Detectable Effect, hereafter MDE. 
@@ -73,18 +82,18 @@ The outcome is binary, thus the natural likelihood to model the data is the Bino
 
 * Let's assume Company X is interested in detecting an absolute difference of at least 1% in the conversion rate, that's our MDE
 * If the baseline conversion rate is around 5%, stakeholders then want to be able to reliably detect if variant B increases it to 6% or more. 
-* Given the above and to make it easy on me, let's say that the as of yet still unknown true effect of Variant B will be 7%  - Obviously several such scenarios coould be simulated, but to keep it short we'll just envisage one Variant B conversion rate. 
+* Given the above and to make it easier, let's say that the latent true conversion rate of Variant B will be 7%  - Obviously several scenarios with different conversion rates coould be simulated. To keep it short, however, we'll just limit the simulation to a single case. 
 
-### Step 4: Prospective Sample Size Planning (Bayesian "Power Analysis")
+#### Step 4: Prospective Sample Size Planning (Bayesian "Power Analysis")
 
-* We are not trying to calculate the probability of rejecting a null hypothesis  (which wouldn't tell you all that much about the alternative, BTW).
+* We are not trying to calculate the probability of rejecting a null hypothesis - this wouldn't tell us much about the alternative anyway.
 * The focus is on the probability of achieving a desired level of certainty about the difference in conversion rates. 
 * This often involves simulating potential outcomes for different sample sizes and evaluating the resulting posterior distribution.
-* Thus, we want to determine the sample size that gives us a high probability if B is better than A under the following two conditions:
-    * The posterior probability that variant B is better than variant A (i.e., conversion rate of B > conversion rate of A) being above a certain threshold (e.g., 95%).
-    * The posterior probability that the difference in conversion rates (B - A) is greater than the MDE being above a certain threshold (e.g., 80%).
+* We assess the following conditions
+    1. The posterior probability that variant B is better than variant A (i.e., conversion rate of B > conversion rate of A) is above a certain threshold; set here at 95%.
+    2. The posterior probability that the difference in conversion rates (B - A) is greater than the MDE is above a certain threshold; set here at 80%.
 
-* The function  below will evaluate the posterior difference for a given number of samples in view of these criteria.
+* The function  `evaluate_analytica_power` in the [notebook](https://github.com/erdemkarakoylu/erdemkarakoylu.github.io/blob/main/blog/bayesian_power/bayesian_power.ipynb) is used to evaluate the posterior difference for a given number of samples in view of these criteria. Now we can build a `power curve` against sample size
 
 <figure>
   <img src="./figures/figure2.png" alt="Power Analysis Curve" style="width:800px;">
@@ -95,7 +104,7 @@ The outcome is binary, thus the natural likelihood to model the data is the Bino
 * The figure above suggests 3500 FOR EACH variant would be a sufficient size. 
 * I recommend running it a bunch of times and get uncertainty envelopes around these numbers for added credibility to threshold surpassing; this is skipped for expediency.
 
-### Running The Actual Experiment.
+#### Running The Actual Experiment.
 * Armed with this information we can actually run an A/B test and see what kind of posterior we get. 
 * Note that unlike Frequentists we don't have traditionally accepted significance levels. How to come to a decision is an important discussion point between  the data scientist and the stakeholder/decision maker.
 * As a decision guide as to whether the difference is significantly greater than 0, I propose a Region of Pratical Equivalence (ROPE).
