@@ -1,0 +1,83 @@
+---
+title: Atmospheric Correction? So Last Year, Man!
+author: Erdem Karaköylü
+date: '2025-05-16'
+description: Inferring Phytoplankton Absorption from Space with BART
+categories:
+  - Bayesian Additive Regression Trees
+  - Remote Sensing
+  - Phytoplankton Ecology
+  - PyMC
+image: ./figures/cover8.png
+format: html
+bibliography: litterature.bib
+---
+
+## Preamble
+Tired of wrestling with atmospheric models when all you want is ocean data? To oceanographers using satellite observations, the atmosphere is an obstacle to the development of good predictive models of marine processes. Bayesian Additive Regression Trees - BART - offers a robust solution, blending the flexibility of tree-based machine learning with Bayesian uncertainty to directly predict phytoplankton absorption from top-of-the-atmosphere (TOA) radiance.
+
+
+## About BART
+
+BART has been around for almost 2 decades; it has gained significant traction for its robust predictive performance and ability to quantify uncertainty across diverse fields. It excels in nonparametric regression problems, automatically capturing complex, nonlinear relationships and interactions without requiring explicit specification [@Chipman2010].
+BART has been applied in variety of fields, including;
+
+1. Causal Inference: BART is widely used for estimating causal effects in observational studies due to its flexibility in modeling confounding relationships [@Hill2011].
+2. Biomedical Research: It has been applied in areas like biomarker discovery, predicting disease outcomes, and estimating individual treatment effects [@Sparapani2020].
+3. Environmental Science: BART has found use in predicting air pollution concentrations, as well as in various ecological modeling tasks [@Liu2020].
+4. Social Sciences and Economics: Its ability to handle high-dimensional data and provide uncertainty estimates makes it valuable for analyzing complex survey data and estimating policy impacts.
+
+This post is a brief demostration of work I did to assess the feasibility of circumventing atmospheric correction. A publication documenting the entire effort is currently in preparation.
+
+
+## Data Overview
+The predictive features consist of 6 wavelengths of TOA radiance measurements from satellite remote sensing, that are Fresnel- and Rayleigh-corrected. The former removes the specular component of sunlight reflected off a flat ocean surface, while the latter accounts for molecular scattering in the atmosphere. These are straightforward physics-based corrections that rely on viewing geometry and standard atmospheric assumptions. They do not require full atmospheric state information. Thus the data is not corrected for more complex interactions, particularly aerosol scattering and absorption. These are expected to be a greater source of uncertainty, and are usually addressed through full atmospheric correction algorithms.  Another charactieristic of these features is their high multicollinearity ([@fig-rrc].) Multicollinearity can be an important impediment to proper fitting for many algorithms as this causes unstable coefficient estimations; tree-based models, including BART, are known to be far more foregiving in this case. Care should nonetheless be taken. This aspect is beyond the scope of the present discussion, and will be addressed in another post. 
+
+::: {#fig-rrc}
+![](./figures/figure1.png)
+
+Pair plot demonstrating the multicollinear nature of the input features; Rayleigh and Fresnel-corrected top-of-the-atmosphhere radiance.
+:::
+
+The prediction targets are phytoplankton absorption (AΦ) at three wavelengths; 443, 555, 670nm; their distribution is seen in [@fig-aphi]. The present BART model was written to predicted all three targets simultaneously. 
+
+Overall the only preprocessing step applied to the data in addition to the aforementioned corrections was to $log_{10}$-transformed them - both input features and prediction targets - as doing so stabilized their variance, which eases model fitting. Interpretation remains easy since data thus transformed refer to magnitude. All plots in this post will be shown in $log_{10}$ scale.
+
+::: {#fig-aphi}
+![](./figures/figure2.png)
+
+Kernel density estimation of the output, phytoplankton absorption at 3 wavelengths; 443, 555, and 670 nm.
+:::
+
+[@fig-graph] shows the BART model structure, written in [PyMC](https://pymc.io) and [PyMC-BART]().  The full notebook with code can be found [here.]() 
+
+
+## Modeling
+
+:::{#fig-graph}
+![](./figures/figure3.png)
+
+Model graph depicting priors, likelihood, data and how these are connected per the model formulation. 
+:::
+
+
+## Abbreviated Bayesian Workflow 
+Part of the Bayesian workflow is to simulate model output before fitting data. This is a verification step to make sure modeling assumptions, encoded as priors, produce reasonable target values. This is referred to as Prior Predictive Checks. After fitting the process is repeated, which shows whether the model has learned from the data, and how simulated data compares to actual observation
+
+::: {#fig-prior-n-post-ppc}
+![](./figures/figure4.png)
+
+:::
+
+::: {#fig-3-way-ppc}
+![](./figures/figure5.png)
+
+Posterior Predictive Checks - The trained Bayesian model can now be used to simulate phytoplankton absorption at all 3 wavelengths. These can in turn be compared with observatiosn. From left to right and top to bottom; phytoplankton absorption at 443, 555, 670 nm, and all bands. Black line: distribution of observations; each grey line represents the distribution of a simulation outcome; orange dashed line is the simulation mean distribution.
+:::
+
+
+
+## References {.unnumbered}
+
+::: {#refs}
+:::
