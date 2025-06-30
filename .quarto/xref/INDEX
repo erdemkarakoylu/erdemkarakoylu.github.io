@@ -86,5 +86,14 @@
   "blog/bayesian_power/bayesian_power.qmd": {
     "bayesian_power.md": "53274108",
     "bayesian_power.html": "4ade87fa"
+  },
+  "blog/bart_toa/bart_toa.qmd": {
+    "bart_toa.html": "0fd07ab8"
+  },
+  "blog/aws_ab_test/aws_ab_test.qmd": {
+    "aws_ab_test.html": "c1ed738d"
+  },
+  "portfolio/bayesian_ab_testing/index.qmd": {
+    "index.html": "fa2c5195"
   }
 }

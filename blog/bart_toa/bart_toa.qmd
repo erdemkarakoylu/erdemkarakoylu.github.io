@@ -1,8 +1,8 @@
 ---
-title: Atmospheric Correction? So Last Year, Man!
+title: Satellite Oceanography without Atmospheric Correction
 author: Erdem Karaköylü
 date: '2025-05-16'
-description: Inferring Phytoplankton Absorption from Space with BART
+description: Inferring Phytoplankton Absorption with BART
 categories:
   - Bayesian Additive Regression Trees
   - Remote Sensing
@@ -16,32 +16,46 @@ bibliography: litterature.bib
 ## Preamble
 Tired of wrestling with atmospheric models when all you want is ocean data? To oceanographers using satellite observations, the atmosphere is an obstacle to the development of good predictive models of marine processes. Bayesian Additive Regression Trees - BART - offers a robust solution, blending the flexibility of tree-based machine learning with Bayesian uncertainty to directly predict phytoplankton absorption from top-of-the-atmosphere (TOA) radiance.
 
+## Atmospheric Correction in Brief
+Atmospheric correction is the process of removing the atmospheric contribution from satellite measurements of TOA radiance to isolate the weak oceanic signal. Sunlight reaching the sensor includes both direct atmospheric paths (scattered by air molecules and aerosols) and reflected sunlight from the ocean surface. Only a small fraction of this signal — the water-leaving radiance — actually carries information about oceanic properties like chlorophyll and suspended particles. While simpler components like Rayleigh scattering and surface reflection (Fresnel effects) can be corrected relatively easily, the remaining atmospheric signal, especially from aerosols, is far more complex. Being able to bypass or reduce the need for full atmospheric correction is a significant advancement, as it simplifies the retrieval pipeline and avoids introducing uncertainty from external assumptions and models.
 
 ## About BART
 
-BART has been around for almost 2 decades; it has gained significant traction for its robust predictive performance and ability to quantify uncertainty across diverse fields. It excels in nonparametric regression problems, automatically capturing complex, nonlinear relationships and interactions without requiring explicit specification [@Chipman2010].
-BART has been applied in variety of fields, including;
+BART has been around for about 2 decades; it has gained significant traction for its robust predictive performance and ability to quantify uncertainty across diverse fields. Because of its nonparametric nature, BART can capture complex, nonlinear relationships and interactions without requiring explicit specification [@Chipman2010]. BART has been applied in variety of fields, including;
 
 1. Causal Inference: BART is widely used for estimating causal effects in observational studies due to its flexibility in modeling confounding relationships [@Hill2011].
-2. Biomedical Research: It has been applied in areas like biomarker discovery, predicting disease outcomes, and estimating individual treatment effects [@Sparapani2020].
-3. Environmental Science: BART has found use in predicting air pollution concentrations, as well as in various ecological modeling tasks [@Liu2020].
+2. Biomedical Research: It has been applied in areas like biomarker discovery, predicting disease outcomes, and estimating individual treatment effects [@Logan2019].
+3. Environmental Science: BART has found use in predicting air pollution concentrations, as well as in various ecological modeling tasks [@Zhang2020].
 4. Social Sciences and Economics: Its ability to handle high-dimensional data and provide uncertainty estimates makes it valuable for analyzing complex survey data and estimating policy impacts.
 
-This post is a brief demostration of work I did to assess the feasibility of circumventing atmospheric correction. A publication documenting the entire effort is currently in preparation.
+BART's building block is the regression tree, which partitions the covariate space into subgroups. As its name suggests BART's formulation then consists in summing such trees. What makes it Bayesian is its regularization priors. These limit both depth and the fit of each tree, thus encouraging an ensemble of weak learners, with the goal of avoiding - or more realistically avoidingg overfitting; *cf.* @Hill2020bart for more. 
 
+
+::: {#fig-labyrinth}
+![](./figures/labyrinth3.png)
+
+In search of a generalizable solution...
+:::
+
+
+This post is a brief demonstration of work I am currently wrapping up, and that improves on previous work [@Craig2020bayesian]. The goal of the project is to assess the feasibility of simplifying the modeling process by avoiding most of atmospheric correction. It builds on work published previously.
 
 ## Data Overview
-The predictive features consist of 6 wavelengths of TOA radiance measurements from satellite remote sensing, that are Fresnel- and Rayleigh-corrected. The former removes the specular component of sunlight reflected off a flat ocean surface, while the latter accounts for molecular scattering in the atmosphere. These are straightforward physics-based corrections that rely on viewing geometry and standard atmospheric assumptions. They do not require full atmospheric state information. Thus the data is not corrected for more complex interactions, particularly aerosol scattering and absorption. These are expected to be a greater source of uncertainty, and are usually addressed through full atmospheric correction algorithms.  Another charactieristic of these features is their high multicollinearity ([@fig-rrc].) Multicollinearity can be an important impediment to proper fitting for many algorithms as this causes unstable coefficient estimations; tree-based models, including BART, are known to be far more foregiving in this case. Care should nonetheless be taken. This aspect is beyond the scope of the present discussion, and will be addressed in another post. 
+The predictive features consist of six wavelengths of TOA (top-of-atmosphere) radiance measurements from satellite remote sensing. These have been corrected for Fresnel reflection and Rayleigh scattering. The Fresnel correction removes the specular component of sunlight reflected off a flat ocean surface, while the Rayleigh correction accounts for molecular scattering by air molecules in the atmosphere. Both are relatively straightforward, physics-based corrections that depend primarily on viewing geometry and standard atmospheric conditions, without requiring full atmospheric state data.
+
+However, the data is not corrected for more complex atmospheric interactions — most notably, aerosol scattering and absorption. These effects are typically handled by full atmospheric correction algorithms, which attempt to isolate the weak water-leaving radiance signal from the much stronger atmospheric contribution. One key aspect of this signal is that ocean color is shaped not just by what is reflected, but also by what is absorbed. For example, phytoplankton pigments like chlorophyll-a absorb strongly in the blue and red parts of the spectrum. In practice, this means we observe less radiance at those wavelengths than we otherwise would — so absorption often reveals itself as a missing or diminished signal where one would expect more. Interpreting these spectral "absences" is fundamental to retrieving information about oceanic constituents.
+
+Another characteristic of these features is their high multicollinearity ([@fig-rrc]). Multicollinearity can pose challenges for many modeling approaches by producing unstable coefficient estimates; however, tree-based models — including BART — are generally more robust in such cases. Nonetheless, care should be taken when interpreting variable importance or partial dependence. This aspect will be explored in more depth in a future post.
+
+
 
 ::: {#fig-rrc}
 ![](./figures/figure1.png)
 
-Pair plot demonstrating the multicollinear nature of the input features; Rayleigh and Fresnel-corrected top-of-the-atmosphhere radiance.
+Pair plot demonstrating the multicollinear nature of the input features; Rayleigh- and Fresnel-corrected top-of-the-atmosphhere radiance.
 :::
 
 The prediction targets are phytoplankton absorption (AΦ) at three wavelengths; 443, 555, 670nm; their distribution is seen in [@fig-aphi]. The present BART model was written to predicted all three targets simultaneously. 
-
-Overall the only preprocessing step applied to the data in addition to the aforementioned corrections was to $log_{10}$-transformed them - both input features and prediction targets - as doing so stabilized their variance, which eases model fitting. Interpretation remains easy since data thus transformed refer to magnitude. All plots in this post will be shown in $log_{10}$ scale.
 
 ::: {#fig-aphi}
 ![](./figures/figure2.png)
@@ -49,10 +63,13 @@ Overall the only preprocessing step applied to the data in addition to the afore
 Kernel density estimation of the output, phytoplankton absorption at 3 wavelengths; 443, 555, and 670 nm.
 :::
 
-[@fig-graph] shows the BART model structure, written in [PyMC](https://pymc.io) and [PyMC-BART]().  The full notebook with code can be found [here.]() 
+Overall the only preprocessing step applied to the data in addition to the aforementioned corrections was to $log_{10}$-transformed them - both input features and prediction targets - as doing so stabilized their variance, which eases model fitting. Interpretation remains easy since data thus transformed refer to magnitude. All plots in this post will be shown in $log_{10}$ scale.
 
 
 ## Modeling
+
+
+[@fig-graph] shows the BART model structure, written in [PyMC](https://pymc.io) and [PyMC-BART](https://www.pymc.io/projects/bart/en/latest/).  The full notebook with code can be found [here.](https://github.com/erdemkarakoylu/bayesian_TOA_2_IOP/blob/main/02_01_%20model_building_bart.ipynb) 
 
 :::{#fig-graph}
 ![](./figures/figure3.png)
@@ -62,11 +79,12 @@ Model graph depicting priors, likelihood, data and how these are connected per t
 
 
 ## Abbreviated Bayesian Workflow 
-Part of the Bayesian workflow is to simulate model output before fitting data. This is a verification step to make sure modeling assumptions, encoded as priors, produce reasonable target values. This is referred to as Prior Predictive Checks. After fitting the process is repeated, which shows whether the model has learned from the data, and how simulated data compares to actual observation
+Part of the Bayesian workflow is to simulate model output before fitting data. This is a verification step to make sure modeling assumptions, encoded as priors, produce reasonable target values. This is referred to as Prior Predictive Checks. After fitting the process is repeated, which shows whether the model has learned from the data, and how simulated data compares to actual observations
 
 ::: {#fig-prior-n-post-ppc}
 ![](./figures/figure4.png)
 
+Did the model learn from the data? *Left* - prior predictive checks, where model output ($log(aΦ)$) is simulated though not conditioned on the data yet. This plot shows Kernel Density Estimation (KDE) of multiple simulation draws, their mean and how the observation data. *Right* - posterior predictive checks, similar but now the simulated output is conditioned on the observations.
 :::
 
 ::: {#fig-3-way-ppc}
@@ -74,6 +92,35 @@ Part of the Bayesian workflow is to simulate model output before fitting data. T
 
 Posterior Predictive Checks - The trained Bayesian model can now be used to simulate phytoplankton absorption at all 3 wavelengths. These can in turn be compared with observatiosn. From left to right and top to bottom; phytoplankton absorption at 443, 555, 670 nm, and all bands. Black line: distribution of observations; each grey line represents the distribution of a simulation outcome; orange dashed line is the simulation mean distribution.
 :::
+
+## Interpretable Machine Learning
+Like other tree-based algorithms, BART is relatively transparent and exploring variable importance in driving inference is relatively easy. 
+
+## Model Generalization 
+
+*Approximating Out-of-Sample Predictions* - As summarized earlier in [@fig-labyrinth], making sure the model will generalized well is paramount. Thus the model should avoid overfitting the training data, while learning a good enough representation of the signal contained within. E.g. the observation KDE suggest a bimodal distribution (two peaks). The likelihood on the other hand is monomodal (single peak). This is because I used a Normal likelihood. At this stage, this is a reasonable assumption, and the bimodality observed in the data could be artifact of the scarcity of the available data. Thus, until more data becomes available to add more weight to the bi- or even multi-modality of observations, a Normal likelihood is a reasonable assumption.  
+
+That said, the gold standard of model skill assessment is the out-of-sample prediction verification; i.e., using labeled data not used to train the model and compare its predictions to the observations. Given the  small size of the data splitting it into training and validtion tiers is not a reasonable proposition. A better use of scarce data is Leave-one-out (LOO) cross-validation. This implies revolving around removing one sample.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

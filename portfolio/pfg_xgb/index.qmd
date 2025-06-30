@@ -1,8 +1,8 @@
 ---
-title: "Retrieving Phytoplankton Functional Groups from Hyperspectral Ocean Color using XGBoost"
+title: "Inferring PCC from Far Far Away"
 author: "Erdem M. Karaköylü & Susanne E. Craig "
 date: 2025-03-29
-description: Using Satellite Data to Predict and Explain PFGs with XGBoost and SHAP
+description: Using Satellite Data to Predict and Explain Phytoplankton Community Composition with XGBoost and SHAP
 categories:
   - Plankton
   - Regression

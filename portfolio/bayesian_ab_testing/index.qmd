@@ -1,0 +1,47 @@
+---
+title: "Bayesian A/B Testing: A Fully Interactive App"
+description: "How to build an AWS-friendly Streamlit dashboard complete with session-aware data updates, posterior plots, and ROPE analysis for sound decision support"
+date: 2025-07-01
+categories: 
+  - streamlit
+  - bayesian
+  - data-science
+  - experimentation
+format:
+  html:
+    code-tools: false
+    execute: false
+image: ./figures/cover.png
+---
+
+> “Bayesian methods make better use of uncertainty — so why not make them easier to explore?”
+
+This post introduces a lightweight, interactive dashboard for **Bayesian A/B testing** built with Streamlit and ArviZ. It’s designed to help you experiment faster, think probabilistically, and get clear answers — without writing formulas or wrangling with p-values.
+
+---
+
+## 🧠 Why Bayesian?
+
+A quick refresher: in contrast to the frequentist approach, Bayesian A/B testing gives us the **full distribution** of possible outcomes. It lets us:
+
+- Compute `P(B > A)` directly
+- Visualize the magnitude and uncertainty of effects
+- Incorporate prior beliefs
+- Define a **ROPE**: a practical threshold for saying “this difference doesn’t matter”
+
+---
+
+## 🛠️ App Features
+
+Here’s what the app supports:
+
+- **Data input**: sample, upload, or manual
+- **Group mapping**: assign any group labels to A and B
+- **Flexible priors**: control the beta distribution for both arms
+- **HDI control**: choose your desired confidence level
+- **ROPE region**: set a tolerance range for negligible effects
+- **Cumulative updates**: simulate sequential testing
+- **Session restart**: start fresh anytime
+
+---
+

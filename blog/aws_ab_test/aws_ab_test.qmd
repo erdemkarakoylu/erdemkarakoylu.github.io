@@ -1,0 +1,142 @@
+---
+title: "Deploying a Streamlit App on AWS EC2 (Free Tier)"
+description: "A lightweight and secure Streamlit demo setup using Amazon Linux, Miniconda, and S3 for sharing A/B testing work publicly."
+date: 2025-06-29
+categories: 
+  - streamlit
+  - AWS
+  - Cloud Deployment
+format:
+  html:
+    code-tools: false
+    execute: false
+image: ./figures/cover.png
+---
+
+This post walks through how I deployed a lightweight **Streamlit demo app on AWS EC2 Free Tier**. I made a series of intentional choices to keep things **minimal, secure, and reproducible**.
+
+---
+
+## Goal
+
+I wanted to:
+
+- Host a public demo of a Streamlit A/B testing app
+- Use the AWS Free Tier to avoid costs
+- Include default data loaded from S3
+- Avoid heavyweight stack setups like Docker or full Conda stacks
+- Ensure others could access the app from anywhere
+
+---
+
+## 1. Why EC2 and Not Streamlit Cloud?
+
+While [Streamlit Community Cloud](https://streamlit.io/cloud) is great for hobby projects, I wanted full control over the environment (especially for installing specific Python versions and libraries). EC2 gives you a real server to manage — and the Free Tier includes **750 hours/month** of `t2.micro` time.
+
+---
+
+## 2. EC2 Setup Overview
+
+I launched an EC2 instance with the following config:
+
+- **AMI**: Amazon Linux 2023 (stable, small footprint)
+- **Instance type**: `t2.micro` (Free Tier)
+- **Security group settings**:
+  - Port 22 (SSH): Open to *my IP* for secure shell access
+  - Port 8501 (Streamlit): Open to `0.0.0.0/0` so others can try the app
+
+---
+
+## 3. Why I Used Miniconda Instead of System pip
+
+The system Python on Amazon Linux is Python 3.9 — too old for some of my requirements (`arviz>=0.21.0`, `numpy>=2.3`). Rather than downgrade packages, I:
+
+- Installed **Miniconda manually** (lightweight and isolated)
+- Created a conda env with **Python 3.12**
+- Installed dependencies using `pip` inside the conda env
+
+This gave me flexibility **without modifying system Python**.
+
+---
+
+## 4. Folder Structure
+
+```bash
+.
+├── abtest-demo/
+│   ├── streamlit_app_1.py
+│   ├── requirements.txt
+│   └── ... (more files coming soon)
+└── miniconda3/
+```
+
+---
+
+## 5. Installing Dependencies
+
+I generated a clean `requirements.txt` using [`pipreqs`](https://github.com/bndr/pipreqs) to only include the packages I actually import.
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 6. Running the App Publicly
+
+```bash
+streamlit run streamlit_app_1.py \
+  --server.port 8501 \
+  --server.address 0.0.0.0 \
+  --server.enableCORS false \
+  --server.enableXsrfProtection false
+```
+
+The CORS and XSRF flags prevent browser-side security errors when the app is accessed via IP. I then visited the app at:
+
+```text
+http://<ec2-public-ip>:8501
+```
+
+---
+
+## 7. Default Data from S3
+
+I uploaded a default dataset to an S3 bucket called `ab-test-demo-data` to demonstrate the app's functionality:
+
+```python
+import pandas as pd
+df = pd.read_csv("https://ab-test-demo-data.s3.us-east-2.amazonaws.com/default_data.csv")
+```
+
+---
+
+## 8. Security & Cost Control
+
+To avoid unnecessary exposure and costs:
+
+- I keep SSH access limited to my IP
+- I shut down the EC2 instance when not in use:
+
+```bash
+sudo shutdown now
+```
+
+---
+
+## In Conclusion
+
+This setup is:
+
+- ✅ Minimal (no Docker, no system Python mods)
+- ✅ Secure (IP-locked SSH, no secrets exposed)
+- ✅ Publicly accessible (so others can interact with my work)
+- ✅ Cost-free within AWS Free Tier
+
+It also gives me flexibility to grow the project — I can add analytics, a custom domain, even TLS later if needed.
+
+---
+
+## Source Code
+
+If you'd like to see how I built the Bayesian A/B testing logic in the app itself, [check out the source code on GitHub](https://github.com/erdemkarakoylu/AB-testing-app).
