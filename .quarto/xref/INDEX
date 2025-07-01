@@ -95,5 +95,9 @@
   },
   "portfolio/bayesian_ab_testing/index.qmd": {
     "index.html": "fa2c5195"
+  },
+  "cv.qmd": {
+    "cv.tex": "1c285dfd",
+    "cv.html": "254eb008"
   }
 }

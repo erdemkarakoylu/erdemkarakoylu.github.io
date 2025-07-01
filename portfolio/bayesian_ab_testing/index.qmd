@@ -20,7 +20,7 @@ This post introduces a lightweight, interactive dashboard for **Bayesian A/B tes
 
 ---
 
-## 🧠 Why Bayesian?
+## Why Bayesian?
 
 A quick refresher: in contrast to the frequentist approach, Bayesian A/B testing gives us the **full distribution** of possible outcomes. It lets us:
 
@@ -31,7 +31,7 @@ A quick refresher: in contrast to the frequentist approach, Bayesian A/B testing
 
 ---
 
-## 🛠️ App Features
+## App Features
 
 Here’s what the app supports:
 

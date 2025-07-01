@@ -1,21 +1,27 @@
 ---
-title: "Erdem Karaköylü – Data Scientist"
-format: html
+title: ""
+author: " "
+format: 
+  pdf:
+    documentclass: article
+    geometry: margin=1in
+    fontsize: 11pt
+toc: false
 ---
 
-**Erdem Karaköylü**  
+## Erdem Karaköylü  
 University Park, MD  
 erdemk@protonmail.com | [erdemkarakoylu.github.io](https://erdemkarakoylu.github.io) | [LinkedIn](https://linkedin.com/in/erdem-karaköylü-49487455)
 
 ---
 
-### 💻 Data Scientist | Bayesian Modeling & Machine Learning Specialist
+## Data Scientist | Bayesian Modeling & Machine Learning Specialist
 
 Practical AI expert specializing in Bayesian methods, LLM pipelines (RAG), and predictive modeling across defense, climate, and environmental domains. Builds robust, uncertainty-aware systems to enhance decision-making.
 
 ---
 
-### 🛠 Core Skills
+## Core Skills
 
 **Bayesian & Statistical Modeling**  
 Hierarchical Modeling (Regression & Classification) · Bayesian Additive Regression Trees (BART) · Monte Carlo Simulation · Probabilistic Programming · A/B Testing 
@@ -29,7 +35,7 @@ Python · PyMC · Scikit-learn · XGBoost · PyTorch · Pandas  · Git · Matplo
 
 ---
 
-### 🧪 Experience & Research Highlights
+## Experience & Research Highlights
 
 **Freelance Data Scientist – Marine Remote Sensing and Ecological Forecasting**  
 *Bayesian modeling and machine learning for environmental data*
@@ -67,7 +73,7 @@ Python · PyMC · Scikit-learn · XGBoost · PyTorch · Pandas  · Git · Matplo
 
 ---
 
-### 📚 Education
+## Education
 
 **Ph.D.** – Biological Oceanography & Marine Ecology  
 *Scripps Institution of Oceanography, UC San Diego*
@@ -75,8 +81,7 @@ Python · PyMC · Scikit-learn · XGBoost · PyTorch · Pandas  · Git · Matplo
 **B.Sc.** – Oceanography  
 *Florida Institute of Technology*
 
-
-### 🌍 Languages
+## Languages
 
 - **English** – Native/Trilingual
 - **French**  - Native/Trilingual

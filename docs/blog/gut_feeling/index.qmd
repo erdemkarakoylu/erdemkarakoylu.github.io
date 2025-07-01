@@ -1,0 +1,33 @@
+---
+title: "Gut Feeling: Reframing Copepod Behavior with Bayesian Inference"
+description: "A Bayesian lens on my earlier thesis work modeling zooplankton behavior from gut fluorescence data."
+date: 2025-07-01
+categories:
+  - bayesian
+  - marine-ecology
+  - behavioral-modeling
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-tools: false
+    number-sections: false
+---
+
+## Introduction
+...
+
+## What the Original Model Did
+...
+
+## What Was Missing
+...
+
+## A Bayesian Approach
+...
+
+## Visualizing Uncertainty
+...
+
+## Conclusion
+...

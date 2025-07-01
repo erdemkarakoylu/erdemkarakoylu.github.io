@@ -1,0 +1,31 @@
+---
+title: "What Marine Consumers Can Teach Us About Human Consumers"
+description: "How zooplankton behavior maps onto customer modeling and digital experimentation."
+date: 2025-07-xx
+categories:
+  - behavior
+  - bayesian
+  - ab-testing
+  - metaphor
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-tools: false
+    number-sections: false
+---
+
+## Introduction
+...
+
+## Internal State Transitions
+...
+
+## Behavior Under Uncertainty
+...
+
+## What We Can Learn
+...
+
+## Conclusion
+...

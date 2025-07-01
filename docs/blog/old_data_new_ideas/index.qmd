@@ -1,0 +1,31 @@
+---
+title: "Reanalyzing Old Data with a Bayesian Workflow"
+description: "How I’d revisit my copepod fluorescence data today using modern Bayesian tools."
+date: 2025-07-xx
+categories:
+  - bayesian
+  - time-series
+  - pymc
+  - workflow
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-tools: false
+    number-sections: false
+---
+
+## Introduction
+...
+
+## Bayesian Time Series Setup
+...
+
+## Fitting with PyMC
+...
+
+## Posterior Interpretation
+...
+
+## Conclusion
+...

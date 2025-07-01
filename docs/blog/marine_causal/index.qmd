@@ -1,0 +1,31 @@
+---
+title: "What If We Could Intervene? Causal Inference Meets Marine Ecology"
+description: "A speculative look at applying modern causal inference tools to field ecology."
+date: 2025-07-xx
+categories:
+  - causal-inference
+  - ecology
+  - bayesian
+  - do-operator
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-tools: false
+    number-sections: false
+---
+
+## Introduction
+...
+
+## Enter the 'do' Operator
+...
+
+## What This Could Teach
+...
+
+## How PyMC Could Help
+...
+
+## Conclusion
+...
