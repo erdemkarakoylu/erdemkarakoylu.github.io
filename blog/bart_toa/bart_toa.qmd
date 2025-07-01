@@ -14,10 +14,10 @@ bibliography: litterature.bib
 ---
 
 ## Preamble
-Tired of wrestling with atmospheric models when all you want is ocean data? To oceanographers using satellite observations, the atmosphere is an obstacle to the development of good predictive models of marine processes. Bayesian Additive Regression Trees - BART - offers a robust solution, blending the flexibility of tree-based machine learning with Bayesian uncertainty to directly predict phytoplankton absorption from top-of-the-atmosphere (TOA) radiance.
+Tired of wrestling with atmospheric models when all you want is ocean data? To oceanographers using satellite observations, the atmosphere is an obstacle to the development of good predictive models of marine processes. Bayesian Additive Regression Trees - BART - offers a robust solution, blending the flexibility of tree-based machine learning with Bayesian uncertainty quantification to directly predict phytoplankton absorption from top-of-the-atmosphere (TOA) radiance.
 
 ## Atmospheric Correction in Brief
-Atmospheric correction is the process of removing the atmospheric contribution from satellite measurements of TOA radiance to isolate the weak oceanic signal. Sunlight reaching the sensor includes both direct atmospheric paths (scattered by air molecules and aerosols) and reflected sunlight from the ocean surface. Only a small fraction of this signal — the water-leaving radiance — actually carries information about oceanic properties like chlorophyll and suspended particles. While simpler components like Rayleigh scattering and surface reflection (Fresnel effects) can be corrected relatively easily, the remaining atmospheric signal, especially from aerosols, is far more complex. Being able to bypass or reduce the need for full atmospheric correction is a significant advancement, as it simplifies the retrieval pipeline and avoids introducing uncertainty from external assumptions and models.
+Atmospheric correction is the process of removing the atmospheric contribution from satellite measurements of TOA radiance to isolate the weak oceanic signal. Sunlight reaching the sensor includes both direct atmospheric paths (scattered by air molecules and aerosols) and reflected sunlight from the ocean surface. Only a small fraction of this signal — the water-leaving radiance — actually carries information about oceanic properties like chlorophyll and suspended particles. While simpler components like Rayleigh scattering and surface reflection (Fresnel effects) can be corrected relatively easily, the remaining atmospheric signal, especially from aerosols, is far more complex. Being able to bypass or reduce the need for full atmospheric correction is a significant advancement - if predictive performance can be preserved. Doing so simplifies the retrieval pipeline and avoids introducing uncertainty from external assumptions and models.
 
 ## About BART
 
@@ -28,7 +28,11 @@ BART has been around for about 2 decades; it has gained significant traction for
 3. Environmental Science: BART has found use in predicting air pollution concentrations, as well as in various ecological modeling tasks [@Zhang2020].
 4. Social Sciences and Economics: Its ability to handle high-dimensional data and provide uncertainty estimates makes it valuable for analyzing complex survey data and estimating policy impacts.
 
-BART's building block is the regression tree, which partitions the covariate space into subgroups. As its name suggests BART's formulation then consists in summing such trees. What makes it Bayesian is its regularization priors. These limit both depth and the fit of each tree, thus encouraging an ensemble of weak learners, with the goal of avoiding - or more realistically avoidingg overfitting; *cf.* @Hill2020bart for more. 
+
+BART's building block is the regression tree, which partitions the covariate space into subgroups. As its name suggests BART's formulation then consists in summing such trees. What makes it Bayesian is its regularization priors. These limit both depth and the fit - he magnitude of predictions at the leaves - of each tree. This yields an ensemble of weak learners, with the goal of avoiding - or more realistically avoiding overfitting; *cf.* @Hill2020bart for more. 
+
+The choice of BART in this study is also motivated by the multicollinearity present in the input features. Regression models - be they linear or neural networks - struggle with highly correlated predictors, often producing unstable or uninterpretable parameter estimates. In contrast, tree-based methods like BART inherently handle multicollinearity by making hierarchical splits, rather than estimating global coefficients. This makes BART especially well-suited to remote sensing data, where reflectance values at adjacent wavelengths are often highly correlated due to physical constraints on the optical signal. Importantly, this robustness also eliminates the need for dimensionality reduction techniques like PCA, which are commonly used to mitigate multicollinearity but can obscure the physical meaning of spectral features. By working directly with the original TOA bands, BART preserves interpretability while still learning a stable mapping from radiance to absorption.
+
 
 
 ::: {#fig-labyrinth}
@@ -68,7 +72,6 @@ Overall the only preprocessing step applied to the data in addition to the afore
 
 ## Modeling
 
-
 [@fig-graph] shows the model structure, written in [PyMC](https://pymc.io) and [PyMC-BART](https://www.pymc.io/projects/bart/en/latest/). There are a few things to note here. (1) BART is only a component of the model, taking in the 6 features $Rrc(λ\_toa)$ and producing the mean μ of each of the three phytoplanktong absorption bands ($λ\_aφ$). The full notebook with code - still very much a living document - can be found [here.](https://github.com/erdemkarakoylu/bayesian_TOA_2_IOP/blob/main/02_01_%20model_building_bart.ipynb) 
 
 :::{#fig-graph}
@@ -77,6 +80,9 @@ Overall the only preprocessing step applied to the data in addition to the afore
 Model graph depicting priors, likelihood, data and how these are connected per model formulation. Note that BART is only a component of the full Bayesian model; namely the mean, μ.
 :::
 
+**BART Priors** – The BART prior encodes a belief that the underlying function can be approximated by a sum of shallow regression trees. Here, I use a tree structure prior with parameters $(α = 0.95)$ and $(β = 2.0)$; these define the probability of a node splitting at depth $( d )$ as $( α (1 + d)^{-β})$ . This formulation favors smaller trees, encouraging regularization by limiting model complexity. Each terminal node (leaf) has a prior over its predicted value, typically drawn from a normal distribution with variance scaled by the number of trees; here I've set this number to $m = 10$. Each tree contributes only weakly to the overall prediction, which helps avoid overfitting and encourages generalization. The prior over each terminal node value is typically a zero-centered normal distribution, with variance scaled by the number of trees (e.g., $( \mathcal{N}(0, τ^2/m))$), further regularizing the contribution of individual trees in the ensemble. The overall BART model thus represents the mean function as a sum of these weak learners, with uncertainty in predictions captured through Bayesian posterior sampling. I also placed a prior on the observation noise to reflect uncertainty in the data-generating process.
+
+
 
 ## Abbreviated Bayesian Workflow 
 Part of the Bayesian workflow is to simulate model output before fitting data. This is a verification step to make sure modeling assumptions, encoded as priors, produce reasonable target values. This is referred to as Prior Predictive Checks. After fitting the process is repeated, which shows whether the model has learned from the data, and how simulated data compares to actual observations
@@ -84,7 +90,7 @@ Part of the Bayesian workflow is to simulate model output before fitting data. T
 ::: {#fig-prior-n-post-ppc}
 ![](./figures/figure4.png)
 
-Did the model learn from the data? *Left* - prior predictive checks, where model output ($log(aΦ)$) is simulated though not conditioned on the data yet. This plot shows Kernel Density Estimation (KDE) of multiple simulation draws, their mean and how the observation data. *Right* - posterior predictive checks, similar but now the simulated output is conditioned on the observations.
+Did the model learn from the data? *Left* - p Prior predictive checks: draws from the model’s prior predictive distribution, where outputs (log-transformed $aΦ$) are simulated without conditioning on observed data. This verifies whether the prior assumptions can plausibly generate target-like values. This plot shows Kernel Density Estimation (KDE) of multiple simulation draws, their mean and how the observation data. *Right* - posterior predictive checks, similar but now the simulated output is conditioned on the observations.
 :::
 
 ::: {#fig-3-way-ppc}
@@ -93,17 +99,16 @@ Did the model learn from the data? *Left* - prior predictive checks, where model
 Posterior Predictive Checks - The trained Bayesian model can now be used to simulate phytoplankton absorption at all 3 wavelengths. These can in turn be compared with observatiosn. From left to right and top to bottom; phytoplankton absorption at 443, 555, 670 nm, and all bands. Black line: distribution of observations; each grey line represents the distribution of a simulation outcome; orange dashed line is the simulation mean distribution.
 :::
 
-## Conclusion and Steps not Included Here. 
+## Conclusion and Next Steps
+
 ### Interpretable Machine Learning
 Like other tree-based algorithms, BART is relatively transparent and exploring variable importance in driving inference is relatively easy. In the full project (soon to be found in the portfolio) I will be assessing what makes the BART component of the model tick. To do so I will use Partial Dependency Plots to determine the average impact of each feature on each output, Individual Conditional Expectation to determine each each observations's feature on corresponding outputs, and Variable Importance Estimation (note that given feature multicollinearity, I don't expect one feature to be significantly more important the another.) 
 
 ### Model Generalization 
 
-*Approximating Out-of-Sample Predictions* - As summarized earlier in [@fig-labyrinth], making sure the model will generalized well is paramount. Thus the model should avoid overfitting the training data, while learning a good enough representation of the signal contained within. E.g. the observation KDE suggest a bimodal distribution (two peaks). The likelihood on the other hand is monomodal (single peak). This is because I used a Normal likelihood. At this stage, this is a reasonable assumption, and the bimodality observed in the data could be artifact of the scarcity of the available data. Thus, until more data becomes available to add more weight to the bi- or even multi-modality of observations, a Normal likelihood is a reasonable assumption.  
+*Approximating Out-of-Sample Predictions* — Ensuring the model generalizes well is critical. To avoid overfitting the training data while capturing meaningful signal, I chose a Normal likelihood, which imposes a unimodal structure on the predictive distribution. The apparent bimodality in the observed data may reflect sampling variability rather than true structure, given the limited sample size.
 
-That said, the gold standard of model skill assessment is the out-of-sample prediction verification; i.e., using labeled data not used to train the model and compare its predictions to the observations. Given the  small size of the data splitting it into training and validtion tiers is not a reasonable proposition. A better use of scarce data is Leave-one-out (LOO) cross-validation. This implies revolving around removing one sample.
-
-
+While I don't report traditional metrics like RMSE—which reduce uncertainty to point estimates and are of limited relevance in a Bayesian framework—I will assess model calibration in the full project using the Leave-One-Out Probability Integral Transform (LOO-PIT). This method provides a principled way to check whether the predictive distributions are well-calibrated without relying on frequentist error metrics. This is also a recommended appraoch when dealing with small datasets, as in this case, where splitting into training/testing tiers is not a reasonable proposition.
 
 
 ## References {.unnumbered}

@@ -99,5 +99,17 @@
   "cv.qmd": {
     "cv.tex": "1c285dfd",
     "cv.html": "254eb008"
+  },
+  "blog/gut_feeling/index.qmd": {
+    "index.html": "68cd70dd"
+  },
+  "blog/consumers/index.qmd": {
+    "index.html": "d78c40db"
+  },
+  "blog/old_data_new_ideas/index.qmd": {
+    "index.html": "61c0ccb3"
+  },
+  "blog/marine_causal/index.qmd": {
+    "index.html": "8f711a96"
   }
 }
