@@ -5,14 +5,17 @@
       "/blog/bayesian_ode/npz1986_blog.html",
       "/blog/bayesian_power/bayesian_power.html",
       "/blog/causailty_in_observation_data/index.html",
+      "/blog/aws_ab_test/aws_ab_test.html",
       "/blog/stats_ab_testing/index.html",
       "/blog/pfg_xgb_xai/index.html",
+      "/blog/bart_toa/bart_toa.html",
       "/blog/zerosumnormal/on_zero_sum_normal.html"
     ]
   },
   {
     "listing": "/portfolio.html",
     "items": [
+      "/portfolio/bayesian_ab_testing/index.html",
       "/portfolio/pfg_xgb/index.html"
     ]
   }
