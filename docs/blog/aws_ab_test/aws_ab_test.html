@@ -165,6 +165,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#running-the-app-publicly" id="toc-running-the-app-publicly" class="nav-link" data-scroll-target="#running-the-app-publicly">6. Running the App Publicly</a></li>
   <li><a href="#default-data-from-s3" id="toc-default-data-from-s3" class="nav-link" data-scroll-target="#default-data-from-s3">7. Default Data from S3</a></li>
   <li><a href="#security-cost-control" id="toc-security-cost-control" class="nav-link" data-scroll-target="#security-cost-control">8. Security &amp; Cost Control</a></li>
+  <li><a href="#app-look-and-feel" id="toc-app-look-and-feel" class="nav-link" data-scroll-target="#app-look-and-feel">9. App Look and Feel</a></li>
   <li><a href="#in-conclusion" id="toc-in-conclusion" class="nav-link" data-scroll-target="#in-conclusion">In Conclusion</a></li>
   <li><a href="#source-code" id="toc-source-code" class="nav-link" data-scroll-target="#source-code">Source Code</a></li>
   </ul>
@@ -295,6 +296,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> shutdown now</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <hr>
+</section>
+<section id="app-look-and-feel" class="level2">
+<h2 class="anchored" data-anchor-id="app-look-and-feel">9. App Look and Feel</h2>
+<p>I am currently blogging about the app tself elsewhere - so if it’s not up already it will soon be. In the meantime, the figure below shows two screenshots that capture the entire app spread.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="1">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 100.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center" style="border: 1px solid #ccc; padding: 4px;">
+<figure class="figure">
+<p><img src="./figures/figure1.png" class="img-fluid figure-img"></p>
+<figcaption>Top half</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 100.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center" style="border: 1px solid #ccc; padding: 4px;">
+<figure class="figure">
+<p><img src="./figures/figure2.png" class="img-fluid figure-img"></p>
+<figcaption>Bottom half</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="caption">
+<p>Full view of the Bayesian A/B testing app interface, shown in two stacked panels due to scrolling limitations during screenshot capture. <strong>Top</strong> - side bar on the left shows experiment settings, data import options with formatting hints; main window shows data inspection option, analysis options to either reset experiment, or update existing posterior when new data becomes available; it also shows posterior distribution of p(A) and p(B). <strong>Bottom</strong> - side par shows options to set priors, set the significance level of the credibility interval (or HDI for Highest Density Interval), and whether to apply Region of Practical Equivalence (ROPE), and if so, where (p(B-A) or p(relative uplift)).</p>
+</div>
 </section>
 <section id="in-conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="in-conclusion">In Conclusion</h2>

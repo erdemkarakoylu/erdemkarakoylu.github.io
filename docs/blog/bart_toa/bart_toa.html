@@ -178,8 +178,11 @@ window.Quarto = {
   <li><a href="#data-overview" id="toc-data-overview" class="nav-link" data-scroll-target="#data-overview">Data Overview</a></li>
   <li><a href="#modeling" id="toc-modeling" class="nav-link" data-scroll-target="#modeling">Modeling</a></li>
   <li><a href="#abbreviated-bayesian-workflow" id="toc-abbreviated-bayesian-workflow" class="nav-link" data-scroll-target="#abbreviated-bayesian-workflow">Abbreviated Bayesian Workflow</a></li>
+  <li><a href="#conclusion-and-steps-not-included-here." id="toc-conclusion-and-steps-not-included-here." class="nav-link" data-scroll-target="#conclusion-and-steps-not-included-here.">Conclusion and Steps not Included Here.</a>
+  <ul class="collapse">
   <li><a href="#interpretable-machine-learning" id="toc-interpretable-machine-learning" class="nav-link" data-scroll-target="#interpretable-machine-learning">Interpretable Machine Learning</a></li>
   <li><a href="#model-generalization" id="toc-model-generalization" class="nav-link" data-scroll-target="#model-generalization">Model Generalization</a></li>
+  </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -289,14 +292,14 @@ Figure&nbsp;3: Kernel density estimation of the output, phytoplankton absorption
 </section>
 <section id="modeling" class="level2">
 <h2 class="anchored" data-anchor-id="modeling">Modeling</h2>
-<p><a href="#fig-graph" class="quarto-xref">Figure&nbsp;4</a> shows the BART model structure, written in <a href="https://pymc.io">PyMC</a> and <a href="https://www.pymc.io/projects/bart/en/latest/">PyMC-BART</a>. The full notebook with code can be found <a href="https://github.com/erdemkarakoylu/bayesian_TOA_2_IOP/blob/main/02_01_%20model_building_bart.ipynb">here.</a></p>
+<p><a href="#fig-graph" class="quarto-xref">Figure&nbsp;4</a> shows the model structure, written in <a href="https://pymc.io">PyMC</a> and <a href="https://www.pymc.io/projects/bart/en/latest/">PyMC-BART</a>. There are a few things to note here. (1) BART is only a component of the model, taking in the 6 features <span class="math inline">\(Rrc(λ\_toa)\)</span> and producing the mean μ of each of the three phytoplanktong absorption bands (<span class="math inline">\(λ\_aφ\)</span>). The full notebook with code - still very much a living document - can be found <a href="https://github.com/erdemkarakoylu/bayesian_TOA_2_IOP/blob/main/02_01_%20model_building_bart.ipynb">here.</a></p>
 <div id="fig-graph" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-graph-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="./figures/figure3.png" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-graph-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4: Model graph depicting priors, likelihood, data and how these are connected per the model formulation.
+Figure&nbsp;4: Model graph depicting priors, likelihood, data and how these are connected per model formulation. Note that BART is only a component of the full Bayesian model; namely the mean, μ.
 </figcaption>
 </figure>
 </div>
@@ -325,14 +328,17 @@ Figure&nbsp;6: Posterior Predictive Checks - The trained Bayesian model can now 
 </figure>
 </div>
 </section>
-<section id="interpretable-machine-learning" class="level2">
-<h2 class="anchored" data-anchor-id="interpretable-machine-learning">Interpretable Machine Learning</h2>
-<p>Like other tree-based algorithms, BART is relatively transparent and exploring variable importance in driving inference is relatively easy.</p>
+<section id="conclusion-and-steps-not-included-here." class="level2">
+<h2 class="anchored" data-anchor-id="conclusion-and-steps-not-included-here.">Conclusion and Steps not Included Here.</h2>
+<section id="interpretable-machine-learning" class="level3">
+<h3 class="anchored" data-anchor-id="interpretable-machine-learning">Interpretable Machine Learning</h3>
+<p>Like other tree-based algorithms, BART is relatively transparent and exploring variable importance in driving inference is relatively easy. In the full project (soon to be found in the portfolio) I will be assessing what makes the BART component of the model tick. To do so I will use Partial Dependency Plots to determine the average impact of each feature on each output, Individual Conditional Expectation to determine each each observations’s feature on corresponding outputs, and Variable Importance Estimation (note that given feature multicollinearity, I don’t expect one feature to be significantly more important the another.)</p>
 </section>
-<section id="model-generalization" class="level2">
-<h2 class="anchored" data-anchor-id="model-generalization">Model Generalization</h2>
+<section id="model-generalization" class="level3">
+<h3 class="anchored" data-anchor-id="model-generalization">Model Generalization</h3>
 <p><em>Approximating Out-of-Sample Predictions</em> - As summarized earlier in <a href="#fig-labyrinth" class="quarto-xref">Figure&nbsp;1</a>, making sure the model will generalized well is paramount. Thus the model should avoid overfitting the training data, while learning a good enough representation of the signal contained within. E.g. the observation KDE suggest a bimodal distribution (two peaks). The likelihood on the other hand is monomodal (single peak). This is because I used a Normal likelihood. At this stage, this is a reasonable assumption, and the bimodality observed in the data could be artifact of the scarcity of the available data. Thus, until more data becomes available to add more weight to the bi- or even multi-modality of observations, a Normal likelihood is a reasonable assumption.</p>
 <p>That said, the gold standard of model skill assessment is the out-of-sample prediction verification; i.e., using labeled data not used to train the model and compare its predictions to the observations. Given the small size of the data splitting it into training and validtion tiers is not a reasonable proposition. A better use of scarce data is Leave-one-out (LOO) cross-validation. This implies revolving around removing one sample.</p>
+</section>
 </section>
 <section id="references" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="references">References</h2>

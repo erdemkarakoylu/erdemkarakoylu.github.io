@@ -124,6 +124,22 @@ sudo shutdown now
 
 ---
 
+## 9. App Look and Feel
+
+I am currently blogging about the app tself elsewhere - so if it's not up already it will soon be. In the meantime, the figure below shows two screenshots that capture the entire app spread. 
+
+:::{layout-ncol=1}
+![Top half](./figures/figure1.png){style="border: 1px solid #ccc; padding: 4px;"}
+
+![Bottom half](./figures/figure2.png){style="border: 1px solid #ccc; padding: 4px;"}
+:::
+
+::: {.caption}
+Full view of the Bayesian A/B testing app interface, shown in two stacked panels due to scrolling limitations during screenshot capture. **Top** - side bar on the left shows experiment settings, data import options with formatting hints; main window shows data inspection option, analysis options to either reset experiment, or update existing posterior when new data becomes available; it also shows posterior distribution of p(A) and p(B). **Bottom** - side par shows options to set priors, set the significance level of the credibility interval (or HDI for Highest Density Interval), and whether to apply Region of Practical Equivalence (ROPE), and if so, where (p(B-A) or p(relative uplift)).
+:::
+
+
+
 ## In Conclusion
 
 This setup is:

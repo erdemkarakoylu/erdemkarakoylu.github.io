@@ -69,12 +69,12 @@ Overall the only preprocessing step applied to the data in addition to the afore
 ## Modeling
 
 
-[@fig-graph] shows the BART model structure, written in [PyMC](https://pymc.io) and [PyMC-BART](https://www.pymc.io/projects/bart/en/latest/).  The full notebook with code can be found [here.](https://github.com/erdemkarakoylu/bayesian_TOA_2_IOP/blob/main/02_01_%20model_building_bart.ipynb) 
+[@fig-graph] shows the model structure, written in [PyMC](https://pymc.io) and [PyMC-BART](https://www.pymc.io/projects/bart/en/latest/). There are a few things to note here. (1) BART is only a component of the model, taking in the 6 features $Rrc(λ\_toa)$ and producing the mean μ of each of the three phytoplanktong absorption bands ($λ\_aφ$). The full notebook with code - still very much a living document - can be found [here.](https://github.com/erdemkarakoylu/bayesian_TOA_2_IOP/blob/main/02_01_%20model_building_bart.ipynb) 
 
 :::{#fig-graph}
 ![](./figures/figure3.png)
 
-Model graph depicting priors, likelihood, data and how these are connected per the model formulation. 
+Model graph depicting priors, likelihood, data and how these are connected per model formulation. Note that BART is only a component of the full Bayesian model; namely the mean, μ.
 :::
 
 
@@ -93,33 +93,15 @@ Did the model learn from the data? *Left* - prior predictive checks, where model
 Posterior Predictive Checks - The trained Bayesian model can now be used to simulate phytoplankton absorption at all 3 wavelengths. These can in turn be compared with observatiosn. From left to right and top to bottom; phytoplankton absorption at 443, 555, 670 nm, and all bands. Black line: distribution of observations; each grey line represents the distribution of a simulation outcome; orange dashed line is the simulation mean distribution.
 :::
 
-## Interpretable Machine Learning
-Like other tree-based algorithms, BART is relatively transparent and exploring variable importance in driving inference is relatively easy. 
+## Conclusion and Steps not Included Here. 
+### Interpretable Machine Learning
+Like other tree-based algorithms, BART is relatively transparent and exploring variable importance in driving inference is relatively easy. In the full project (soon to be found in the portfolio) I will be assessing what makes the BART component of the model tick. To do so I will use Partial Dependency Plots to determine the average impact of each feature on each output, Individual Conditional Expectation to determine each each observations's feature on corresponding outputs, and Variable Importance Estimation (note that given feature multicollinearity, I don't expect one feature to be significantly more important the another.) 
 
-## Model Generalization 
+### Model Generalization 
 
 *Approximating Out-of-Sample Predictions* - As summarized earlier in [@fig-labyrinth], making sure the model will generalized well is paramount. Thus the model should avoid overfitting the training data, while learning a good enough representation of the signal contained within. E.g. the observation KDE suggest a bimodal distribution (two peaks). The likelihood on the other hand is monomodal (single peak). This is because I used a Normal likelihood. At this stage, this is a reasonable assumption, and the bimodality observed in the data could be artifact of the scarcity of the available data. Thus, until more data becomes available to add more weight to the bi- or even multi-modality of observations, a Normal likelihood is a reasonable assumption.  
 
 That said, the gold standard of model skill assessment is the out-of-sample prediction verification; i.e., using labeled data not used to train the model and compare its predictions to the observations. Given the  small size of the data splitting it into training and validtion tiers is not a reasonable proposition. A better use of scarce data is Leave-one-out (LOO) cross-validation. This implies revolving around removing one sample.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
