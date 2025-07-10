@@ -16,7 +16,7 @@ image: ./figures/cover.png
 
 > “Bayesian methods make better use of uncertainty — so why not make them easier to explore?”
 
-This post introduces a lightweight, interactive dashboard for **Bayesian A/B testing** built with Streamlit and ArviZ. It’s designed to help you experiment faster, think probabilistically, and get clear answers — without writing formulas or wrangling with p-values.
+This post introduces a lightweight, interactive dashboard for **Bayesian A/B testing** built with Streamlit and ArviZ. It’s designed for quick experimentation, probabilistic thinking, and get clear answers — without writing formulas or wrangling with p-values.
 
 ---
 
@@ -33,15 +33,107 @@ A quick refresher: in contrast to the frequentist approach, Bayesian A/B testing
 
 ## App Features
 
-Here’s what the app supports:
+The dashboard supports:
 
-- **Data input**: sample, upload, or manual
-- **Group mapping**: assign any group labels to A and B
-- **Flexible priors**: control the beta distribution for both arms
-- **HDI control**: choose your desired confidence level
-- **ROPE region**: set a tolerance range for negligible effects
-- **Cumulative updates**: simulate sequential testing
-- **Session restart**: start fresh anytime
+* **Data input**: sample dataset, manual entry, or CSV upload
+* **Flexible group mapping**: label groups as A and B
+* **Priors**: set alpha and beta values for the Beta distribution
+* **HDI control**: adjust the credible interval width
+* **ROPE**: define a Region of Practical Equivalence
+* **Cumulative updates**: add new data incrementally
+* **Session restart**: flush all state and start fresh
 
 ---
 
+## Interface Walkthrough
+
+### 1. Experiment Setup (Sidebar)
+
+Configure the experiment using widgets:
+
+* Choose input mode (sample / upload / manual)
+* Map the dataset’s groups to A and B
+* Set prior values and ROPE settings
+
+```python
+alpha_prior = st.slider("Alpha prior", 0.5, 10.0, 1.0)
+beta_prior = st.slider("Beta prior", 0.5, 10.0, 1.0)
+
+with st.expander("📏 Advanced: ROPE Settings"):
+    use_rope = st.checkbox("Use ROPE?")
+    if use_rope:
+        rope_min = st.number_input("ROPE min", value=-0.01)
+        rope_max = st.number_input("ROPE max", value=0.01)
+        rope_target = st.selectbox("Apply ROPE to:", ["p(B − A)", "Relative Uplift (%)"])
+```
+
+📸 _Screenshot Placeholder: Sidebar controls_
+
+
+
+---
+
+### 2. Posterior Control (Main Area)
+
+At the top of the main panel:
+
+- **Update Posterior**: adds new data and re-runs the analysis  
+- **Restart Session**: clears all cumulative data and resets inputs  
+
+```python
+col1, col2 = st.columns([1, 2])
+with col1:
+    reset = st.button("🔄 Restart Session")
+with col2:
+    update = st.button("➕ Update Posterior")
+
+if reset:
+    st.session_state.clear()
+    st.rerun()
+```
+📸 _Screenshot Placeholder: Posterior and reset buttons_
+
+---
+
+### 3. Results and Visuals
+
+Tabs display the analysis results.
+
+#### Posterior Distributions
+
+- Posterior of `p(A)` and `p(B)`  
+- Distribution of `Δ = p(B) − p(A)`  
+- Optional ROPE shading  
+- Relative uplift (%) if applicable  
+
+```python
+samples['Δ'] = samples['B'] - samples['A']
+samples['rel_uplift'] = ((samples['B'] / samples['A']) - 1) * 100
+idata = az.from_dict(posterior=samples)
+az.plot_posterior(idata, var_names=["Δ"], rope=rope, ref_val=0)
+
+```
+📸 _Screenshot Placeholder: Posterior plot grid_
+
+#### Summary Table
+
+Using `arviz.summary` to show mean, HDI, ESS, and more.
+
+📸 _Screenshot Placeholder: ArviZ summary table_
+
+#### Decision Metrics
+
+Displays:
+
+- `P(B > A)` (i.e. probability of uplift)  
+- `P(delta ∈ ROPE)` if enabled  
+
+📸 _Screenshot Placeholder: Decision metrics section_
+
+## Deployment
+
+This app is deployed to a public-facing server using AWS EC2 (Free Tier) and serves live via a simple streamlit run launch script. It’s built for reproducibility, modular code structure, and fast loading.
+
+For a full walkthrough of the deployment process, including setup with Amazon Linux, Miniconda, and S3 backups, see the dedicated post:
+
+👉 [Deploying a Streamlit App on AWS EC2 (Free Tier)](https://erdemkarakoylu.github.io/blog/aws_ab_test/aws_ab_test.html)

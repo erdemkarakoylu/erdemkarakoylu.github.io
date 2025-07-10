@@ -111,5 +111,11 @@
   },
   "blog/marine_causal/index.qmd": {
     "index.html": "8f711a96"
+  },
+  "blog/bayesian_calibration/index.qmd": {
+    "index.html": "4231154e"
+  },
+  "blog/psis_loo/index.qmd": {
+    "index.html": "5cf99c92"
   }
 }

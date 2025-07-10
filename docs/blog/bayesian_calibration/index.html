@@ -7,10 +7,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Erdem Karaköylü">
-<meta name="dcterms.date" content="2025-03-11">
-<meta name="description" content="A principled approach to avoinding overparameterization and non-identifiability in categorical regression">
+<meta name="dcterms.date" content="2025-05-16">
+<meta name="description" content="A brief description and demonstration of LOO-PIT">
 
-<title>The ZeroSumNormal Distribution – Erdem Karaköylü</title>
+<title>LOO-PIT: A Visual Tool for Bayesian Model Calibration – Erdem Karaköylü</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,40 +22,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -181,27 +147,49 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#understanding-leave-one-out-probability-integral-transform-loo-pit" id="toc-understanding-leave-one-out-probability-integral-transform-loo-pit" class="nav-link" data-scroll-target="#understanding-leave-one-out-probability-integral-transform-loo-pit">Understanding Leave-One-Out Probability Integral Transform (LOO-PIT)</a>
+  <ul class="collapse">
+  <li><a href="#pit-a-surprising-result-from-probability-theory" id="toc-pit-a-surprising-result-from-probability-theory" class="nav-link" data-scroll-target="#pit-a-surprising-result-from-probability-theory">PIT: A Surprising Result from Probability Theory</a></li>
+  <li><a href="#extending-pit-to-bayesian-models-with-limited-data" id="toc-extending-pit-to-bayesian-models-with-limited-data" class="nav-link" data-scroll-target="#extending-pit-to-bayesian-models-with-limited-data">Extending PIT to Bayesian Models with Limited Data</a></li>
+  <li><a href="#how-loo-pit-works" id="toc-how-loo-pit-works" class="nav-link" data-scroll-target="#how-loo-pit-works">How LOO-PIT Works</a></li>
+  <li><a href="#visualizing-simulated-loo-pit-scenarios" id="toc-visualizing-simulated-loo-pit-scenarios" class="nav-link" data-scroll-target="#visualizing-simulated-loo-pit-scenarios">Visualizing Simulated LOO-PIT Scenarios</a></li>
+  </ul></li>
+  <li><a href="#real-world-use-case-phytoplankton-absorption-from-toa-radiance" id="toc-real-world-use-case-phytoplankton-absorption-from-toa-radiance" class="nav-link" data-scroll-target="#real-world-use-case-phytoplankton-absorption-from-toa-radiance">Real-World Use Case: Phytoplankton Absorption from TOA Radiance</a></li>
+  <li><a href="#posterior-predictive-checks-ppcs" id="toc-posterior-predictive-checks-ppcs" class="nav-link" data-scroll-target="#posterior-predictive-checks-ppcs">Posterior Predictive Checks (PPCs)</a></li>
+  <li><a href="#loo-pit-diagnostics-per-target" id="toc-loo-pit-diagnostics-per-target" class="nav-link" data-scroll-target="#loo-pit-diagnostics-per-target">LOO-PIT Diagnostics per Target</a>
+  <ul class="collapse">
+  <li><a href="#aφ443" id="toc-aφ443" class="nav-link" data-scroll-target="#aφ443">AΦ(443)</a></li>
+  <li><a href="#aφ555" id="toc-aφ555" class="nav-link" data-scroll-target="#aφ555">AΦ(555)</a></li>
+  <li><a href="#aφ670" id="toc-aφ670" class="nav-link" data-scroll-target="#aφ670">AΦ(670)</a></li>
+  </ul></li>
+  <li><a href="#model-takeaways-and-recommendations" id="toc-model-takeaways-and-recommendations" class="nav-link" data-scroll-target="#model-takeaways-and-recommendations">Model Takeaways and Recommendations</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">The ZeroSumNormal Distribution</h1>
+<h1 class="title">LOO-PIT: A Visual Tool for Bayesian Model Calibration</h1>
   <div class="quarto-categories">
-    <div class="quarto-category">Bayesian A/B/n testing</div>
-    <div class="quarto-category">Pivoting</div>
-    <div class="quarto-category">Categorical regression</div>
-    <div class="quarto-category">ZeroSumNormal</div>
-    <div class="quarto-category">PyMC</div>
+    <div class="quarto-category">LOO-PIT</div>
+    <div class="quarto-category">Model Calibration</div>
+    <div class="quarto-category">Bayesian Modeling</div>
+    <div class="quarto-category">Arviz</div>
   </div>
   </div>
 
 <div>
   <div class="description">
-    A principled approach to avoinding overparameterization and non-identifiability in categorical regression
+    A brief description and demonstration of LOO-PIT
   </div>
 </div>
 
@@ -218,7 +206,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 11, 2025</p>
+      <p class="date">May 16, 2025</p>
     </div>
   </div>
   
@@ -230,85 +218,165 @@ window.Quarto = {
 </header>
 
 
-<section id="overview" class="level4">
-<h4 class="anchored" data-anchor-id="overview">Overview</h4>
-<p><em>Categorical Regression</em> is a powerful tool when dealing with outcomes that fall seveeral distinct categories. This can be seen as an extension of the <em>Logistic Regression</em> where the goal is the prediction of one of two possible outcomes. An example of categorical regression is voter preference prediction in multi-party elections. This is closely related to Frequentist Multivariate testing in marketing, A/B/n testing. Regardless of the school of thought one subscribes to or the field one operates in categorical regression models can suffer from non-identifiability issues due to overparameterization.</p>
-</section>
-<section id="non-identifiability-and-overparameterization" class="level4">
-<h4 class="anchored" data-anchor-id="non-identifiability-and-overparameterization"><em>Non-identifiability</em> and <em>Overparameterization</em></h4>
-<p>In categorical regression, each category is typically assigned its own set of parameter; e.g., intercepts or coefficients for each level of a predictor. Without proper constraints, these parameters can play off of each other, their values can shift collectively in a way that leaves the model’s predictions unchanged. This is analogous to making relative measurements without defined axes; you can measure the distance between different points but without a fixed reference, the absolute positions are arbitrary. In other words, the model ends up making relative measurements wihtout an establised baseline, leading to redundancy and ambiguity in parameter estimates. There are two common strategies to address the problem; <em>Pivoting</em> and the <em>ZerosumNormal</em> distibution.</p>
-<p><strong>Pivoting</strong> involves using one of the categories as a reference as a reference or baseline so that the effects of the remaining categories are measured relative to this reference. Pivoting is useful in scenarios where there is a natural or meaningful control group - for example, in A/B/n testing where one version, usually A, is the baseline, oft referred to as the control group.</p>
-<p><strong>ZeroSumNormal Distibution</strong> is an approach that imposes a zero-sum constraint on the parameters, effectively anchoring them by ensuring that their sum equal zero. This constraint allows for relative comparisions without arbitrarily selecting one category as the baseline; particularly beneficial in settings where all categories are of equal interest.</p>
-<p>This post focuses on the ZeroSumNormal approach. In a future post, I will disucss pivoting and its applications.</p>
-</section>
-<section id="the-zerosumnormal-dsitribbution-how-it-works" class="level4">
-<h4 class="anchored" data-anchor-id="the-zerosumnormal-dsitribbution-how-it-works">The <em>ZeroSumnormal Dsitribbution</em>: How it Works</h4>
-<p>IF you’re a Bayesian modeller like me you’re in luck - and if not it’s never too late to convert. The <em>ZeroSumNormal</em> distribution is a Bayesian prior designed to mitigate overparameterization and non-identifiability by enforcing a zero-sum constraint on the parameters. This means that the sum of the effects across all categories is forced to equal zero, anchoring the estimates in a way that ensures they are uniquely identifiable.</p>
-<p>Consider a model that predicts product choice baed on demographic predictors such as age, eduation, nationality, etc. Without constraints the model might assign an arbitrary set of intercepts or coefficients to each category, making the parameter estimates mabiguous. The ZeroSumNormal prior anchors these enstimates, ensuring that while the differences between categories remain informative, their absolute values are constrained to a common scale.</p>
-<p>Below is a code snippet that illustrates the use of the ZeroSumNormal prior by doing the following: * It defines a simple model where <span class="math inline">\(zs\)</span> is a parameter drawn from a <span class="math inline">\(ZeroSumNormal\)</span> distribution over 5 categories. * It sets up the coordinates for the category dimension * It draws prior predictive samples (a process used to assess modeling assumptions before fitting data) * Finally, it computes the sum of the samples across the <span class="math inline">\(category\)</span> axis.</p>
-<div id="da35ef27" class="cell" data-execution_count="2">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pymc <span class="im">as</span> pm</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> pp</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the dimensions and a simple model to sample from ZeroSumNormal</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pm.Model() <span class="im">as</span> model:</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># For demonstration, assume we have 5 categories.</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># The ZeroSumNormal is defined over the 'category' dimension.</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    categories <span class="op">=</span> [<span class="st">'A'</span>, <span class="st">'B'</span>, <span class="st">'C'</span>, <span class="st">'D'</span>, <span class="st">'E'</span>]</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Set up coordinates so PyMC knows about the dimension.</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    model.add_coord(<span class="st">"category"</span>, categories)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    zs <span class="op">=</span> pm.ZeroSumNormal(<span class="st">"zs"</span>, sigma<span class="op">=</span><span class="dv">1</span>, dims<span class="op">=</span><span class="st">"category"</span>)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    trace <span class="op">=</span> pm.sample_prior_predictive(<span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stderr">
-<pre><code>Sampling: [zs]</code></pre>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Model calibration is a critical requirement for any model that produces probabilistic outputs. For Bayesian models, which yield full distributions rather than point estimates, calibration is especially important. The reliability of these predictive distributions determines how well these models will generalize to unseen data.</p>
+<p>In this post, I focus on the <strong>Leave-One-Out Probability Integral Transform (LOO-PIT)</strong> as a tool to assess calibration in Bayesian models. I illustrate both its theoretical foundation and practical use through simulated examples and a real-world case study in Oceanographic Remote Sensing.</p>
+<hr>
+<div class="callout callout-style-default callout-important callout-titled" title="Calibration vs. Generalization">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Calibration vs.&nbsp;Generalization
 </div>
 </div>
-<p>Now I can gather the results of the prior predictive sampling, sum the samples across the categories and plot their distribution. The resulting histogram shows that the sum are centered very close to zero; the zero-sum constraint.</p>
-<div id="a3ca6f76" class="cell" data-execution_count="3">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract samples and verify that they sum to nearly zero across categories.</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>samples <span class="op">=</span> trace.prior[<span class="st">"zs"</span>].values  <span class="co"># shape: (n_samples, n_categories)</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>sums <span class="op">=</span> samples.<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the distribution of the sums</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>f, ax <span class="op">=</span> pp.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>))</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>ax.hist(sums, bins<span class="op">=</span><span class="dv">100</span>, edgecolor<span class="op">=</span><span class="st">"k"</span>, alpha<span class="op">=</span><span class="fl">0.7</span>)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>ax.axvline(</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    sums.<span class="bu">sum</span>(), color<span class="op">=</span><span class="st">'red'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, label<span class="op">=</span><span class="vs">r'$Σ_</span><span class="sc">{categories}</span><span class="vs">$ = '</span> <span class="op">+</span> <span class="ss">f'</span><span class="sc">{</span>sums<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:.4f}</span><span class="ss">'</span>)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>ax.<span class="bu">set</span>(xlabel<span class="op">=</span><span class="st">"Categories"</span>, ylabel<span class="op">=</span><span class="st">"Frequency"</span>, title<span class="op">=</span><span class="st">"Distribution of ZeroSumNormal Samples"</span>, ylim<span class="op">=</span>(<span class="dv">0</span>, <span class="fl">1.1</span>))</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>ax.legend(fontsize<span class="op">=</span><span class="dv">12</span>, loc<span class="op">=</span><span class="st">'best'</span>)</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> s, cat <span class="kw">in</span> <span class="bu">zip</span>(sums.ravel(), categories):</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    ax.text(s, <span class="fl">1.05</span>, cat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-display">
-<div>
+<div class="callout-body-container callout-body">
+<p>In non-Bayesian models, <strong>generalization</strong> is typically assessed using metrics like accuracy, RMSE, or log-loss on a held-out test set — all of which focus on <strong>point predictions</strong>.</p>
+<p>Bayesian models, by contrast, aim to represent the full <strong>data generation process</strong>. Each prediction is in fact a <strong>predictive distribution</strong> that quantifies uncertainty about the outcome. A Bayesian model is considered <strong>well-calibrated</strong> when these predictive distributions accurately reflect the uncertainty in new observations — that is, when they are consistent with what is epistemically known about the process based on the data and the model.</p>
+<blockquote class="blockquote">
+<p>Calibration is therefore central to generalization in Bayesian modeling — not just how well the model predicts, but how honest it is about what it doesn’t know.</p>
+</blockquote>
+</div>
+</div>
+</section>
+<section id="understanding-leave-one-out-probability-integral-transform-loo-pit" class="level2">
+<h2 class="anchored" data-anchor-id="understanding-leave-one-out-probability-integral-transform-loo-pit">Understanding Leave-One-Out Probability Integral Transform (LOO-PIT)</h2>
+<section id="pit-a-surprising-result-from-probability-theory" class="level3">
+<h3 class="anchored" data-anchor-id="pit-a-surprising-result-from-probability-theory">PIT: A Surprising Result from Probability Theory</h3>
+<p>To build some intuition about <strong>Probability Integral Transform (PIT)</strong>, consider the following:</p>
+<ol type="1">
+<li>Take a probability distribution <span class="math inline">\(G\)</span> with cumulative distribution function (CDF) <span class="math inline">\(F\)</span>.</li>
+<li>Sample a set of values, <span class="math inline">\(X \sim G\)</span>.</li>
+<li>For each sampled value <span class="math inline">\(x_i\)</span>, compute <span class="math inline">\(u_i = F(x_i)\)</span>.</li>
+</ol>
+<p>It turns out that the collection of <span class="math inline">\(u_i\)</span> values are uniformly distributed on the interval [0, 1]. This is a classic identity in probability theory. The transformation from sample space to uniform space under the CDF is the backbone of the PIT, and it holds whether <span class="math inline">\(G\)</span> is a normal distribution, a beta, or something else entirely — <u>as long as it’s continuous</u>. It also turns out this result is useful to assess model calibration in Bayesian</p>
+<hr>
+</section>
+<section id="extending-pit-to-bayesian-models-with-limited-data" class="level3">
+<h3 class="anchored" data-anchor-id="extending-pit-to-bayesian-models-with-limited-data">Extending PIT to Bayesian Models with Limited Data</h3>
+<p>In traditional machine learning, performance is often assessed using out-of-sample testing — splitting the dataset into training and testing portions. But in <strong>small data settings</strong>, this approach can be problematic: it throws away valuable training information and may introduce <strong>random partition bias</strong>.</p>
+<p>Bayesian modeling offers an alternative via <strong>Pareto-Smoothed Importance Sampling Leave-One-Out (PSIS-LOO)</strong>. This allows us to assess generalization <strong>without needing to retrain the model N times</strong>. LOO-PIT builds on PSIS-LOO to assess <strong>calibration</strong> by applying PIT to the posterior predictive distribution of left-out points.</p>
+<blockquote class="blockquote">
+<p>For a deeper dive into PSIS-LOO itself, see my companion post: <em><a href="">Understanding PSIS-LOO for Bayesian Models</a></em>.</p>
+</blockquote>
+<hr>
+</section>
+<section id="how-loo-pit-works" class="level3">
+<h3 class="anchored" data-anchor-id="how-loo-pit-works">How LOO-PIT Works</h3>
+<ol type="1">
+<li>Train the model on ( N-1 ) observations, leaving one out.</li>
+<li>Predict the <strong>posterior predictive distribution</strong> of the left-out observation — not a point estimate, but a full distribution.</li>
+<li>Compute the <strong>CDF of the predictive distribution</strong> at the actual observed value.</li>
+<li>This gives a single value between 0 and 1 — the <strong>LOO-PIT value</strong> for that observation.</li>
+<li>Repeat this for all ( N ) observations, rotating the one left out each time.</li>
+<li>Collect the resulting LOO-PIT values and compare their distribution to <strong>Uniform(0, 1)</strong>.</li>
+<li>If the model is well-calibrated, the LOO-PIT values should resemble a uniform distribution.</li>
+</ol>
+<p>If the distribution <strong>deviates from uniformity</strong>, it can reveal the <strong>type of miscalibration</strong>: - <strong>Underdispersed</strong> → model is overconfident (predictive intervals too narrow) - <strong>Overdispersed</strong> → model is too uncertain (intervals too wide) - <strong>Biased</strong> → model consistently over- or underpredicts</p>
+<hr>
+</section>
+<section id="visualizing-simulated-loo-pit-scenarios" class="level3">
+<h3 class="anchored" data-anchor-id="visualizing-simulated-loo-pit-scenarios">Visualizing Simulated LOO-PIT Scenarios</h3>
+<p>To make these ideas concrete, we simulate synthetic predictions. We draw samples from a known “data-generating” distribution, then compute CDF values under a model’s predictive distribution. By manipulating the model’s assumptions (e.g., narrower or wider spread, shifted mean), we generate different calibration failure modes.</p>
+<p>Each of the following four panels shows a different case: - <strong>Top left</strong>: well-calibrated — PIT values are uniform. - <strong>Top right</strong>: underdispersed — model is overconfident, resulting in U-shape. - <strong>Bottom right</strong>: overdispersed — model is too uncertain, hump-shaped PIT. - <strong>Bottom left</strong>: biased — predictive distribution systematically misaligned.</p>
+<div class="cell">
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="on_zero_sum_normal_files/figure-html/cell-3-output-1.png" width="668" height="376" class="figure-img"></p>
+<p><img src="simulated_loo_pit_scenarios.png" class="img-fluid figure-img"></p>
+<figcaption>Simulated LOO-PIT histograms showing four canonical calibration behaviors.</figcaption>
 </figure>
 </div>
 </div>
+<p>These stylized examples are helpful when interpreting real-world diagnostics later.</p>
+<hr>
+</section>
+</section>
+<section id="real-world-use-case-phytoplankton-absorption-from-toa-radiance" class="level2">
+<h2 class="anchored" data-anchor-id="real-world-use-case-phytoplankton-absorption-from-toa-radiance">Real-World Use Case: Phytoplankton Absorption from TOA Radiance</h2>
+<p>The model analyzed here is designed to estimate <strong>phytoplankton absorption spectra (AΦ)</strong> at three visible wavelengths: 443 nm, 555 nm, and 670 nm. These absorption coefficients reflect how strongly phytoplankton pigments absorb light in ocean waters and are critical for understanding ocean productivity and biogeochemistry.</p>
+<p>Crucially, the inputs to this model are <strong>top-of-the-atmosphere (TOA) radiances</strong> measured at six spectral bands, corresponding to the SeaWiFS sensor. These radiances are corrected only for <strong>Rayleigh scattering and Fresnel reflection</strong>, with <strong>no full atmospheric correction</strong> applied. This presents a challenging inversion problem: can we extract meaningful in-water optical signals (AΦ) from partially corrected radiance measurements?</p>
+<p>To further complicate things, the six input radiance bands are <strong>highly collinear</strong> — as is typical for multispectral satellite data. To handle this, we use <strong>Bayesian Additive Regression Trees (BART)</strong>, which are well-suited for nonlinear modeling in the presence of multicollinearity and can flexibly learn relevant feature combinations without explicit manual selection.</p>
+<p>Given the <strong>small dataset (N = 163)</strong> and the difficulty of the inference task, it is especially important to evaluate not just point predictions but also the <strong>calibration</strong> of the full predictive distributions.</p>
+<hr>
+</section>
+<section id="posterior-predictive-checks-ppcs" class="level2">
+<h2 class="anchored" data-anchor-id="posterior-predictive-checks-ppcs">Posterior Predictive Checks (PPCs)</h2>
+<div class="cell">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="ppc_bandwise.png" class="img-fluid figure-img"></p>
+<figcaption>Posterior predictive checks for each AΦ band and the flattened distribution across all bands.</figcaption>
+</figure>
 </div>
-</section>
-<section id="why-choose-zerosumnormal-over-pivoting" class="level4">
-<h4 class="anchored" data-anchor-id="why-choose-zerosumnormal-over-pivoting">Why Choose <em>ZeroSumNormal</em> over <em>Pivoting</em>?</h4>
-<p>As I indicated earlier, pivoting is a practical method when there’s a clear reference outcome. However when each category is of equal interest, selecting an arbitrary baseline can bias the interpretation of the results. The ZeroSumNormal approach avoids this by treating all categories symmetrically, ensuring that each effect is measured relative to the collective group rather than an arbitrary reference.</p>
-</section>
-<section id="in-conclusion" class="level4">
-<h4 class="anchored" data-anchor-id="in-conclusion">In Conclusion…</h4>
-<p>Overparameterization and the resulting non-identifiability problem in categorical regression can lead to models that lack interpretability and stability. By using the ZeroSumNormal prior, we effectively anchor the parameters through a zero-sum constraint, avoiding the pitfalls of relative measurements without fixed axes. This leads to more robust and interpretable models, especially in contexts like multiparty elections where every category is of equal importance.</p>
-</section>
-<section id="references-and-links" class="level4">
-<h4 class="anchored" data-anchor-id="references-and-links">References and links:</h4>
+</div>
+<p>These plots compare the model’s predicted densities (gray) to the observed data (black), along with the posterior predictive mean (orange dashed).</p>
 <ul>
-<li>The ZeroSumNormal is discussed in this <a href="https://learnbayesstats.com/episode/74-optimizing-nuts-developing-zerosumnormal-distribution-adrian-seyboldt">podcast</a>.</li>
-<li><a href="https://www.pymc.io/projects/docs/en/latest/api/distributions/generated/pymc.ZeroSumNormal.html">Here is the documentation</a> of the implementation of the ZeroSumNormal distribution in PyMC.</li>
-<li><a href="">Here is a project</a> I’m working on where I use ZeroSumNormal priors in my models.</li>
+<li><strong>AΦ(443)</strong>: Predictive distribution is too narrow and slightly left-shifted.</li>
+<li><strong>AΦ(555)</strong>: Good agreement.</li>
+<li><strong>AΦ(670)</strong>: Predictive mean is too low and uncertainty is underestimated.</li>
+<li><strong>All targets</strong>: Slight global underdispersion visible when targets are pooled.</li>
 </ul>
+<hr>
+</section>
+<section id="loo-pit-diagnostics-per-target" class="level2">
+<h2 class="anchored" data-anchor-id="loo-pit-diagnostics-per-target">LOO-PIT Diagnostics per Target</h2>
+<section id="aφ443" class="level3">
+<h3 class="anchored" data-anchor-id="aφ443">AΦ(443)</h3>
+<div class="cell">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="band_wise_loo_pit_443.png" class="img-fluid figure-img"></p>
+<figcaption>LOO-PIT diagnostics for AΦ(443)</figcaption>
+</figure>
+</div>
+</div>
+<ul>
+<li>Mild <strong>low bias</strong></li>
+<li>Clear <strong>underdispersion</strong></li>
+</ul>
+</section>
+<section id="aφ555" class="level3">
+<h3 class="anchored" data-anchor-id="aφ555">AΦ(555)</h3>
+<div class="cell">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="band_wise_loo_pit_555.png" class="img-fluid figure-img"></p>
+<figcaption>LOO-PIT diagnostics for AΦ(555)</figcaption>
+</figure>
+</div>
+</div>
+<ul>
+<li><strong>Well-calibrated</strong></li>
+<li>Minimal dispersion error</li>
+</ul>
+</section>
+<section id="aφ670" class="level3">
+<h3 class="anchored" data-anchor-id="aφ670">AΦ(670)</h3>
+<div class="cell">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="band_wise_loo_pit_670.png" class="img-fluid figure-img"></p>
+<figcaption>LOO-PIT diagnostics for AΦ(670)</figcaption>
+</figure>
+</div>
+</div>
+<ul>
+<li><strong>Strong low bias</strong></li>
+<li>Uncertainty is underestimated</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="model-takeaways-and-recommendations" class="level2">
+<h2 class="anchored" data-anchor-id="model-takeaways-and-recommendations">Model Takeaways and Recommendations</h2>
+<p>Model 1 uses a shared error term across bands, drawn from a <code>HalfNormal(0.5)</code> prior. This introduces two issues: (1) it underestimates uncertainty for bands like AΦ(443) and AΦ(670), and (2) it cannot account for different noise characteristics across targets.</p>
+<p>To address these, the next modeling steps should: - Use <strong>band-specific dispersion</strong>, ideally with a weakly informative or hierarchical prior - Consider <strong>input-dependent noise modeling</strong> (heteroscedasticity) - Explore <strong>bias-correction terms or covariate interactions</strong> specific to AΦ(670)</p>
+<hr>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
 
 
 </section>
@@ -404,7 +472,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp("https:\/\/erdemkarakoylu\.github\.io\/");
+      var filterRegex = new RegExp('/' + window.location.host + '/');
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }

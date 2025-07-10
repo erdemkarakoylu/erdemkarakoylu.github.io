@@ -1,0 +1,14 @@
+---
+title: PSIS-LOO
+author: Erdem Karaköylü
+date: '2025-05-16'
+description: Efficient Cross-Validation for Bayesian Models
+categories:
+  - PSIS-LOO
+  - Model Validation
+  - Bayesian Modeling
+  - Arviz
+image: ./figures/cover8.png
+format: html
+bibliography: literature.bib
+---

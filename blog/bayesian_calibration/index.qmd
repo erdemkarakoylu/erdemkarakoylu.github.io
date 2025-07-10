@@ -1,0 +1,165 @@
+---
+title: "LOO-PIT: A Visual Tool for Bayesian Model Calibration"
+author: Erdem Karaköylü
+date: '2025-05-16'
+description: A brief description and demonstration of LOO-PIT
+categories:
+  - LOO-PIT
+  - Model Calibration
+  - Bayesian Modeling
+  - Arviz
+image: ./figures/cover8.png
+format: html
+bibliography: literature.bib
+---
+
+## Introduction
+
+Model calibration is a critical requirement for any model that produces probabilistic outputs. For Bayesian models, which yield full distributions rather than point estimates, calibration is especially important. The reliability of these predictive distributions determines how well these models will generalize to unseen data.
+
+In this post, I focus on the **Leave-One-Out Probability Integral Transform (LOO-PIT)** as a tool to assess calibration in Bayesian models. I illustrate both its theoretical foundation and practical use through simulated examples and a real-world case study in Oceanographic Remote Sensing. 
+
+---
+
+::: {.callout-important title="Calibration vs. Generalization"}
+In non-Bayesian models, **generalization** is typically assessed using metrics like accuracy, RMSE, or log-loss on a held-out test set — all of which focus on **point predictions**.
+
+Bayesian models, by contrast, aim to represent the full **data generation process**. Each prediction is in fact a **predictive distribution** that quantifies uncertainty about the outcome. A Bayesian model is considered **well-calibrated** when these predictive distributions accurately reflect the uncertainty in new observations — that is, when they are consistent with what is epistemically known about the process based on the data and the model.
+
+> Calibration is therefore central to generalization in Bayesian modeling — not just how well the model predicts, but how honest it is about what it doesn’t know.
+:::
+
+
+
+## Understanding Leave-One-Out Probability Integral Transform (LOO-PIT)
+
+### PIT: A Surprising Result from Probability Theory
+
+To build some intuition about  **Probability Integral Transform (PIT)**, consider the following:
+
+1. Take a probability distribution $G$ with cumulative distribution function (CDF) $F$.
+2. Sample a set of values, $X \sim G$.
+3. For each sampled value $x_i$, compute  $u_i = F(x_i)$.
+
+It turns out that the collection of $u_i$ values are uniformly distributed on the interval [0, 1]. This is a classic identity in probability theory. The transformation from sample space to uniform space under the CDF is the backbone of the PIT, and it holds whether $G$ is a normal distribution, a beta, or something else entirely — <u>as long as it’s continuous</u>. It also turns out this result is useful to assess model calibration in Bayesian
+
+---
+
+### Extending PIT to Bayesian Models with Limited Data
+
+In traditional machine learning, performance is often assessed using out-of-sample testing — splitting the dataset into training and testing portions. But in **small data settings**, this approach can be problematic: it throws away valuable training information and may introduce **random partition bias**.
+
+Bayesian modeling offers an alternative via **Pareto-Smoothed Importance Sampling Leave-One-Out (PSIS-LOO)**. This allows us to assess generalization **without needing to retrain the model N times**. LOO-PIT builds on PSIS-LOO to assess **calibration** by applying PIT to the posterior predictive distribution of left-out points.
+
+> For a deeper dive into PSIS-LOO itself, see my companion post: _[Understanding PSIS-LOO for Bayesian Models]()_.
+
+---
+
+### How LOO-PIT Works
+
+1. Train the model on \( N-1 \) observations, leaving one out.
+2. Predict the **posterior predictive distribution** of the left-out observation — not a point estimate, but a full distribution.
+3. Compute the **CDF of the predictive distribution** at the actual observed value.
+4. This gives a single value between 0 and 1 — the **LOO-PIT value** for that observation.
+5. Repeat this for all \( N \) observations, rotating the one left out each time.
+6. Collect the resulting LOO-PIT values and compare their distribution to **Uniform(0, 1)**.
+7. If the model is well-calibrated, the LOO-PIT values should resemble a uniform distribution.
+
+If the distribution **deviates from uniformity**, it can reveal the **type of miscalibration**:
+- **Underdispersed** → model is overconfident (predictive intervals too narrow)
+- **Overdispersed** → model is too uncertain (intervals too wide)
+- **Biased** → model consistently over- or underpredicts
+
+---
+
+### Visualizing Simulated LOO-PIT Scenarios
+
+To make these ideas concrete, we simulate synthetic predictions. We draw samples from a known “data-generating” distribution, then compute CDF values under a model’s predictive distribution. By manipulating the model's assumptions (e.g., narrower or wider spread, shifted mean), we generate different calibration failure modes.
+
+Each of the following four panels shows a different case:
+- **Top left**: well-calibrated — PIT values are uniform.
+- **Top right**: underdispersed — model is overconfident, resulting in U-shape.
+- **Bottom right**: overdispersed — model is too uncertain, hump-shaped PIT.
+- **Bottom left**: biased — predictive distribution systematically misaligned.
+
+::: {.cell}
+![Simulated LOO-PIT histograms showing four canonical calibration behaviors.](simulated_loo_pit_scenarios.png)
+:::
+
+These stylized examples are helpful when interpreting real-world diagnostics later.
+
+---
+
+## Real-World Use Case: Phytoplankton Absorption from TOA Radiance
+
+The model analyzed here is designed to estimate **phytoplankton absorption spectra (AΦ)** at three visible wavelengths: 443 nm, 555 nm, and 670 nm. These absorption coefficients reflect how strongly phytoplankton pigments absorb light in ocean waters and are critical for understanding ocean productivity and biogeochemistry.
+
+Crucially, the inputs to this model are **top-of-the-atmosphere (TOA) radiances** measured at six spectral bands, corresponding to the SeaWiFS sensor. These radiances are corrected only for **Rayleigh scattering and Fresnel reflection**, with **no full atmospheric correction** applied. This presents a challenging inversion problem: can we extract meaningful in-water optical signals (AΦ) from partially corrected radiance measurements?
+
+To further complicate things, the six input radiance bands are **highly collinear** — as is typical for multispectral satellite data. To handle this, we use **Bayesian Additive Regression Trees (BART)**, which are well-suited for nonlinear modeling in the presence of multicollinearity and can flexibly learn relevant feature combinations without explicit manual selection.
+
+Given the **small dataset (N = 163)** and the difficulty of the inference task, it is especially important to evaluate not just point predictions but also the **calibration** of the full predictive distributions.
+
+---
+
+## Posterior Predictive Checks (PPCs)
+
+::: {.cell}
+![Posterior predictive checks for each AΦ band and the flattened distribution across all bands.](ppc_bandwise.png)
+:::
+
+These plots compare the model’s predicted densities (gray) to the observed data (black), along with the posterior predictive mean (orange dashed).
+
+- **AΦ(443)**: Predictive distribution is too narrow and slightly left-shifted.
+- **AΦ(555)**: Good agreement.
+- **AΦ(670)**: Predictive mean is too low and uncertainty is underestimated.
+- **All targets**: Slight global underdispersion visible when targets are pooled.
+
+---
+
+## LOO-PIT Diagnostics per Target
+
+### AΦ(443)
+
+::: {.cell}
+![LOO-PIT diagnostics for AΦ(443)](band_wise_loo_pit_443.png)
+:::
+
+- Mild **low bias**
+- Clear **underdispersion**
+
+### AΦ(555)
+
+::: {.cell}
+![LOO-PIT diagnostics for AΦ(555)](band_wise_loo_pit_555.png)
+:::
+
+- **Well-calibrated**
+- Minimal dispersion error
+
+### AΦ(670)
+
+::: {.cell}
+![LOO-PIT diagnostics for AΦ(670)](band_wise_loo_pit_670.png)
+:::
+
+- **Strong low bias**
+- Uncertainty is underestimated
+
+---
+
+## Model Takeaways and Recommendations
+
+Model 1 uses a shared error term across bands, drawn from a `HalfNormal(0.5)` prior. This introduces two issues: (1) it underestimates uncertainty for bands like AΦ(443) and AΦ(670), and (2) it cannot account for different noise characteristics across targets.
+
+To address these, the next modeling steps should:
+- Use **band-specific dispersion**, ideally with a weakly informative or hierarchical prior
+- Consider **input-dependent noise modeling** (heteroscedasticity)
+- Explore **bias-correction terms or covariate interactions** specific to AΦ(670)
+
+---
+
+## References
+
+
+
