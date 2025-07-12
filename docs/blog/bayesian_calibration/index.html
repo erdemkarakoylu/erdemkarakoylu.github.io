@@ -10,7 +10,7 @@
 <meta name="dcterms.date" content="2025-05-16">
 <meta name="description" content="A brief description and demonstration of LOO-PIT">
 
-<title>LOO-PIT: A Visual Tool for Bayesian Model Calibration – Erdem Karaköylü</title>
+<title>A Visual Tool for Bayesian Model Calibration” – Erdem Karaköylü</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -156,6 +156,7 @@ window.Quarto = {
   <li><a href="#understanding-leave-one-out-probability-integral-transform-loo-pit" id="toc-understanding-leave-one-out-probability-integral-transform-loo-pit" class="nav-link" data-scroll-target="#understanding-leave-one-out-probability-integral-transform-loo-pit">Understanding Leave-One-Out Probability Integral Transform (LOO-PIT)</a>
   <ul class="collapse">
   <li><a href="#pit-a-surprising-result-from-probability-theory" id="toc-pit-a-surprising-result-from-probability-theory" class="nav-link" data-scroll-target="#pit-a-surprising-result-from-probability-theory">PIT: A Surprising Result from Probability Theory</a></li>
+  <li><a href="#understanding-pit-through-visualization" id="toc-understanding-pit-through-visualization" class="nav-link" data-scroll-target="#understanding-pit-through-visualization">Understanding PIT through Visualization</a></li>
   <li><a href="#extending-pit-to-bayesian-models-with-limited-data" id="toc-extending-pit-to-bayesian-models-with-limited-data" class="nav-link" data-scroll-target="#extending-pit-to-bayesian-models-with-limited-data">Extending PIT to Bayesian Models with Limited Data</a></li>
   <li><a href="#how-loo-pit-works" id="toc-how-loo-pit-works" class="nav-link" data-scroll-target="#how-loo-pit-works">How LOO-PIT Works</a></li>
   <li><a href="#visualizing-simulated-loo-pit-scenarios" id="toc-visualizing-simulated-loo-pit-scenarios" class="nav-link" data-scroll-target="#visualizing-simulated-loo-pit-scenarios">Visualizing Simulated LOO-PIT Scenarios</a></li>
@@ -178,7 +179,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">LOO-PIT: A Visual Tool for Bayesian Model Calibration</h1>
+<h1 class="title">A Visual Tool for Bayesian Model Calibration”</h1>
   <div class="quarto-categories">
     <div class="quarto-category">LOO-PIT</div>
     <div class="quarto-category">Model Calibration</div>
@@ -252,25 +253,36 @@ Calibration vs.&nbsp;Generalization
 <li>For each sampled value <span class="math inline">\(x_i\)</span>, compute <span class="math inline">\(u_i = F(x_i)\)</span>.</li>
 </ol>
 <p>It turns out that the collection of <span class="math inline">\(u_i\)</span> values are uniformly distributed on the interval [0, 1]. This is a classic identity in probability theory. The transformation from sample space to uniform space under the CDF is the backbone of the PIT, and it holds whether <span class="math inline">\(G\)</span> is a normal distribution, a beta, or something else entirely — <u>as long as it’s continuous</u>. It also turns out this result is useful to assess model calibration in Bayesian</p>
+</section>
+<section id="understanding-pit-through-visualization" class="level3">
+<h3 class="anchored" data-anchor-id="understanding-pit-through-visualization">Understanding PIT through Visualization</h3>
+<p>To make these ideas concrete, I simulate synthetic predictions. draw samples from a known “data-generating” distribution, then compute CDF values under a model’s assumed predictive distribution. By manipulating the model’s assumptions (e.g., narrower or wider spread, shifted mean), I generated different calibration failure modes and compare it to the case of a well-calibrated model (<em>cf.</em> <a href="#fig-pit_demo" class="quarto-xref">Figure&nbsp;1</a>). These stylized examples are helpful when interpreting real-world diagnostics later.</p>
+<div id="fig-pit_demo" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pit_demo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="./figures/PIT-demo.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pit_demo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Simulated LOO-PIT histograms showing four canonical calibration behaviors. <strong><em>Top left</em></strong> well-calibrated model results in PIT values that are uniform; <strong><em>top right</em></strong> <u>underdispersed</u> — model is overconfident, resulting in U-shaped PIT histogram; <strong><em>bottom right</em></strong> <u>overdispersed</u> — model is too uncertain, resulting in a hump-shaped PIT historgram; <strong><em>bottom left</em></strong>: <u>biased</u> — predictive distribution systematically misaligned - this cased biased high.
+</figcaption>
+</figure>
+</div>
 <hr>
 </section>
 <section id="extending-pit-to-bayesian-models-with-limited-data" class="level3">
 <h3 class="anchored" data-anchor-id="extending-pit-to-bayesian-models-with-limited-data">Extending PIT to Bayesian Models with Limited Data</h3>
 <p>In traditional machine learning, performance is often assessed using out-of-sample testing — splitting the dataset into training and testing portions. But in <strong>small data settings</strong>, this approach can be problematic: it throws away valuable training information and may introduce <strong>random partition bias</strong>.</p>
 <p>Bayesian modeling offers an alternative via <strong>Pareto-Smoothed Importance Sampling Leave-One-Out (PSIS-LOO)</strong>. This allows us to assess generalization <strong>without needing to retrain the model N times</strong>. LOO-PIT builds on PSIS-LOO to assess <strong>calibration</strong> by applying PIT to the posterior predictive distribution of left-out points.</p>
-<blockquote class="blockquote">
-<p>For a deeper dive into PSIS-LOO itself, see my companion post: <em><a href="">Understanding PSIS-LOO for Bayesian Models</a></em>.</p>
-</blockquote>
 <hr>
 </section>
 <section id="how-loo-pit-works" class="level3">
 <h3 class="anchored" data-anchor-id="how-loo-pit-works">How LOO-PIT Works</h3>
 <ol type="1">
-<li>Train the model on ( N-1 ) observations, leaving one out.</li>
+<li>Train the model on <span class="math inline">\(N-1\)</span> observations, leaving one out.</li>
 <li>Predict the <strong>posterior predictive distribution</strong> of the left-out observation — not a point estimate, but a full distribution.</li>
 <li>Compute the <strong>CDF of the predictive distribution</strong> at the actual observed value.</li>
 <li>This gives a single value between 0 and 1 — the <strong>LOO-PIT value</strong> for that observation.</li>
-<li>Repeat this for all ( N ) observations, rotating the one left out each time.</li>
+<li>Repeat this for all <span class="math inline">\(N\)</span> observations, rotating the one left out each time.</li>
 <li>Collect the resulting LOO-PIT values and compare their distribution to <strong>Uniform(0, 1)</strong>.</li>
 <li>If the model is well-calibrated, the LOO-PIT values should resemble a uniform distribution.</li>
 </ol>
@@ -279,17 +291,6 @@ Calibration vs.&nbsp;Generalization
 </section>
 <section id="visualizing-simulated-loo-pit-scenarios" class="level3">
 <h3 class="anchored" data-anchor-id="visualizing-simulated-loo-pit-scenarios">Visualizing Simulated LOO-PIT Scenarios</h3>
-<p>To make these ideas concrete, we simulate synthetic predictions. We draw samples from a known “data-generating” distribution, then compute CDF values under a model’s predictive distribution. By manipulating the model’s assumptions (e.g., narrower or wider spread, shifted mean), we generate different calibration failure modes.</p>
-<p>Each of the following four panels shows a different case: - <strong>Top left</strong>: well-calibrated — PIT values are uniform. - <strong>Top right</strong>: underdispersed — model is overconfident, resulting in U-shape. - <strong>Bottom right</strong>: overdispersed — model is too uncertain, hump-shaped PIT. - <strong>Bottom left</strong>: biased — predictive distribution systematically misaligned.</p>
-<div class="cell">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="simulated_loo_pit_scenarios.png" class="img-fluid figure-img"></p>
-<figcaption>Simulated LOO-PIT histograms showing four canonical calibration behaviors.</figcaption>
-</figure>
-</div>
-</div>
-<p>These stylized examples are helpful when interpreting real-world diagnostics later.</p>
 <hr>
 </section>
 </section>

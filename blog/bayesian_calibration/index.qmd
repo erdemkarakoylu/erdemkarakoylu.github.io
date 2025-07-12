@@ -1,5 +1,5 @@
 ---
-title: "LOO-PIT: A Visual Tool for Bayesian Model Calibration"
+title: A Visual Tool for Bayesian Model Calibration"
 author: Erdem Karaköylü
 date: '2025-05-16'
 description: A brief description and demonstration of LOO-PIT
@@ -8,7 +8,7 @@ categories:
   - Model Calibration
   - Bayesian Modeling
   - Arviz
-image: ./figures/cover8.png
+image: ./figures/cover.png
 format: html
 bibliography: literature.bib
 ---
@@ -43,6 +43,17 @@ To build some intuition about  **Probability Integral Transform (PIT)**, conside
 
 It turns out that the collection of $u_i$ values are uniformly distributed on the interval [0, 1]. This is a classic identity in probability theory. The transformation from sample space to uniform space under the CDF is the backbone of the PIT, and it holds whether $G$ is a normal distribution, a beta, or something else entirely — <u>as long as it’s continuous</u>. It also turns out this result is useful to assess model calibration in Bayesian
 
+### Understanding PIT through Visualization 
+To make these ideas concrete, I simulate synthetic predictions. draw samples from a known “data-generating” distribution, then compute CDF values under a model’s assumed predictive distribution. By manipulating the model's assumptions (e.g., narrower or wider spread, shifted mean), I generated different calibration failure modes and compare it to the case of a well-calibrated model (*cf.* @fig-pit_demo). 
+These stylized examples are helpful when interpreting real-world diagnostics later.
+
+::: {#fig-pit_demo}
+![](./figures/PIT-demo.png)
+
+Simulated LOO-PIT histograms showing four canonical calibration behaviors. ***Top left*** well-calibrated model results in PIT values that are uniform; ***top right*** <u>underdispersed</u> — model is overconfident, resulting in U-shaped PIT histogram; ***bottom right*** <u>overdispersed</u> — model is too uncertain, resulting in a hump-shaped PIT historgram; ***bottom left***: <u>biased</u> — predictive distribution systematically misaligned - this cased biased high. 
+
+:::
+
 ---
 
 ### Extending PIT to Bayesian Models with Limited Data
@@ -51,17 +62,15 @@ In traditional machine learning, performance is often assessed using out-of-samp
 
 Bayesian modeling offers an alternative via **Pareto-Smoothed Importance Sampling Leave-One-Out (PSIS-LOO)**. This allows us to assess generalization **without needing to retrain the model N times**. LOO-PIT builds on PSIS-LOO to assess **calibration** by applying PIT to the posterior predictive distribution of left-out points.
 
-> For a deeper dive into PSIS-LOO itself, see my companion post: _[Understanding PSIS-LOO for Bayesian Models]()_.
-
 ---
 
 ### How LOO-PIT Works
 
-1. Train the model on \( N-1 \) observations, leaving one out.
+1. Train the model on $N-1$ observations, leaving one out.
 2. Predict the **posterior predictive distribution** of the left-out observation — not a point estimate, but a full distribution.
 3. Compute the **CDF of the predictive distribution** at the actual observed value.
 4. This gives a single value between 0 and 1 — the **LOO-PIT value** for that observation.
-5. Repeat this for all \( N \) observations, rotating the one left out each time.
+5. Repeat this for all $N$ observations, rotating the one left out each time.
 6. Collect the resulting LOO-PIT values and compare their distribution to **Uniform(0, 1)**.
 7. If the model is well-calibrated, the LOO-PIT values should resemble a uniform distribution.
 
@@ -74,19 +83,8 @@ If the distribution **deviates from uniformity**, it can reveal the **type of mi
 
 ### Visualizing Simulated LOO-PIT Scenarios
 
-To make these ideas concrete, we simulate synthetic predictions. We draw samples from a known “data-generating” distribution, then compute CDF values under a model’s predictive distribution. By manipulating the model's assumptions (e.g., narrower or wider spread, shifted mean), we generate different calibration failure modes.
 
-Each of the following four panels shows a different case:
-- **Top left**: well-calibrated — PIT values are uniform.
-- **Top right**: underdispersed — model is overconfident, resulting in U-shape.
-- **Bottom right**: overdispersed — model is too uncertain, hump-shaped PIT.
-- **Bottom left**: biased — predictive distribution systematically misaligned.
 
-::: {.cell}
-![Simulated LOO-PIT histograms showing four canonical calibration behaviors.](simulated_loo_pit_scenarios.png)
-:::
-
-These stylized examples are helpful when interpreting real-world diagnostics later.
 
 ---
 
