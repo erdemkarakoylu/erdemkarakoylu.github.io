@@ -305,7 +305,7 @@ Calibration vs.&nbsp;Generalization
 </section>
 <section id="visualizing-simulated-loo-pit-scenarios" class="level3">
 <h3 class="anchored" data-anchor-id="visualizing-simulated-loo-pit-scenarios">Visualizing Simulated LOO-PIT Scenarios</h3>
-<p>The main output of a trained Bayesian model is a multi-dimensional posterior distribution. This is a rich construct - for which classical machine learning has no answer. Consequently the posterior can be mined for a number of insights, however, its complexity means that most Bayesian modeling diagnostic tools are visual. This helps the user to spot major problems quickly, and provides hints as to how to address them. Below I show three different types of plot for different models - calibrated or affected by one of the three pathologies. Let’s start with what a calibrated model looks like. <strong>?@fig-fig-loo-pit-calibrated</strong> shows 3 panels including Posterior Predictive Checks (PPC), and two ways of comparing the LOO-PIT to a Uniform distribution. PPC <span class="citation" data-cites="gelman1996">(<a href="#ref-gelman1996" role="doc-biblioref">Gelman, Meng, and Stern 1996</a>)</span> use the posterior distribution to simulate the output data and show whether the data generation process is well approximated.</p>
+<p>The main output of a trained Bayesian model is a multi-dimensional posterior distribution. This is a rich construct - for which classical machine learning has no answer. Consequently the posterior can be mined for a number of insights, however, its complexity means that most Bayesian modeling diagnostic tools are visual. This helps the user to spot major problems quickly, and provides hints as to how to address them. Below I show three different types of plot for different models - calibrated or affected by one of the three pathologies. Let’s start with what a calibrated model looks like. <a href="#fig-loo-pit-calibrated" class="quarto-xref">Figure&nbsp;2</a> shows 3 panels including Posterior Predictive Checks (PPC), and two ways of comparing the LOO-PIT to a Uniform distribution. PPC <span class="citation" data-cites="gelman1996">(<a href="#ref-gelman1996" role="doc-biblioref">Gelman, Meng, and Stern 1996</a>)</span> use the posterior distribution to simulate the output data and show whether the data generation process is well approximated.</p>
 <div id="fig-loo-pit-calibrated" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-loo-pit-calibrated-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -316,8 +316,7 @@ Figure&nbsp;2: Visual diagnostics useful to see how well a model has learned and
 </figcaption>
 </figure>
 </div>
-<p>In contrast <a href="#fig-loo_pit_pathologies" class="quarto-xref">Figure&nbsp;3</a> provides a visual primer for the canonical pathologies LOO-PIT can help detect with the same three types of plots.<br>
-<strong>Top Row</strong> Posterior Predictive Checks.</p>
+<p>In contrast <a href="#fig-loo_pit_pathologies" class="quarto-xref">Figure&nbsp;3</a> provides a visual primer for the canonical pathologies LOO-PIT can help detect with the same three types of plots.</p>
 <div id="fig-loo_pit_pathologies" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-loo_pit_pathologies-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">

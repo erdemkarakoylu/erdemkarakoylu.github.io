@@ -599,13 +599,13 @@ Discarded       0       0</code></pre>
     One Sample t-test
 
 data:  diff_outcome
-t = 0.089508, df = 184, p-value = 0.9288
+t = 0.4528, df = 184, p-value = 0.6512
 alternative hypothesis: true mean is not equal to 0
 95 percent confidence interval:
- -1285.448  1407.627
+ -1037.968  1656.327
 sample estimates:
 mean of x 
- 61.08955 </code></pre>
+ 309.1799 </code></pre>
 </div>
 </div>
 <p><span class="math inline">\(\rightarrow\)</span> Propensity score matching (no caliper)</p>
@@ -746,7 +746,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp("https:\/\/erdemkarakoylu\.github\.io\/");
+      var filterRegex = new RegExp('/' + window.location.host + '/');
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
