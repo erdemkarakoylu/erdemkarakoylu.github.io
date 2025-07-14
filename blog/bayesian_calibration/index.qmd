@@ -1,5 +1,5 @@
 ---
-title: A Visual Tool for Bayesian Model Calibration"
+title: A Visual Tool for Bayesian Model Calibration
 author: Erdem Karaköylü
 date: '2025-05-16'
 description: A brief description and demonstration of LOO-PIT
@@ -33,25 +33,24 @@ To build some intuition about  **Probability Integral Transform (PIT)**, conside
 2. Sample a set of values, $X \sim G$.
 3. For each sampled value $x_i$, compute  $u_i = F(x_i)$.
 
-It turns out that the collection of $u_i$ values are uniformly distributed on the interval [0, 1]. This is a classic identity in probability theory. The transformation from sample space to uniform space under the CDF is the backbone of the PIT, and it holds whether $G$ is a normal distribution, a beta, or something else entirely — <u>as long as it’s continuous</u>. It also turns out this result is useful to assess model calibration in Bayesian
+It turns out that the collection of $u_i$ values are uniformly distributed on the interval [0, 1]. This is a classic identity in probability theory. The transformation from sample space to uniform space under the CDF is the backbone of the PIT, and it holds whether $G$ is a normal distribution, a beta, or something else entirely — <u>as long as it’s continuous</u>. It also turns out this result is useful to assess model calibration in Bayesian models.
 
 ### Understanding PIT through Visualization 
-To make these ideas concrete, I simulate synthetic predictions. draw samples from a known “data-generating” distribution, then compute CDF values under a model’s assumed predictive distribution. By manipulating the model's assumptions (e.g., narrower or wider spread, shifted mean), I generated different calibration failure modes and compare it to the case of a well-calibrated model (*cf.* @fig-pit_demo). 
-These stylized examples are helpful when interpreting real-world diagnostics later.
+To make these ideas concrete, I simulate synthetic predictions, draw samples from a known “data-generating” distribution, then compute CDF values under a model’s assumed predictive distribution. By manipulating the model's assumptions (e.g., narrower or wider spread, shifted mean), I generate different calibration failure modes and compare them to the case of a well-calibrated model (*cf.* @fig-pit_demo). These stylized examples are helpful when interpreting real-world diagnostics later.
 
 ::: {#fig-pit_demo}
 ![](./figures/PIT-demo.png)
 
-Simulated PIT histograms showing four canonical calibration behaviors. ***Top left*** well-calibrated model results in PIT values that are uniform; ***top right*** <u>underdispersed</u> — model is overconfident, resulting in U-shaped PIT histogram; ***bottom right*** <u>overdispersed</u> — model is too uncertain, resulting in a hump-shaped PIT historgram; ***bottom left***: <u>biased</u> — predictive distribution systematically misaligned - this cased biased high. 
+Simulated PIT histograms showing four canonical calibration behaviors. ***Top left*** well-calibrated model results in PIT values that are uniform; ***top right*** <u>underdispersed</u> — model is overconfident, resulting in U-shaped PIT histogram; ***bottom right*** <u>overdispersed</u> — model is too uncertain, resulting in a hump-shaped PIT histogram; ***bottom left***: <u>biased</u> — predictive distribution systematically misaligned in this case, biased high. 
 :::
 
 ---
 
-### Extending PIT to Bayesian Models with Limited Data
+### Extending PIT to Bayesian Models
 
-In traditional machine learning, performance is often assessed using out-of-sample testing — splitting the dataset into training and testing portions. However, this approach can be problematic because valuable training information is discared and arbitrary splitting risks introducing **random partition bias**. K-Fold cross validation can mitigate, but the arbitrary choice of "K" remains problematic for the same reasons. In the case of large complex Bayesian models, K-Fold CV is not practical to the computational cost of recomputing high-dimensional posteriors
+In traditional machine learning, performance is often assessed using out-of-sample testing — splitting the dataset into training and testing portions. However, this approach can be problematic because valuable training information is discarded and arbitrary splitting risks introducing **random partition bias**. K-Fold cross validation can mitigate, but the arbitrary choice of "K" remains problematic for the same reasons. In the case of large complex Bayesian models, K-Fold CV is not practical due to the cost of recomputing high-dimensional posteriors.
 
-Bayesian modeling however offers an remarkable alternative via **Pareto-Smoothed Importance Sampling Leave-One-Out (PSIS-LOO)**. This makes assessing generalization possible **without needing to retrain the model N** (number of observations) **times**. LOO-PIT builds on PSIS-LOO to assess **calibration** by applying PIT to the posterior predictive distribution of left-out points.
+Bayesian modeling, however, offers an remarkable alternative via **Pareto-Smoothed Importance Sampling Leave-One-Out (PSIS-LOO)** [@vehtari2017]. This makes assessing generalization possible **without needing to retrain the model N** (number of observations) **times**. LOO-PIT builds on PSIS-LOO to assess **calibration** by applying PIT to the posterior predictive distribution of left-out points.
 
 ::: {.callout-important title="Calibration vs. Generalization"}
 In non-Bayesian models, **generalization** is typically assessed using metrics like accuracy, RMSE, or log-loss on a held-out test set — all of which focus on **point predictions**.
@@ -78,20 +77,43 @@ If the distribution **deviates from uniformity**, it can reveal the **type of mi
 - **Overdispersed** → model is too uncertain (intervals too wide)
 - **Biased** → model consistently over- or underpredicts
 
-Next, I will train 4 models. For the non-calibrated cases, I will force the models so as to yield the particular pathologies mentioned above. 
+Next, I will train 4 models. For the non-calibrated cases, I force the models to yield the particular pathologies mentioned above. 
 ---
 
 ### Visualizing Simulated LOO-PIT Scenarios
 
-@fig-loo_pit_demo provides a primer of the LOO-PIT approach for the aforementioned 4 canonical cases. Most of Bayesian modeling diagnostic tools are visual. This helps to spot major problems quickly, and provides hints as to how to address them. 
+The main output of a trained Bayesian model is a multi-dimensional posterior distribution. This is a rich construct - for which classical machine learning has no answer. Consequently the posterior can be mined for a number of insights, however, its complexity means that most Bayesian modeling diagnostic tools are visual. This helps the user to spot major problems quickly, and provides hints as to how to address them. Below I show three different types of plot for different models - calibrated or affected by one of the three pathologies. 
+Let's start with what a calibrated model looks like. @fig-fig-loo-pit-calibrated shows 3 panels including Posterior Predictive Checks (PPC), and two ways of comparing the LOO-PIT to a Uniform distribution. PPC [@gelman1996] use the posterior distribution to simulate the output data and show whether the data generation process is well approximated. 
 
+::: {#fig-loo-pit-calibrated}
+![](./figures/loo_pit_calibrated.png)
 
-::: {#fig-loo_pit_demo}
-![](./figures/loo_pit_demo.png)
+Visual diagnostics useful to see how well a model has learned and whether it is well calibrated. **Top row** - Kernel density estimation of Posterior Predictive Checks (PPC). PPC use the model posterior distribution and the training data to simulate output to verify conformity to labeled output. Multiple simulatino runs are shown (light gray), along with their mean (orange dashed line). This is compared to the actual observations (black line). **Bottom left** - Kernel density estimation of model LOO-PIT (dark blue line)  compared from multiple draws from a Uniform distribution (light blue lines). **Bottom right** Deviation of the empirical CDF of LOO-PIT values from the ideal uniform (dark blue line), with a 94% Highest Density Interval envelope from simulated uniform samples. 
+:::
 
-**Top Row** Model Posterior Predictive Checks - these simulate output data for comparison with observations. 
+In contrast @fig-loo_pit_pathologies provides a visual primer for the canonical pathologies LOO-PIT can help detect with the same three types of plots.  
+**Top Row** Posterior Predictive Checks. 
+
+::: {#fig-loo_pit_pathologies}
+![](./figures/loo_pit_pathologies.png)
+
+**Top Row** Model Posterior Predictive Checks, same as before. Pathologies start to show up at this stage. 
 Simulated LOO-PIT histograms showing four canonical calibration behaviors. ***Top left*** well-calibrated model results in PIT values that are uniform; ***top right*** <u>underdispersed</u> — model is overconfident, resulting in U-shaped PIT histogram; ***bottom right*** <u>overdispersed</u> — model is too uncertain, resulting in a hump-shaped PIT historgram; ***bottom left***: <u>biased</u> — predictive distribution systematically misaligned - this cased biased high. 
 :::
+
+### A Real World Example of LOO-PIT
+The examples shown so far were designed to be clearly distinguishable. This type of plot is not as clear in the wild. 
+
+@fig-pit_loo_wild shows the now familiar three-panel figure. This a real world, in this case Bayesian Additive Trees - BART - model I wrote for an oceanographic predictive application. The PPC is pretty clean with no obvious problems. The LOO-PIT plots on the other hand suggest calibration issues that might come back to bite when predicting on new data. But what, here, is specifically the problem? Or problems?
+
+:::{#fig-pit_loo_wild}
+![](./figures/model1_loo_pit.png)
+Same three panels seen before in @fig-loo-pit-calibrated and @fig-loo_pit_pathologies. This time the model is fitting real observations, and the results are more nuanced; clean PPC (top), problematic LOO-PIT plots. 
+:::
+
+In Bayesian modeling ***we model the data generation process***;  not the data. Thus unlike in classical machine learning we can iteratively improve on the model without the same concerns for data leakage. The Bayesian Workflow [@gelman2020bayesianworkflow] in fact strongly recommends multiple modeling iterations, usually with increasing complexity in model structure. This is a more cerebral affair, when compared to classical machine learning and frequentist statistical modeling; it takes more time and mental effort. Ultimately, though the insights are deeper, the understanding more complete the experience, both of which make for a more satisfying experience.
+
+Let me know if you are able to diagnose the problem suggested by @fig-pit_loo_wild. Ι'll buy you lunch if you're correct.
 
 ---
 

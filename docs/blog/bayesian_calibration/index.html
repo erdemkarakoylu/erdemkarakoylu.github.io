@@ -10,7 +10,7 @@
 <meta name="dcterms.date" content="2025-05-16">
 <meta name="description" content="A brief description and demonstration of LOO-PIT">
 
-<title>LOO-PIT: A Visual Tool for Bayesian Model Calibration – Erdem Karaköylü</title>
+<title>A Visual Tool for Bayesian Model Calibration – Erdem Karaköylü</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,7 +23,27 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -155,20 +175,13 @@ window.Quarto = {
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
   <li><a href="#understanding-leave-one-out-probability-integral-transform-loo-pit" id="toc-understanding-leave-one-out-probability-integral-transform-loo-pit" class="nav-link" data-scroll-target="#understanding-leave-one-out-probability-integral-transform-loo-pit">Understanding Leave-One-Out Probability Integral Transform (LOO-PIT)</a>
   <ul class="collapse">
-  <li><a href="#pit-a-surprising-result-from-probability-theory" id="toc-pit-a-surprising-result-from-probability-theory" class="nav-link" data-scroll-target="#pit-a-surprising-result-from-probability-theory">PIT: A Surprising Result from Probability Theory</a></li>
-  <li><a href="#extending-pit-to-bayesian-models-with-limited-data" id="toc-extending-pit-to-bayesian-models-with-limited-data" class="nav-link" data-scroll-target="#extending-pit-to-bayesian-models-with-limited-data">Extending PIT to Bayesian Models with Limited Data</a></li>
+  <li><a href="#pit-a-little-known-result-from-probability-theory" id="toc-pit-a-little-known-result-from-probability-theory" class="nav-link" data-scroll-target="#pit-a-little-known-result-from-probability-theory">PIT: A Little-Known Result from Probability Theory</a></li>
+  <li><a href="#understanding-pit-through-visualization" id="toc-understanding-pit-through-visualization" class="nav-link" data-scroll-target="#understanding-pit-through-visualization">Understanding PIT through Visualization</a></li>
+  <li><a href="#extending-pit-to-bayesian-models" id="toc-extending-pit-to-bayesian-models" class="nav-link" data-scroll-target="#extending-pit-to-bayesian-models">Extending PIT to Bayesian Models</a></li>
   <li><a href="#how-loo-pit-works" id="toc-how-loo-pit-works" class="nav-link" data-scroll-target="#how-loo-pit-works">How LOO-PIT Works</a></li>
   <li><a href="#visualizing-simulated-loo-pit-scenarios" id="toc-visualizing-simulated-loo-pit-scenarios" class="nav-link" data-scroll-target="#visualizing-simulated-loo-pit-scenarios">Visualizing Simulated LOO-PIT Scenarios</a></li>
+  <li><a href="#a-real-world-example-of-loo-pit" id="toc-a-real-world-example-of-loo-pit" class="nav-link" data-scroll-target="#a-real-world-example-of-loo-pit">A Real World Example of LOO-PIT</a></li>
   </ul></li>
-  <li><a href="#real-world-use-case-phytoplankton-absorption-from-toa-radiance" id="toc-real-world-use-case-phytoplankton-absorption-from-toa-radiance" class="nav-link" data-scroll-target="#real-world-use-case-phytoplankton-absorption-from-toa-radiance">Real-World Use Case: Phytoplankton Absorption from TOA Radiance</a></li>
-  <li><a href="#posterior-predictive-checks-ppcs" id="toc-posterior-predictive-checks-ppcs" class="nav-link" data-scroll-target="#posterior-predictive-checks-ppcs">Posterior Predictive Checks (PPCs)</a></li>
-  <li><a href="#loo-pit-diagnostics-per-target" id="toc-loo-pit-diagnostics-per-target" class="nav-link" data-scroll-target="#loo-pit-diagnostics-per-target">LOO-PIT Diagnostics per Target</a>
-  <ul class="collapse">
-  <li><a href="#aφ443" id="toc-aφ443" class="nav-link" data-scroll-target="#aφ443">AΦ(443)</a></li>
-  <li><a href="#aφ555" id="toc-aφ555" class="nav-link" data-scroll-target="#aφ555">AΦ(555)</a></li>
-  <li><a href="#aφ670" id="toc-aφ670" class="nav-link" data-scroll-target="#aφ670">AΦ(670)</a></li>
-  </ul></li>
-  <li><a href="#model-takeaways-and-recommendations" id="toc-model-takeaways-and-recommendations" class="nav-link" data-scroll-target="#model-takeaways-and-recommendations">Model Takeaways and Recommendations</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -178,7 +191,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">LOO-PIT: A Visual Tool for Bayesian Model Calibration</h1>
+<h1 class="title">A Visual Tool for Bayesian Model Calibration</h1>
   <div class="quarto-categories">
     <div class="quarto-category">LOO-PIT</div>
     <div class="quarto-category">Model Calibration</div>
@@ -222,7 +235,42 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <p>Model calibration is a critical requirement for any model that produces probabilistic outputs. For Bayesian models, which yield full distributions rather than point estimates, calibration is especially important. The reliability of these predictive distributions determines how well these models will generalize to unseen data.</p>
 <p>In this post, I focus on the <strong>Leave-One-Out Probability Integral Transform (LOO-PIT)</strong> as a tool to assess calibration in Bayesian models. I illustrate both its theoretical foundation and practical use through simulated examples and a real-world case study in Oceanographic Remote Sensing.</p>
+<blockquote class="blockquote">
+<p>Please see <a href="https://github.com/erdemkarakoylu/bayesian_TOA_2_IOP/blob/main/02_02_Understanding_loo_pit.ipynb">this Jupyter notebook</a> for the code used to generate the various cases.</p>
+</blockquote>
 <hr>
+</section>
+<section id="understanding-leave-one-out-probability-integral-transform-loo-pit" class="level2">
+<h2 class="anchored" data-anchor-id="understanding-leave-one-out-probability-integral-transform-loo-pit">Understanding Leave-One-Out Probability Integral Transform (LOO-PIT)</h2>
+<section id="pit-a-little-known-result-from-probability-theory" class="level3">
+<h3 class="anchored" data-anchor-id="pit-a-little-known-result-from-probability-theory">PIT: A Little-Known Result from Probability Theory</h3>
+<p>To build some intuition about <strong>Probability Integral Transform (PIT)</strong>, consider the following:</p>
+<ol type="1">
+<li>Take a probability distribution <span class="math inline">\(G\)</span> with cumulative distribution function (CDF) <span class="math inline">\(F\)</span>.</li>
+<li>Sample a set of values, <span class="math inline">\(X \sim G\)</span>.</li>
+<li>For each sampled value <span class="math inline">\(x_i\)</span>, compute <span class="math inline">\(u_i = F(x_i)\)</span>.</li>
+</ol>
+<p>It turns out that the collection of <span class="math inline">\(u_i\)</span> values are uniformly distributed on the interval [0, 1]. This is a classic identity in probability theory. The transformation from sample space to uniform space under the CDF is the backbone of the PIT, and it holds whether <span class="math inline">\(G\)</span> is a normal distribution, a beta, or something else entirely — <u>as long as it’s continuous</u>. It also turns out this result is useful to assess model calibration in Bayesian models.</p>
+</section>
+<section id="understanding-pit-through-visualization" class="level3">
+<h3 class="anchored" data-anchor-id="understanding-pit-through-visualization">Understanding PIT through Visualization</h3>
+<p>To make these ideas concrete, I simulate synthetic predictions, draw samples from a known “data-generating” distribution, then compute CDF values under a model’s assumed predictive distribution. By manipulating the model’s assumptions (e.g., narrower or wider spread, shifted mean), I generate different calibration failure modes and compare them to the case of a well-calibrated model (<em>cf.</em> <a href="#fig-pit_demo" class="quarto-xref">Figure&nbsp;1</a>). These stylized examples are helpful when interpreting real-world diagnostics later.</p>
+<div id="fig-pit_demo" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pit_demo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="./figures/PIT-demo.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pit_demo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Simulated PIT histograms showing four canonical calibration behaviors. <strong><em>Top left</em></strong> well-calibrated model results in PIT values that are uniform; <strong><em>top right</em></strong> <u>underdispersed</u> — model is overconfident, resulting in U-shaped PIT histogram; <strong><em>bottom right</em></strong> <u>overdispersed</u> — model is too uncertain, resulting in a hump-shaped PIT histogram; <strong><em>bottom left</em></strong>: <u>biased</u> — predictive distribution systematically misaligned in this case, biased high.
+</figcaption>
+</figure>
+</div>
+<hr>
+</section>
+<section id="extending-pit-to-bayesian-models" class="level3">
+<h3 class="anchored" data-anchor-id="extending-pit-to-bayesian-models">Extending PIT to Bayesian Models</h3>
+<p>In traditional machine learning, performance is often assessed using out-of-sample testing — splitting the dataset into training and testing portions. However, this approach can be problematic because valuable training information is discarded and arbitrary splitting risks introducing <strong>random partition bias</strong>. K-Fold cross validation can mitigate, but the arbitrary choice of “K” remains problematic for the same reasons. In the case of large complex Bayesian models, K-Fold CV is not practical due to the cost of recomputing high-dimensional posteriors.</p>
+<p>Bayesian modeling, however, offers an remarkable alternative via <strong>Pareto-Smoothed Importance Sampling Leave-One-Out (PSIS-LOO)</strong> <span class="citation" data-cites="vehtari2017">(<a href="#ref-vehtari2017" role="doc-biblioref">Vehtari, Gelman, and Gabry 2017</a>)</span>. This makes assessing generalization possible <strong>without needing to retrain the model N</strong> (number of observations) <strong>times</strong>. LOO-PIT builds on PSIS-LOO to assess <strong>calibration</strong> by applying PIT to the posterior predictive distribution of left-out points.</p>
 <div class="callout callout-style-default callout-important callout-titled" title="Calibration vs. Generalization">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -235,153 +283,89 @@ Calibration vs.&nbsp;Generalization
 <div class="callout-body-container callout-body">
 <p>In non-Bayesian models, <strong>generalization</strong> is typically assessed using metrics like accuracy, RMSE, or log-loss on a held-out test set — all of which focus on <strong>point predictions</strong>.</p>
 <p>Bayesian models, by contrast, aim to represent the full <strong>data generation process</strong>. Each prediction is in fact a <strong>predictive distribution</strong> that quantifies uncertainty about the outcome. A Bayesian model is considered <strong>well-calibrated</strong> when these predictive distributions accurately reflect the uncertainty in new observations — that is, when they are consistent with what is epistemically known about the process based on the data and the model.</p>
-<blockquote class="blockquote">
 <p>Calibration is therefore central to generalization in Bayesian modeling — not just how well the model predicts, but how honest it is about what it doesn’t know.</p>
-</blockquote>
 </div>
 </div>
-</section>
-<section id="understanding-leave-one-out-probability-integral-transform-loo-pit" class="level2">
-<h2 class="anchored" data-anchor-id="understanding-leave-one-out-probability-integral-transform-loo-pit">Understanding Leave-One-Out Probability Integral Transform (LOO-PIT)</h2>
-<section id="pit-a-surprising-result-from-probability-theory" class="level3">
-<h3 class="anchored" data-anchor-id="pit-a-surprising-result-from-probability-theory">PIT: A Surprising Result from Probability Theory</h3>
-<p>To build some intuition about <strong>Probability Integral Transform (PIT)</strong>, consider the following:</p>
-<ol type="1">
-<li>Take a probability distribution <span class="math inline">\(G\)</span> with cumulative distribution function (CDF) <span class="math inline">\(F\)</span>.</li>
-<li>Sample a set of values, <span class="math inline">\(X \sim G\)</span>.</li>
-<li>For each sampled value <span class="math inline">\(x_i\)</span>, compute <span class="math inline">\(u_i = F(x_i)\)</span>.</li>
-</ol>
-<p>It turns out that the collection of <span class="math inline">\(u_i\)</span> values are uniformly distributed on the interval [0, 1]. This is a classic identity in probability theory. The transformation from sample space to uniform space under the CDF is the backbone of the PIT, and it holds whether <span class="math inline">\(G\)</span> is a normal distribution, a beta, or something else entirely — <u>as long as it’s continuous</u>. It also turns out this result is useful to assess model calibration in Bayesian</p>
-<hr>
-</section>
-<section id="extending-pit-to-bayesian-models-with-limited-data" class="level3">
-<h3 class="anchored" data-anchor-id="extending-pit-to-bayesian-models-with-limited-data">Extending PIT to Bayesian Models with Limited Data</h3>
-<p>In traditional machine learning, performance is often assessed using out-of-sample testing — splitting the dataset into training and testing portions. But in <strong>small data settings</strong>, this approach can be problematic: it throws away valuable training information and may introduce <strong>random partition bias</strong>.</p>
-<p>Bayesian modeling offers an alternative via <strong>Pareto-Smoothed Importance Sampling Leave-One-Out (PSIS-LOO)</strong>. This allows us to assess generalization <strong>without needing to retrain the model N times</strong>. LOO-PIT builds on PSIS-LOO to assess <strong>calibration</strong> by applying PIT to the posterior predictive distribution of left-out points.</p>
-<blockquote class="blockquote">
-<p>For a deeper dive into PSIS-LOO itself, see my companion post: <em><a href="">Understanding PSIS-LOO for Bayesian Models</a></em>.</p>
-</blockquote>
 <hr>
 </section>
 <section id="how-loo-pit-works" class="level3">
 <h3 class="anchored" data-anchor-id="how-loo-pit-works">How LOO-PIT Works</h3>
 <ol type="1">
-<li>Train the model on ( N-1 ) observations, leaving one out.</li>
+<li>Train the model on <span class="math inline">\(N-1\)</span> observations, leaving one out.</li>
 <li>Predict the <strong>posterior predictive distribution</strong> of the left-out observation — not a point estimate, but a full distribution.</li>
 <li>Compute the <strong>CDF of the predictive distribution</strong> at the actual observed value.</li>
 <li>This gives a single value between 0 and 1 — the <strong>LOO-PIT value</strong> for that observation.</li>
-<li>Repeat this for all ( N ) observations, rotating the one left out each time.</li>
+<li>Repeat this for all <span class="math inline">\(N\)</span> observations, rotating the one left out each time.</li>
 <li>Collect the resulting LOO-PIT values and compare their distribution to <strong>Uniform(0, 1)</strong>.</li>
 <li>If the model is well-calibrated, the LOO-PIT values should resemble a uniform distribution.</li>
 </ol>
 <p>If the distribution <strong>deviates from uniformity</strong>, it can reveal the <strong>type of miscalibration</strong>: - <strong>Underdispersed</strong> → model is overconfident (predictive intervals too narrow) - <strong>Overdispersed</strong> → model is too uncertain (intervals too wide) - <strong>Biased</strong> → model consistently over- or underpredicts</p>
+<p>Next, I will train 4 models. For the non-calibrated cases, I force the models to yield the particular pathologies mentioned above.</p>
 <hr>
 </section>
 <section id="visualizing-simulated-loo-pit-scenarios" class="level3">
 <h3 class="anchored" data-anchor-id="visualizing-simulated-loo-pit-scenarios">Visualizing Simulated LOO-PIT Scenarios</h3>
-<p>To make these ideas concrete, we simulate synthetic predictions. We draw samples from a known “data-generating” distribution, then compute CDF values under a model’s predictive distribution. By manipulating the model’s assumptions (e.g., narrower or wider spread, shifted mean), we generate different calibration failure modes.</p>
-<p>Each of the following four panels shows a different case: - <strong>Top left</strong>: well-calibrated — PIT values are uniform. - <strong>Top right</strong>: underdispersed — model is overconfident, resulting in U-shape. - <strong>Bottom right</strong>: overdispersed — model is too uncertain, hump-shaped PIT. - <strong>Bottom left</strong>: biased — predictive distribution systematically misaligned.</p>
-<div class="cell">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="simulated_loo_pit_scenarios.png" class="img-fluid figure-img"></p>
-<figcaption>Simulated LOO-PIT histograms showing four canonical calibration behaviors.</figcaption>
+<p>The main output of a trained Bayesian model is a multi-dimensional posterior distribution. This is a rich construct - for which classical machine learning has no answer. Consequently the posterior can be mined for a number of insights, however, its complexity means that most Bayesian modeling diagnostic tools are visual. This helps the user to spot major problems quickly, and provides hints as to how to address them. Below I show three different types of plot for different models - calibrated or affected by one of the three pathologies. Let’s start with what a calibrated model looks like. <strong>?@fig-fig-loo-pit-calibrated</strong> shows 3 panels including Posterior Predictive Checks (PPC), and two ways of comparing the LOO-PIT to a Uniform distribution. PPC <span class="citation" data-cites="gelman1996">(<a href="#ref-gelman1996" role="doc-biblioref">Gelman, Meng, and Stern 1996</a>)</span> use the posterior distribution to simulate the output data and show whether the data generation process is well approximated.</p>
+<div id="fig-loo-pit-calibrated" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-loo-pit-calibrated-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="./figures/loo_pit_calibrated.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-loo-pit-calibrated-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Visual diagnostics useful to see how well a model has learned and whether it is well calibrated. <strong>Top row</strong> - Kernel density estimation of Posterior Predictive Checks (PPC). PPC use the model posterior distribution and the training data to simulate output to verify conformity to labeled output. Multiple simulatino runs are shown (light gray), along with their mean (orange dashed line). This is compared to the actual observations (black line). <strong>Bottom left</strong> - Kernel density estimation of model LOO-PIT (dark blue line) compared from multiple draws from a Uniform distribution (light blue lines). <strong>Bottom right</strong> Deviation of the empirical CDF of LOO-PIT values from the ideal uniform (dark blue line), with a 94% Highest Density Interval envelope from simulated uniform samples.
+</figcaption>
 </figure>
 </div>
+<p>In contrast <a href="#fig-loo_pit_pathologies" class="quarto-xref">Figure&nbsp;3</a> provides a visual primer for the canonical pathologies LOO-PIT can help detect with the same three types of plots.<br>
+<strong>Top Row</strong> Posterior Predictive Checks.</p>
+<div id="fig-loo_pit_pathologies" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-loo_pit_pathologies-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="./figures/loo_pit_pathologies.png" class="img-fluid figure-img">
 </div>
-<p>These stylized examples are helpful when interpreting real-world diagnostics later.</p>
-<hr>
-</section>
-</section>
-<section id="real-world-use-case-phytoplankton-absorption-from-toa-radiance" class="level2">
-<h2 class="anchored" data-anchor-id="real-world-use-case-phytoplankton-absorption-from-toa-radiance">Real-World Use Case: Phytoplankton Absorption from TOA Radiance</h2>
-<p>The model analyzed here is designed to estimate <strong>phytoplankton absorption spectra (AΦ)</strong> at three visible wavelengths: 443 nm, 555 nm, and 670 nm. These absorption coefficients reflect how strongly phytoplankton pigments absorb light in ocean waters and are critical for understanding ocean productivity and biogeochemistry.</p>
-<p>Crucially, the inputs to this model are <strong>top-of-the-atmosphere (TOA) radiances</strong> measured at six spectral bands, corresponding to the SeaWiFS sensor. These radiances are corrected only for <strong>Rayleigh scattering and Fresnel reflection</strong>, with <strong>no full atmospheric correction</strong> applied. This presents a challenging inversion problem: can we extract meaningful in-water optical signals (AΦ) from partially corrected radiance measurements?</p>
-<p>To further complicate things, the six input radiance bands are <strong>highly collinear</strong> — as is typical for multispectral satellite data. To handle this, we use <strong>Bayesian Additive Regression Trees (BART)</strong>, which are well-suited for nonlinear modeling in the presence of multicollinearity and can flexibly learn relevant feature combinations without explicit manual selection.</p>
-<p>Given the <strong>small dataset (N = 163)</strong> and the difficulty of the inference task, it is especially important to evaluate not just point predictions but also the <strong>calibration</strong> of the full predictive distributions.</p>
-<hr>
-</section>
-<section id="posterior-predictive-checks-ppcs" class="level2">
-<h2 class="anchored" data-anchor-id="posterior-predictive-checks-ppcs">Posterior Predictive Checks (PPCs)</h2>
-<div class="cell">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="ppc_bandwise.png" class="img-fluid figure-img"></p>
-<figcaption>Posterior predictive checks for each AΦ band and the flattened distribution across all bands.</figcaption>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-loo_pit_pathologies-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: <strong>Top Row</strong> Model Posterior Predictive Checks, same as before. Pathologies start to show up at this stage. Simulated LOO-PIT histograms showing four canonical calibration behaviors. <strong><em>Top left</em></strong> well-calibrated model results in PIT values that are uniform; <strong><em>top right</em></strong> <u>underdispersed</u> — model is overconfident, resulting in U-shaped PIT histogram; <strong><em>bottom right</em></strong> <u>overdispersed</u> — model is too uncertain, resulting in a hump-shaped PIT historgram; <strong><em>bottom left</em></strong>: <u>biased</u> — predictive distribution systematically misaligned - this cased biased high.
+</figcaption>
 </figure>
 </div>
-</div>
-<p>These plots compare the model’s predicted densities (gray) to the observed data (black), along with the posterior predictive mean (orange dashed).</p>
-<ul>
-<li><strong>AΦ(443)</strong>: Predictive distribution is too narrow and slightly left-shifted.</li>
-<li><strong>AΦ(555)</strong>: Good agreement.</li>
-<li><strong>AΦ(670)</strong>: Predictive mean is too low and uncertainty is underestimated.</li>
-<li><strong>All targets</strong>: Slight global underdispersion visible when targets are pooled.</li>
-</ul>
-<hr>
 </section>
-<section id="loo-pit-diagnostics-per-target" class="level2">
-<h2 class="anchored" data-anchor-id="loo-pit-diagnostics-per-target">LOO-PIT Diagnostics per Target</h2>
-<section id="aφ443" class="level3">
-<h3 class="anchored" data-anchor-id="aφ443">AΦ(443)</h3>
-<div class="cell">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="band_wise_loo_pit_443.png" class="img-fluid figure-img"></p>
-<figcaption>LOO-PIT diagnostics for AΦ(443)</figcaption>
+<section id="a-real-world-example-of-loo-pit" class="level3">
+<h3 class="anchored" data-anchor-id="a-real-world-example-of-loo-pit">A Real World Example of LOO-PIT</h3>
+<p>The examples shown so far were designed to be clearly distinguishable. This type of plot is not as clear in the wild.</p>
+<p><a href="#fig-pit_loo_wild" class="quarto-xref">Figure&nbsp;4</a> shows the now familiar three-panel figure. This a real world, in this case Bayesian Additive Trees - BART - model I wrote for an oceanographic predictive application. The PPC is pretty clean with no obvious problems. The LOO-PIT plots on the other hand suggest calibration issues that might come back to bite when predicting on new data. But what, here, is specifically the problem? Or problems?</p>
+<div id="fig-pit_loo_wild" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pit_loo_wild-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="./figures/model1_loo_pit.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-pit_loo_wild-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4
+</figcaption>
 </figure>
 </div>
-</div>
-<ul>
-<li>Mild <strong>low bias</strong></li>
-<li>Clear <strong>underdispersion</strong></li>
-</ul>
-</section>
-<section id="aφ555" class="level3">
-<h3 class="anchored" data-anchor-id="aφ555">AΦ(555)</h3>
-<div class="cell">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="band_wise_loo_pit_555.png" class="img-fluid figure-img"></p>
-<figcaption>LOO-PIT diagnostics for AΦ(555)</figcaption>
-</figure>
-</div>
-</div>
-<ul>
-<li><strong>Well-calibrated</strong></li>
-<li>Minimal dispersion error</li>
-</ul>
-</section>
-<section id="aφ670" class="level3">
-<h3 class="anchored" data-anchor-id="aφ670">AΦ(670)</h3>
-<div class="cell">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="band_wise_loo_pit_670.png" class="img-fluid figure-img"></p>
-<figcaption>LOO-PIT diagnostics for AΦ(670)</figcaption>
-</figure>
-</div>
-</div>
-<ul>
-<li><strong>Strong low bias</strong></li>
-<li>Uncertainty is underestimated</li>
-</ul>
+<p>In Bayesian modeling <strong><em>we model the data generation process</em></strong>; not the data. Thus unlike in classical machine learning we can iteratively improve on the model without the same concerns for data leakage. The Bayesian Workflow <span class="citation" data-cites="gelman2020bayesianworkflow">(<a href="#ref-gelman2020bayesianworkflow" role="doc-biblioref">Gelman et al. 2020</a>)</span> in fact strongly recommends multiple modeling iterations, usually with increasing complexity in model structure. This is a more cerebral affair, when compared to classical machine learning and frequentist statistical modeling; it takes more time and mental effort. Ultimately, though the insights are deeper, the understanding more complete the experience, both of which make for a more satisfying experience.</p>
+<p>Let me know if you are able to diagnose the problem suggested by <a href="#fig-pit_loo_wild" class="quarto-xref">Figure&nbsp;4</a>. Ι’ll buy you lunch if you’re correct.</p>
 <hr>
 </section>
-</section>
-<section id="model-takeaways-and-recommendations" class="level2">
-<h2 class="anchored" data-anchor-id="model-takeaways-and-recommendations">Model Takeaways and Recommendations</h2>
-<p>Model 1 uses a shared error term across bands, drawn from a <code>HalfNormal(0.5)</code> prior. This introduces two issues: (1) it underestimates uncertainty for bands like AΦ(443) and AΦ(670), and (2) it cannot account for different noise characteristics across targets.</p>
-<p>To address these, the next modeling steps should: - Use <strong>band-specific dispersion</strong>, ideally with a weakly informative or hierarchical prior - Consider <strong>input-dependent noise modeling</strong> (heteroscedasticity) - Explore <strong>bias-correction terms or covariate interactions</strong> specific to AΦ(670)</p>
-<hr>
 </section>
 <section id="references" class="level2">
-<h2 class="anchored" data-anchor-id="references">References</h2>
+
+
 
 
 </section>
 
-<script async="" defer="" src="https://scripts.simpleanalyticscdn.com/latest.js"></script></main> <!-- /main -->
+<script async="" defer="" src="https://scripts.simpleanalyticscdn.com/latest.js"></script><div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-gelman1996" class="csl-entry" role="listitem">
+Gelman, Andrew, Xiao-Li Meng, and Hal Stern. 1996. <span>“Posterior Predictive Assessment of Model Fitness via Realized Discrepancies.”</span> <em>Statistica Sinica</em>, 733–60.
+</div>
+<div id="ref-gelman2020bayesianworkflow" class="csl-entry" role="listitem">
+Gelman, Andrew, Aki Vehtari, Daniel Simpson, Charles C. Margossian, Bob Carpenter, Yuling Yao, Lauren Kennedy, Jonah Gabry, Paul-Christian Bürkner, and Martin Modrák. 2020. <span>“Bayesian Workflow.”</span> <a href="https://arxiv.org/abs/2011.01808">https://arxiv.org/abs/2011.01808</a>.
+</div>
+<div id="ref-vehtari2017" class="csl-entry" role="listitem">
+Vehtari, Aki, Andrew Gelman, and Jonah Gabry. 2017. <span>“Practical Bayesian Model Evaluation Using Leave-One-Out Cross-Validation and WAIC.”</span> <em>Statistics and Computing</em> 27 (5): 1413–32. <a href="https://doi.org/10.1007/s11222-016-9696-4">https://doi.org/10.1007/s11222-016-9696-4</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
