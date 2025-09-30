@@ -83,7 +83,7 @@ Next, I will train 4 models. For the non-calibrated cases, I force the models to
 ### Visualizing Simulated LOO-PIT Scenarios
 
 The main output of a trained Bayesian model is a multi-dimensional posterior distribution. This is a rich construct - for which classical machine learning has no answer. Consequently the posterior can be mined for a number of insights, however, its complexity means that most Bayesian modeling diagnostic tools are visual. This helps the user to spot major problems quickly, and provides hints as to how to address them. Below I show three different types of plot for different models - calibrated or affected by one of the three pathologies. 
-Let's start with what a calibrated model looks like. @fig-loo-pit-calibrated shows 3 panels including Posterior Predictive Checks (PPC), and two ways of comparing the LOO-PIT to a Uniform distribution. PPC [@gelman1996] use the posterior distribution to simulate the output data and show whether the data generation process is well approximated. The caveat though is that they represent in-sample diagnostic; some call it Posterior Retrodictive Checks as a reminder. LOO-based tools are better suited to verify out-of-sample performance, and in this case calibration. Thus the middle row [@fig-loo_pit_calibrated] compares the density estimation of many draws from the  Uniform distribution to the density estimation of PIT of the left-out sample $y_i$ conditioned on the model posterior fit on the remaining $N-1$ samples; $y_{-i}$. 
+Let's start with what a calibrated model looks like. @fig-loo-pit-calibrated shows 3 panels including Posterior Predictive Checks (PPC), and two ways of comparing the LOO-PIT to a Uniform distribution. PPC [@gelman1996] use the posterior distribution to simulate the output data and show whether the data generation process is well approximated. The caveat though is that they represent in-sample diagnostic; some call it Posterior Retrodictive Checks as a reminder. LOO-based tools are better suited to verify out-of-sample performance, and in this case calibration. Thus the middle row [@fig-loo-pit-calibrated] compares the density estimation of many draws from the  Uniform distribution to the density estimation of PIT of the left-out sample $y_i$ conditioned on the model posterior fit on the remaining $N-1$ samples; $y_{-i}$. 
 
 ::: {#fig-loo-pit-calibrated}
 ![](./figures/loo_pit_calibrated.png)
@@ -101,19 +101,20 @@ For instance, in the case of the top row showing the PPC plots, notice how the e
 Simulated LOO-PIT histograms showing four canonical calibration behaviors. ***Top left*** well-calibrated model results in PIT values that are uniform; ***top right*** <u>underdispersed</u> — model is overconfident, resulting in U-shaped PIT histogram; ***bottom right*** <u>overdispersed</u> — model is too uncertain, resulting in a hump-shaped PIT historgram; ***bottom left***: <u>biased</u> — predictive distribution systematically misaligned - this cased biased high. 
 :::
 
-### A Real World Example of LOO-PIT
+### A Real World LOO-PIT Example 
 The examples shown so far were designed to be clearly distinguishable. This type of plot is not as clear in the wild. 
 
 @fig-pit_loo_wild shows the now familiar three-panel figure. This a real world, in this case Bayesian Additive Trees - BART - model I wrote for an oceanographic predictive application. The PPC is pretty clean with no obvious problems. The LOO-PIT plots on the other hand suggest calibration issues that might come back to bite when predicting on new data. But what, here, is specifically the problem? Or problems?
 
 :::{#fig-pit_loo_wild}
 ![](./figures/model1_loo_pit.png)
+
 Same three panels seen before in @fig-loo-pit-calibrated and @fig-loo_pit_pathologies. This time the model is fitting real observations, and the results are more nuanced; clean PPC (top), problematic LOO-PIT plots. 
 :::
 
 In Bayesian modeling ***we model the data generation process***;  not the data. Thus unlike in classical machine learning we can iteratively improve on the model without the same concerns for data leakage. The Bayesian Workflow [@gelman2020bayesianworkflow] in fact strongly recommends multiple modeling iterations, usually with increasing complexity in model structure. This is a more cerebral affair, when compared to classical machine learning and frequentist statistical modeling; it takes more time and mental effort. Ultimately, though the insights are deeper, the understanding more complete the experience, both of which make for a more satisfying experience.
 
-Let me know if you are able to diagnose the problem suggested by @fig-pit_loo_wild. Ι'll buy you lunch if you're correct.
+I'll buy you coffee if you correctly diagnose @fig-pit_loo_wild.
 
 ---
 

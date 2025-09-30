@@ -180,7 +180,7 @@ window.Quarto = {
   <li><a href="#extending-pit-to-bayesian-models" id="toc-extending-pit-to-bayesian-models" class="nav-link" data-scroll-target="#extending-pit-to-bayesian-models">Extending PIT to Bayesian Models</a></li>
   <li><a href="#how-loo-pit-works" id="toc-how-loo-pit-works" class="nav-link" data-scroll-target="#how-loo-pit-works">How LOO-PIT Works</a></li>
   <li><a href="#visualizing-simulated-loo-pit-scenarios" id="toc-visualizing-simulated-loo-pit-scenarios" class="nav-link" data-scroll-target="#visualizing-simulated-loo-pit-scenarios">Visualizing Simulated LOO-PIT Scenarios</a></li>
-  <li><a href="#a-real-world-example-of-loo-pit" id="toc-a-real-world-example-of-loo-pit" class="nav-link" data-scroll-target="#a-real-world-example-of-loo-pit">A Real World Example of LOO-PIT</a></li>
+  <li><a href="#a-real-world-loo-pit-example" id="toc-a-real-world-loo-pit-example" class="nav-link" data-scroll-target="#a-real-world-loo-pit-example">A Real World LOO-PIT Example</a></li>
   </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
@@ -305,7 +305,7 @@ Calibration vs.&nbsp;Generalization
 </section>
 <section id="visualizing-simulated-loo-pit-scenarios" class="level3">
 <h3 class="anchored" data-anchor-id="visualizing-simulated-loo-pit-scenarios">Visualizing Simulated LOO-PIT Scenarios</h3>
-<p>The main output of a trained Bayesian model is a multi-dimensional posterior distribution. This is a rich construct - for which classical machine learning has no answer. Consequently the posterior can be mined for a number of insights, however, its complexity means that most Bayesian modeling diagnostic tools are visual. This helps the user to spot major problems quickly, and provides hints as to how to address them. Below I show three different types of plot for different models - calibrated or affected by one of the three pathologies. Let’s start with what a calibrated model looks like. <a href="#fig-loo-pit-calibrated" class="quarto-xref">Figure&nbsp;2</a> shows 3 panels including Posterior Predictive Checks (PPC), and two ways of comparing the LOO-PIT to a Uniform distribution. PPC <span class="citation" data-cites="gelman1996">(<a href="#ref-gelman1996" role="doc-biblioref">Gelman, Meng, and Stern 1996</a>)</span> use the posterior distribution to simulate the output data and show whether the data generation process is well approximated.</p>
+<p>The main output of a trained Bayesian model is a multi-dimensional posterior distribution. This is a rich construct - for which classical machine learning has no answer. Consequently the posterior can be mined for a number of insights, however, its complexity means that most Bayesian modeling diagnostic tools are visual. This helps the user to spot major problems quickly, and provides hints as to how to address them. Below I show three different types of plot for different models - calibrated or affected by one of the three pathologies. Let’s start with what a calibrated model looks like. <a href="#fig-loo-pit-calibrated" class="quarto-xref">Figure&nbsp;2</a> shows 3 panels including Posterior Predictive Checks (PPC), and two ways of comparing the LOO-PIT to a Uniform distribution. PPC <span class="citation" data-cites="gelman1996">(<a href="#ref-gelman1996" role="doc-biblioref">Gelman, Meng, and Stern 1996</a>)</span> use the posterior distribution to simulate the output data and show whether the data generation process is well approximated. The caveat though is that they represent in-sample diagnostic; some call it Posterior Retrodictive Checks as a reminder. LOO-based tools are better suited to verify out-of-sample performance, and in this case calibration. Thus the middle row <strong>?@fig-loo_pit_calibrated</strong> compares the density estimation of many draws from the Uniform distribution to the density estimation of PIT of the left-out sample <span class="math inline">\(y_i\)</span> conditioned on the model posterior fit on the remaining <span class="math inline">\(N-1\)</span> samples; <span class="math inline">\(y_{-i}\)</span>.</p>
 <div id="fig-loo-pit-calibrated" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-loo-pit-calibrated-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -316,7 +316,8 @@ Figure&nbsp;2: Visual diagnostics useful to see how well a model has learned and
 </figcaption>
 </figure>
 </div>
-<p>In contrast <a href="#fig-loo_pit_pathologies" class="quarto-xref">Figure&nbsp;3</a> provides a visual primer for the canonical pathologies LOO-PIT can help detect with the same three types of plots.</p>
+<p>In contrast <a href="#fig-loo_pit_pathologies" class="quarto-xref">Figure&nbsp;3</a> provides a visual primer for the canonical pathologies LOO-PIT can help detect with the same three types of plots.<br>
+For instance, in the case of the top row showing the PPC plots, notice how the estimated density of the observations are situated in relation to the simulated draws (and their mean). PPC’s begin to highlight problems, even though this is an in-sample evaluation. But as mentioned earlier, we want to know about out-of-sample calibration. So we go to the middle row and see that each pathology results in LOO-PIT density estimates of a particular shape; <em>U-</em> , <em>hump-</em>shaped or skewed in the respective cases of underdispersion, overdispersion and bias. Moreover in each case there is little overlap with the Uniform distribution denstiy estimates.</p>
 <div id="fig-loo_pit_pathologies" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-loo_pit_pathologies-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -328,8 +329,8 @@ Figure&nbsp;3: <strong>Top Row</strong> Model Posterior Predictive Checks, same 
 </figure>
 </div>
 </section>
-<section id="a-real-world-example-of-loo-pit" class="level3">
-<h3 class="anchored" data-anchor-id="a-real-world-example-of-loo-pit">A Real World Example of LOO-PIT</h3>
+<section id="a-real-world-loo-pit-example" class="level3">
+<h3 class="anchored" data-anchor-id="a-real-world-loo-pit-example">A Real World LOO-PIT Example</h3>
 <p>The examples shown so far were designed to be clearly distinguishable. This type of plot is not as clear in the wild.</p>
 <p><a href="#fig-pit_loo_wild" class="quarto-xref">Figure&nbsp;4</a> shows the now familiar three-panel figure. This a real world, in this case Bayesian Additive Trees - BART - model I wrote for an oceanographic predictive application. The PPC is pretty clean with no obvious problems. The LOO-PIT plots on the other hand suggest calibration issues that might come back to bite when predicting on new data. But what, here, is specifically the problem? Or problems?</p>
 <div id="fig-pit_loo_wild" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -337,13 +338,13 @@ Figure&nbsp;3: <strong>Top Row</strong> Model Posterior Predictive Checks, same 
 <div aria-describedby="fig-pit_loo_wild-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="./figures/model1_loo_pit.png" class="img-fluid figure-img">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-pit_loo_wild-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pit_loo_wild-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Same three panels seen before in <a href="#fig-loo-pit-calibrated" class="quarto-xref">Figure&nbsp;2</a> and <a href="#fig-loo_pit_pathologies" class="quarto-xref">Figure&nbsp;3</a>. This time the model is fitting real observations, and the results are more nuanced; clean PPC (top), problematic LOO-PIT plots.
 </figcaption>
 </figure>
 </div>
 <p>In Bayesian modeling <strong><em>we model the data generation process</em></strong>; not the data. Thus unlike in classical machine learning we can iteratively improve on the model without the same concerns for data leakage. The Bayesian Workflow <span class="citation" data-cites="gelman2020bayesianworkflow">(<a href="#ref-gelman2020bayesianworkflow" role="doc-biblioref">Gelman et al. 2020</a>)</span> in fact strongly recommends multiple modeling iterations, usually with increasing complexity in model structure. This is a more cerebral affair, when compared to classical machine learning and frequentist statistical modeling; it takes more time and mental effort. Ultimately, though the insights are deeper, the understanding more complete the experience, both of which make for a more satisfying experience.</p>
-<p>Let me know if you are able to diagnose the problem suggested by <a href="#fig-pit_loo_wild" class="quarto-xref">Figure&nbsp;4</a>. Ι’ll buy you lunch if you’re correct.</p>
+<p>I’ll buy you coffee if you correctly diagnose <a href="#fig-pit_loo_wild" class="quarto-xref">Figure&nbsp;4</a>.</p>
 <hr>
 </section>
 </section>
@@ -455,7 +456,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp('/' + window.location.host + '/');
+      var filterRegex = new RegExp("https:\/\/erdemkarakoylu\.github\.io\/");
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
