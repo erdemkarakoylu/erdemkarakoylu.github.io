@@ -7,10 +7,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Erdem Karaköylü">
-<meta name="dcterms.date" content="2025-05-16">
-<meta name="description" content="A bayesian approach to sample size planning for A/B testing.">
+<meta name="dcterms.date" content="2025-08-20">
+<meta name="description" content="A Framework for Understanding CPO, ROAS, CPA, and LTV in Performance Marketing">
 
-<title>Bayesian Power Analysis for A/B Testing – Erdem Karaköylü</title>
+<title>What Does a Dollar in Ad Spend Really Buy? – Erdem Karaköylü</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -70,35 +70,6 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -148,10 +119,18 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#background" id="toc-background" class="nav-link active" data-scroll-target="#background">Background</a></li>
-  <li><a href="#brief-demonstration-of-bayesian-power-analysis" id="toc-brief-demonstration-of-bayesian-power-analysis" class="nav-link" data-scroll-target="#brief-demonstration-of-bayesian-power-analysis">Brief Demonstration of Bayesian Power Analysis</a></li>
-  <li><a href="#power-analysis-interpretation" id="toc-power-analysis-interpretation" class="nav-link" data-scroll-target="#power-analysis-interpretation">Power Analysis Interpretation</a></li>
-  <li><a href="#in-conclusion" id="toc-in-conclusion" class="nav-link" data-scroll-target="#in-conclusion">In conclusion</a></li>
+  <li><a href="#a-framework-for-understanding-cpo-roas-cpa-and-ltv" id="toc-a-framework-for-understanding-cpo-roas-cpa-and-ltv" class="nav-link active" data-scroll-target="#a-framework-for-understanding-cpo-roas-cpa-and-ltv">A Framework for Understanding CPO, ROAS, CPA, and LTV</a>
+  <ul class="collapse">
+  <li><a href="#visual-summary" id="toc-visual-summary" class="nav-link" data-scroll-target="#visual-summary">Visual Summary</a></li>
+  <li><a href="#key-definitions-and-relationships" id="toc-key-definitions-and-relationships" class="nav-link" data-scroll-target="#key-definitions-and-relationships">Key Definitions and Relationships</a>
+  <ul class="collapse">
+  <li><a href="#cpo-cost-per-order" id="toc-cpo-cost-per-order" class="nav-link" data-scroll-target="#cpo-cost-per-order">1. CPO – Cost Per Order</a></li>
+  <li><a href="#roas-return-on-ad-spend" id="toc-roas-return-on-ad-spend" class="nav-link" data-scroll-target="#roas-return-on-ad-spend">2. ROAS – Return on Ad Spend</a></li>
+  <li><a href="#cpa-cost-per-acquisition" id="toc-cpa-cost-per-acquisition" class="nav-link" data-scroll-target="#cpa-cost-per-acquisition">3. CPA – Cost Per Acquisition</a></li>
+  <li><a href="#ltv-lifetime-value" id="toc-ltv-lifetime-value" class="nav-link" data-scroll-target="#ltv-lifetime-value">4. LTV – Lifetime Value</a></li>
+  </ul></li>
+  <li><a href="#putting-it-all-together" id="toc-putting-it-all-together" class="nav-link" data-scroll-target="#putting-it-all-together">Putting It All Together</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -160,19 +139,12 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Bayesian Power Analysis for A/B Testing</h1>
-  <div class="quarto-categories">
-    <div class="quarto-category">Power Analysis</div>
-    <div class="quarto-category">Bayesian A/B testing</div>
-    <div class="quarto-category">Minimum Detectable Effect</div>
-    <div class="quarto-category">Region of Practical Equivalence</div>
-    <div class="quarto-category">Prospective sample size planning</div>
-  </div>
-  </div>
+<h1 class="title">What Does a Dollar in Ad Spend Really Buy?</h1>
+</div>
 
 <div>
   <div class="description">
-    A bayesian approach to sample size planning for A/B testing.
+    A Framework for Understanding CPO, ROAS, CPA, and LTV in Performance Marketing
   </div>
 </div>
 
@@ -189,7 +161,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 16, 2025</p>
+      <p class="date">August 20, 2025</p>
     </div>
   </div>
   
@@ -201,127 +173,76 @@ window.Quarto = {
 </header>
 
 
-<section id="background" class="level3">
-<h3 class="anchored" data-anchor-id="background">Background</h3>
-<p>A/B testing is a critical tool for informing decisions, whether comparing webpages, app features, or marketing campaigns. The goal is to identify which version performs best based on a chosen metric like conversion rate, click-through rate, or revenue. For frequentists, A/B testing often involves Null Hypothesis Significance Testing (NHST), where concepts such as <span class="math inline">\(α\)</span>, <span class="math inline">\(p-\text{value}\)</span>, and power analysis are central. My focus here is on power analysis.</p>
-<section id="frequentist-power-analysis-a-brief-critique" class="level4">
-<h4 class="anchored" data-anchor-id="frequentist-power-analysis-a-brief-critique">Frequentist power analysis: a brief critique</h4>
-<p>In Frequentist Statistics, power analysis is essential during the planning phase of an experiment. Frequentist power is defined as the probability of correctly rejecting a false null hypothesis, which is often equated to the probability of correctly identifying a true effect. It’s used to determine the minimum sample size required for a study to have a reasonable chance (typically 80% or higher) of detecting a statistically significant effect of a given size at a predetermined significance level (α, often 0.05). This helps researchers avoid underpowered studies that might fail to detect real effects and informs decisions about resource allocation.</p>
-<p>The standard definition of frequentist power (the probability of rejecting a false null hypothesis) is framed within a <span class="math inline">\(P(D∣H)\)</span> perspective. It asks: “If the null hypothesis is indeed false (meaning a true effect exists), what is the probability that statistical testing will produce data that leads to rejecting that null hypothesis?” In my opinion, this is a risky and often flawed approach due to its incorrect use of probability for inference. This topic is beyond the scope of this post, but interested readers are invited to consult Aubrey Clayton’s “Bernoulli’s Fallacy” for a deeper technical and historical dive into this issue.</p>
-</section>
-<section id="the-bayesian-alternative" class="level4">
-<h4 class="anchored" data-anchor-id="the-bayesian-alternative">The Bayesian Alternative</h4>
-<p>The point is that Bayesian analysis offers a compelling alternative to the frequentist approach for A/B testing. It provides more direct and intuitive interpretations of results, without concerns about stopping issues, p-hacking, or needing multiple comparison corrections. Instead of focusing on the probability of observing data under a null hypothesis, Bayesian methods yield the probability distribution of the parameters of interest (e.g., the conversion rates of each variant and their difference). This allows for direct statements about the probability that one variant is better than the other, or the probability that the difference exceeds a practically significant threshold.</p>
-<p>Nevertheless, power analysis can still be important in the Bayesian paradigm. While it takes on an altered meaning, it remains essential in experiment planning. Specifically, the goal is to determine the sample size, and consequently, adequate resource allocation to collect so that the experiment has a high probability of yielding informative results. Typically, this means assessing the probability of obtaining posterior distributions with sufficient precision (e.g., narrow credible intervals) or the probability that the effect size (the difference between the variants) exceeds a Minimum Detectable Effect (MDE). In practice, this means simulating potential experiment outcomes for a variety of sample sizes and analyzing the resulting posterior distributions.</p>
-</section>
-</section>
-<section id="brief-demonstration-of-bayesian-power-analysis" class="level3">
-<h3 class="anchored" data-anchor-id="brief-demonstration-of-bayesian-power-analysis">Brief Demonstration of Bayesian Power Analysis</h3>
-<blockquote class="blockquote">
-<p>👉 <a href="https://github.com/erdemkarakoylu/erdemkarakoylu.github.io/blob/main/blog/bayesian_power/bayesian_power.ipynb">Here is the notebook with all the code</a></p>
-</blockquote>
-<section id="step-1-define-goal-and-metrics" class="level4">
-<h4 class="anchored" data-anchor-id="step-1-define-goal-and-metrics">Step 1: Define Goal and Metric(s)</h4>
-<p>Company X wants to increase the conversion rate on its landing page. To do so a new landing page is proposed. Thus we have * Current landing page; hereafter referred to as <code>A</code> * Proposed landing page; hereafter referred to as <code>B</code> * A single primary metric, <code>conversion rate</code> (number of conversions / total landings )</p>
-<p>Obviously this is an oversimplified example but will serve to illustrate the approach.</p>
-</section>
-<section id="step-2-eliciting-prior-beliefs" class="level4">
-<h4 class="anchored" data-anchor-id="step-2-eliciting-prior-beliefs">Step 2: Eliciting Prior Beliefs</h4>
-<p>To compute posteriors I need to combine likelihoods obtained with data with priors. Unlike Frequentist settings, Bayesian experiments are not conducted in a vaccum. Instead the paradigm encourages the incorporation of prior knowledge. While it is often the case that data will swamp out priors, there is value in carefully constructing them.</p>
-<p>Company X data scientists should therefore base their priors on any relevant existing knowledge. This could include:</p>
-<ol type="1">
-<li><p><strong>Historical Data:</strong> If Company X has run similar A/B tests in the past on the same website or for similar features, the results of those tests can provide valuable information for setting priors. For example, if previous versions of the landing page had conversion rates consistently around 4-6%, this could inform the prior for variant A.</p></li>
-<li><p><strong>Industry Benchmarks:</strong> Depending on the industry, there might be typical conversion rate ranges that can inform the priors.</p></li>
-<li><p><strong>Expert Opinions:</strong> Marketing experts or product managers within Company X might have intuitions or expectations about the performance of the new variant B. These subjective beliefs can be formalized into a prior distribution.</p></li>
-<li><p><strong>A “Skeptical” or Weakly Informative Prior:</strong> If Company X has little to no prior information, they might choose a weakly informative prior. This is a prior that doesn’t strongly favor any particular outcome but still provides some regularization.</p></li>
-</ol>
-<p>The outcome is binary, thus the natural likelihood to model the data is the Binomial distribution, which aggregates binary Bernoulli trials. There a few distributions that can be used to encode priors in this case. To keep things simple and avoid reaching for my favorite MCMC sampler, I define priors in terms of Beta distributions. A Beta distribution is a conjugate prior to the Binomial, meaning that updating the posterior has a closed form and does not require approximation. The parameters <span class="math inline">\(α\)</span> and <span class="math inline">\(β\)</span> of the Beta distribution represent prior “successes” and “failures,” respectively. A higher <span class="math inline">\(α\)</span> relative to <span class="math inline">\(β\)</span> shifts the distribution towards higher values, and vice versa. The sum of <span class="math inline">\(α\)</span> and <span class="math inline">\(β\)</span> influences the “strength” or concentration of the prior belief (higher sum means more certainty). Below I show what this might look like.</p>
+<section id="a-framework-for-understanding-cpo-roas-cpa-and-ltv" class="level1">
+<h1>A Framework for Understanding CPO, ROAS, CPA, and LTV</h1>
+<p>In the fast-moving world of digital advertising, understanding how to measure performance is essential. But with so many metrics—CPO, ROAS, CPA, LTV—it’s easy to lose track of how they relate and when to use each. This post serves as a quick reference for understanding these core performance indicators through both definitions and a visual map.</p>
+<section id="visual-summary" class="level2">
+<h2 class="anchored" data-anchor-id="visual-summary">Visual Summary</h2>
+<p>Before diving into definitions, here’s a high-level diagram showing how these metrics relate:</p>
 <ul>
-<li>Let’s assume historical data suggest a current conversion rate of 5% for variant <span class="math inline">\(A\)</span>.</li>
-<li>Without any additional information and to keep things simple a reasonable prior for <span class="math inline">\(A\)</span> is therefore <span class="math inline">\(prior_A=Beta(α=5, β=95)\)</span>.</li>
-<li>For one reason or another, I also expect a lift of 1% from variant B so an acceptable prior is <span class="math inline">\(prior_B=Beta(α=6, β=94)\)</span>. Importantly, this does not discard the possibility that variant B is worse or better. The point is that my assumptions are made explicit, open to critique, and certainly revisable.</li>
-<li></li>
+<li><strong>Ad Spend</strong> and <strong>Revenue</strong> flow into <strong>ROAS</strong>.</li>
+<li><strong>Ad Spend</strong> and <strong>Orders</strong> define <strong>CPO</strong>.</li>
+<li><strong>Ad Spend</strong> and <strong>Acquisitions</strong> give you <strong>CPA</strong>.</li>
+<li><strong>Revenue</strong> and <strong>Orders</strong> help compute <strong>LTV</strong>.</li>
 </ul>
-<p>These priors can be seen in Figure 1.</p>
-<figure class="figure">
-<img src="./figures/figure1.png" alt="Beta Priors for A and B variants" style="width:800px;" class="figure-img">
-<figcaption>
-Figure 1: Beta Priors for A and B variants.
-</figcaption>
-</figure>
+<p><img src="./figures/ad_metrics_relationship_diagram.png" class="img-fluid"></p>
+</section>
+<section id="key-definitions-and-relationships" class="level2">
+<h2 class="anchored" data-anchor-id="key-definitions-and-relationships">Key Definitions and Relationships</h2>
+<section id="cpo-cost-per-order" class="level3">
+<h3 class="anchored" data-anchor-id="cpo-cost-per-order">1. CPO – Cost Per Order</h3>
 <ul>
-<li>Updating the Beta prior to get the posterior is trivial as it boils down to adding new successes and new failures to the existing <span class="math inline">\(α\)</span> and <span class="math inline">\(β\)</span> parameters, respectively.</li>
-<li>The function <code>run_analytical_ab_test</code> in the <a href="https://github.com/erdemkarakoylu/erdemkarakoylu.github.io/blob/main/blog/bayesian_power/bayesian_power.ipynb">notebook</a> simulates the Data Generation Process with a know conversion rate for variant A and a latent (not yet known) conversion rate for variant B.</li>
+<li><strong>Definition</strong>: Total advertising spend divided by the number of completed orders.</li>
+<li><strong>Formula</strong>:<br>
+<code>CPO = Ad Spend / Orders</code></li>
+<li><strong>Use Case</strong>: Best for retail media networks or e-commerce businesses that can track purchases directly.</li>
+<li><strong>Optimization Objective</strong>: Lower CPO without sacrificing order volume.</li>
 </ul>
 </section>
-<section id="step-3-defining-the-minimum-detectable-effect-mde" class="level4">
-<h4 class="anchored" data-anchor-id="step-3-defining-the-minimum-detectable-effect-mde">Step 3: Defining the Minimum Detectable Effect (MDE)</h4>
+<section id="roas-return-on-ad-spend" class="level3">
+<h3 class="anchored" data-anchor-id="roas-return-on-ad-spend">2. ROAS – Return on Ad Spend</h3>
 <ul>
-<li><p>Question: what is the smallest <u>practically significant</u> difference in conversion rates that Company X would want to detect?</p></li>
-<li><p>The answer is the Minimum Detectable Effect, hereafter MDE.</p></li>
-<li><p>Note the actual effect would need to be greater than the MDE; the greater the actual effect relative to the MDE, the smaller the number of samples needed to detect a difference at the MDE level.</p></li>
-<li><p>Let’s assume Company X is interested in detecting an absolute difference of at least 1% in the conversion rate, that’s our MDE</p></li>
-<li><p>If the baseline conversion rate is around 5%, stakeholders then want to be able to reliably detect if variant B increases it to 6% or more.</p></li>
-<li><p>Given the above and to make it easier, let’s say that the latent true conversion rate of Variant B will be 7% - Obviously several scenarios with different conversion rates coould be simulated. To keep it short, however, we’ll just limit the simulation to a single case.</p></li>
+<li><strong>Definition</strong>: Measures how much revenue is generated per dollar of ad spend.</li>
+<li><strong>Formula</strong>:<br>
+<code>ROAS = Revenue / Ad Spend</code></li>
+<li><strong>Use Case</strong>: Widely used in performance marketing to evaluate the efficiency of a campaign.</li>
+<li><strong>Optimization Objective</strong>: Maximize ROAS by increasing conversion value or reducing inefficient spend.</li>
 </ul>
 </section>
-<section id="step-4-prospective-sample-size-planning-bayesian-power-analysis" class="level4">
-<h4 class="anchored" data-anchor-id="step-4-prospective-sample-size-planning-bayesian-power-analysis">Step 4: Prospective Sample Size Planning (Bayesian “Power Analysis”)</h4>
+<section id="cpa-cost-per-acquisition" class="level3">
+<h3 class="anchored" data-anchor-id="cpa-cost-per-acquisition">3. CPA – Cost Per Acquisition</h3>
 <ul>
-<li>We are not trying to calculate the probability of rejecting a null hypothesis - this wouldn’t tell us much about the alternative anyway.</li>
-<li>The focus is on the probability of achieving a desired level of certainty about the difference in conversion rates.</li>
-<li>This often involves simulating potential outcomes for different sample sizes and evaluating the resulting posterior distribution.</li>
-<li>We assess the following conditions
-<ol type="1">
-<li>The posterior probability that variant B is better than variant A (i.e., conversion rate of B &gt; conversion rate of A) is above a certain threshold; set here at 95%.</li>
-<li>The posterior probability that the difference in conversion rates (B - A) is greater than the MDE is above a certain threshold; set here at 80%.</li>
-</ol></li>
-<li>The function <code>evaluate_analytica_power</code> in the <a href="https://github.com/erdemkarakoylu/erdemkarakoylu.github.io/blob/main/blog/bayesian_power/bayesian_power.ipynb">notebook</a> is used to evaluate the posterior difference for a given number of samples in view of these criteria. Now we can build a <code>power curve</code> against sample size</li>
+<li><strong>Definition</strong>: Measures how much it costs to get a user to take a specific action—install, signup, subscribe.</li>
+<li><strong>Formula</strong>:<br>
+<code>CPA = Ad Spend / Acquisitions</code></li>
+<li><strong>Use Case</strong>: Best suited to lead generation, app installs, and other conversion-oriented campaigns.</li>
+<li><strong>Optimization Objective</strong>: Reduce CPA while maintaining conversion quality.</li>
 </ul>
-<figure class="figure">
-<img src="./figures/figure2.png" alt="Power Analysis Curve" style="width:800px;" class="figure-img">
-<figcaption>
-Figure 2: Power curve showing showing expected power given the number of samples for each variant. Red line indicates desired threshold probability of detecting that stipulated MDE is satisfied; in this case 80%.
-</figcaption>
-</figure>
 </section>
-</section>
-<section id="power-analysis-interpretation" class="level3">
-<h3 class="anchored" data-anchor-id="power-analysis-interpretation">Power Analysis Interpretation</h3>
+<section id="ltv-lifetime-value" class="level3">
+<h3 class="anchored" data-anchor-id="ltv-lifetime-value">4. LTV – Lifetime Value</h3>
 <ul>
-<li>The figure above suggests 3500 FOR EACH variant would be a sufficient size.</li>
-<li>I recommend running it a bunch of times and get uncertainty envelopes around these numbers for added credibility to threshold surpassing; this is skipped for expediency.</li>
-</ul>
-<section id="running-the-actual-experiment." class="level4">
-<h4 class="anchored" data-anchor-id="running-the-actual-experiment.">Running The Actual Experiment.</h4>
-<ul>
-<li>Armed with this information we can actually run an A/B test and see what kind of posterior we get.</li>
-<li>Note that unlike Frequentists we don’t have traditionally accepted significance levels. How to come to a decision is an important discussion point between the data scientist and the stakeholder/decision maker.</li>
-<li>As a decision guide as to whether the difference is significantly greater than 0, I propose a Region of Pratical Equivalence (ROPE).</li>
-<li>Determining a good ROPE is beyond the scope of this post. But the power analysis had two criteria so for illustration, I will use these as follows</li>
-<li>First ROPE will be between (-1 and 0.005) and I will visually evaluate whether 95% of the Highest Density Interval (HDI) of the posterior of the difference (B-A) is greater</li>
-<li>Second rope will be between (0 and 0.015) and I will visually evaluate whether 80% of the HDI of the same posterior is greater.</li>
-<li>Note that for both I left some wiggle room and bumped the ROPE’s upper limits by half a percent relative to the Power Analysis criteria</li>
-</ul>
-<figure class="figure">
-<img src="./figures/figure3.png" alt="Experiment posterior" style="width:800px;" class="figure-img">
-<figcaption>
-Figure 3: Experiment outcome depicted as the posterior distribution of the difference, B-A, in terms of conversion between variants. Posterior statistics in black. Left panel includes Region of Practical Equivalence (ROPE) for absolute difference criterion, Right includes ROPE for minimum detectability criterion. See text for more.
-</figcaption>
-</figure>
-<p>Figure above: * Both plots above show the same posterior with different ROPEs * In black, the chosen HDI - 94% in this case as a reminder to be practical, not religious about these numbers * Numbers in black are lower and upper HDI bounds, and posterior mean.</p>
-<ul>
-<li><p>Left panel shows 0% of the posterior overlaps with the ROPE, which satisfies the condition that <span class="math inline">\(P((B-A)&gt;0) &gt; 95\%\)</span>.</p></li>
-<li><p>Right panel shows shows 2.1% of the posterior overlaps with the ROPE, meaning <span class="math inline">\(P((B-A)&gt;0.01)=97.1\%&gt;80\%\)</span></p></li>
+<li><strong>Definition</strong>: Estimates the total revenue a customer will generate over their relationship with the product or brand.</li>
+<li><strong>Formula</strong>:<br>
+<code>LTV = Revenue / Orders</code> (approximation for single-purchase models)</li>
+<li><strong>Use Case</strong>: Important for businesses with recurring purchases or long customer cycles.</li>
+<li><strong>Optimization Objective</strong>: Improve LTV via retention, upsell, and product strategy.</li>
 </ul>
 </section>
 </section>
-<section id="in-conclusion" class="level3">
-<h3 class="anchored" data-anchor-id="in-conclusion">In conclusion</h3>
-<p>Power analysis is not a strict necessity for Bayesians. It’s OK for us to go and collect more data if the posterior is not what we want it to be - data snooping or p-hacking is not a thing here. Nevertheless it can still be a useful tool for experiment planning and adequate resource allocation.</p>
-<p>Thanks for reading &amp; happy (probabilistic) coding!</p>
+<section id="putting-it-all-together" class="level2">
+<h2 class="anchored" data-anchor-id="putting-it-all-together">Putting It All Together</h2>
+<p>These metrics aren’t interchangeable—they each offer a different lens into campaign performance:</p>
+<ul>
+<li><strong>CPO</strong> and <strong>CPA</strong> measure cost-efficiency.</li>
+<li><strong>ROAS</strong> and <strong>LTV</strong> measure value generated.</li>
+<li><strong>ROAS</strong> is the mirror image of <strong>CPO</strong>, and should be evaluated together.</li>
+<li><strong>LTV</strong> helps contextualize whether a seemingly high <strong>CPA</strong> is actually acceptable.</li>
+</ul>
+<p>If you’re tuning a performance ad system—whether it’s for real-time bidding, post-campaign analytics, or growth experimentation—this metric map gives you a foundation for choosing what to optimize, when to dig deeper, and how to evaluate trade-offs.</p>
 
 
+</section>
 </section>
 
 <script async="" defer="" src="https://scripts.simpleanalyticscdn.com/latest.js"></script></main> <!-- /main -->

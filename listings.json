@@ -10,12 +10,14 @@
       "/blog/stats_ab_testing/index.html",
       "/blog/pfg_xgb_xai/index.html",
       "/blog/bart_toa/bart_toa.html",
-      "/blog/zerosumnormal/on_zero_sum_normal.html"
+      "/blog/zerosumnormal/on_zero_sum_normal.html",
+      "/blog/performance_marketing/index.html"
     ]
   },
   {
     "listing": "/portfolio.html",
     "items": [
+      "/portfolio/bayesian_chl/index.html",
       "/portfolio/bayesian_ab_testing/index.html",
       "/portfolio/pfg_xgb/index.html"
     ]
