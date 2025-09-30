@@ -17,14 +17,14 @@ erdemk@protonmail.com | [erdemkarakoylu.github.io](https://erdemkarakoylu.github
 
 ## Data Scientist | Bayesian Modeling & Machine Learning Specialist
 
-Practical AI expert specializing in Bayesian methods, LLM pipelines (RAG), and predictive modeling across defense, climate, and environmental domains. Builds robust, uncertainty-aware systems to enhance decision-making.
+Data scientist specializing in Bayesian modeling, uncertainty-aware machine learning for decision optimization. Experienced in developing and evaluating probabilistic models in high-stakes domains including defense, remote sensing, and environmental prediction. Strong track record of applying principled statistics to improve system performance and experimental design.
 
 ---
 
 ## Core Skills
 
 **Bayesian & Statistical Modeling**  
-Hierarchical Modeling (Regression & Classification) · Bayesian Additive Regression Trees (BART) · Monte Carlo Simulation · Probabilistic Programming · A/B Testing 
+Hierarchical Modeling (Regression & Classification) · Bayesian Additive Regression Trees (BART) · Probabilistic Programming · A/B Testing 
 
 **Emerging Interests**  
 Causal Inference (incl. do-calculus in PyMC) · Bayesian Decision Theory 
@@ -35,7 +35,7 @@ Python · PyMC · Scikit-learn · XGBoost · PyTorch · Pandas  · Git · Matplo
 
 ---
 
-## Experience & Research Highlights
+##  Experience & Research Highlights
 
 **Freelance Data Scientist – Marine Remote Sensing and Ecological Forecasting**  
 *Bayesian modeling and machine learning for environmental data*
@@ -64,11 +64,11 @@ Python · PyMC · Scikit-learn · XGBoost · PyTorch · Pandas  · Git · Matplo
 **Researcher – UC San Diego / Scripps Institution of Oceanography**  
 *Thesis: Foraging Sorties Hypothesis – Inferring Behavioral Rhythms in Marine Primary Consumers*
 
-- Adapted a planar laser-induced fluorescence (PLIF) imaging system to quantify real-time feeding states in individual marine zooplankton.
+- Adapted a planar laser-induced fluorescence imaging system to quantify real-time feeding states in individual marine zooplankton.
 - Captured high-resolution time series of gut pigment dynamics to infer behavioral state transitions (feeding, digestion, resting).
 - Built an individual-based model linking physiological state to vertical foraging behavior under environmental constraints.
 - Calibrated imaging measurements against chemical extraction to ensure accuracy and repeatability across individuals.
-- Findings published in *Limnology and Oceanography Methods* (2009); follow-up research on temperature effects published in *Journal of Plankton Research* (2012), where a gut fluorescence image was featured on the journal cover.
+- Follow-up research conducted on temperature effects on feeding behavior and gut dynamics. 
 
 
 ---

@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Erdem M. Karaköylü">
+<meta name="dcterms.date" content="2025-10-29">
+<meta name="description" content="End-to-end Bayesian modeling for chlorophyll-a with PyMC &amp; ArviZ — model ladder, LOO-PIT, and 94% predictive coverage.">
+
+<title>A Bayesian Workflow for Satellite Ocean Color (Chlorophyll-a) – Erdem Karaköylü</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b53751a350365c71b6c909e95f209ed1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-22381ab97ffb8a420d3841344730e94d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Erdem Karaköylü</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../portfolio.html"> 
+<span class="menu-text">Portfolio</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../resume.html"> 
+<span class="menu-text">Resume</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction-maximum-band-ratio-mbr" id="toc-introduction-maximum-band-ratio-mbr" class="nav-link active" data-scroll-target="#introduction-maximum-band-ratio-mbr"><span class="header-section-number">1</span> Introduction: Maximum Band Ratio (MBR)</a></li>
+  <li><a href="#model-ladder" id="toc-model-ladder" class="nav-link" data-scroll-target="#model-ladder"><span class="header-section-number">2</span> Model Ladder</a></li>
+  <li><a href="#comparative-model-diagnostics" id="toc-comparative-model-diagnostics" class="nav-link" data-scroll-target="#comparative-model-diagnostics"><span class="header-section-number">3</span> Comparative Model Diagnostics</a>
+  <ul class="collapse">
+  <li><a href="#loo-pit-94-envelope" id="toc-loo-pit-94-envelope" class="nav-link" data-scroll-target="#loo-pit-94-envelope"><span class="header-section-number">3.1</span> LOO-PIT (94% envelope)</a></li>
+  <li><a href="#in--and-out-of-sample-predictive-coverage-94-hdi" id="toc-in--and-out-of-sample-predictive-coverage-94-hdi" class="nav-link" data-scroll-target="#in--and-out-of-sample-predictive-coverage-94-hdi"><span class="header-section-number">3.2</span> In- and Out-of-Sample Predictive Coverage (94% HDI)</a></li>
+  </ul></li>
+  <li><a href="#model-comparison-psis-loo" id="toc-model-comparison-psis-loo" class="nav-link" data-scroll-target="#model-comparison-psis-loo"><span class="header-section-number">4</span> Model comparison (PSIS-LOO)</a></li>
+  <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways"><span class="header-section-number">5</span> Takeaways</a>
+  <ul class="collapse">
+  <li><a href="#why-it-matters" id="toc-why-it-matters" class="nav-link" data-scroll-target="#why-it-matters"><span class="header-section-number">5.1</span> Why it matters</a></li>
+  </ul></li>
+  <li><a href="#links" id="toc-links" class="nav-link" data-scroll-target="#links"><span class="header-section-number">6</span> Links</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">A Bayesian Workflow for Satellite Ocean Color (Chlorophyll-a)</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Bayesian</div>
+    <div class="quarto-category">Ocean Color</div>
+    <div class="quarto-category">PyMC</div>
+    <div class="quarto-category">ArviZ</div>
+    <div class="quarto-category">Uncertainty</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    End-to-end Bayesian modeling for chlorophyll-a with PyMC &amp; ArviZ — model ladder, LOO-PIT, and 94% predictive coverage.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Erdem M. Karaköylü </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 29, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+📂 Code &amp; Notebooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>All code and demo notebooks are available in the <a href="https://github.com/erdemkarakoylu/bayesian_chl_pub">GitHub repository</a>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" open="true">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Abstract
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Traditional satellite ocean-color algorithms often provide single-point chlorophyll-a estimates without calibrated uncertainty. This project implements a full <strong>Bayesian workflow</strong>—priors, sampling, posterior predictive checks, and model comparison—to produce <strong>uncertainty-aware</strong> predictions for chlorophyll-a.</p>
+<p>I build a <strong>model ladder</strong>: (1) OC-style polynomial baseline, (2) hierarchical partial pooling, and (3) heteroskedastic likelihood. Using <strong>LOO-PIT</strong> and <strong>predictive coverage at 94% HDI</strong>, I show stepwise improvement in calibration: partial pooling reduces over/under-confidence, and heteroskedastic noise modeling yields near-uniform PIT and near-nominal coverage. This workflow supports risk-aware tasks like HAB threshold exceedance probabilities and regional uncertainty summaries.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+A Principled Definition of Uncertainty
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Uncertainty is still an ill-defined fuzzy concept in Oceanography that causes much headache, and would cause certainly more if replication was a more ingrained tradition in this field.</p>
+<p>The classical meaning of uncertainty boils down to <em>how an estimator behaves under repeated sampling of a frozen system (IID, no drift, no perturbation, etc)</em>. Here, <u><b>UNCERTAINTY</b></u> means how probable different values are, given the model and data. This lets me make statements like:</p>
+<ul>
+<li><em>“The probability that the quantity of interest lies between* <span class="math inline">\(y_{\text{low}}\)</span> <em>and</em> <span class="math inline">\(y_{\text{high}}\)</span> <em>is</em> <span class="math inline">\(X\%\)</span>.”</em><br>
+Equivalently, <span class="math inline">\(p\!\left(y_{\text{low}} \le Y \le y_{\text{high}} \mid x,\ \text{model},\ \text{data}\right)=X\%\)</span>.</li>
+</ul>
+<p><strong>What are typically reported .</strong><br>
+- <strong>Parameters:</strong> posterior summaries <strong>with <span class="math inline">\(X\%\)</span> intervals</strong>.<br>
+- <strong>Predictions:</strong> posterior predictive distributions and <strong><span class="math inline">\(X\%\)</span> prediction intervals</strong> for future/held-out observations. - <strong>Uncertainty Calibrations:</strong> whether predictive uncertainty can be expected to reasonably reflect reality.</p>
+<p><strong>A Note on Significance level</strong> The <span class="math inline">\(X\%\)</span> probability and interval used for reporting should be chosen through careful consideration, rather than expected dogma (like p&lt;0.05). 100% is fine to report if it best suits the goal of a study. To help readers keep this in mind I used a quirky interval - referred to as Highest Density Interval (HDI) - of 94%.</p>
+</div>
+</div>
+<hr>
+<section id="introduction-maximum-band-ratio-mbr" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="introduction-maximum-band-ratio-mbr"><span class="header-section-number">1</span> Introduction: Maximum Band Ratio (MBR)</h2>
+<p><strong>Why this approach.</strong> Building on the long-standing <strong>band-ratio (OCx) tradition</strong>, I use the <strong>Maximum Band Ratio (MBR)</strong> as a compact, interpretable summary of spectral shape. Defining roles (indigo/blue/cyan/blue-green vs green/red) keeps the setup <strong>sensor-agnostic</strong>, and modeling a single covariate, <span class="math inline">\(log_{10}(\mathrm{MBR})\)</span>, makes the workflow transparent. My contribution is to <strong>apply a full Bayesian workflow</strong>—with priors, partial pooling by numerator-band group, and a heteroskedastic likelihood—to this familiar framework to improve <strong>predictive calibration</strong> and interpretability.</p>
+<p><strong>Concept (sensor-agnostic).</strong> Following the band-ratio (OCx) tradition, I use the <strong>Maximum Band Ratio (MBR)</strong> to encode spectral shape: take the strongest short-wavelength (“blue family”) signal and normalize by a longer-wavelength green/red reference. Naming bands by <strong>roles</strong> (indigo/blue/cyan/blue-green vs green/red) keeps the definition sensor-agnostic:</p>
+<p><span class="math display">\[
+\mathrm{MBR}
+=\frac{\max\big(\mathrm{Rrs}_{\text{indigo}},\ \mathrm{Rrs}_{\text{blue}},\ \mathrm{Rrs}_{\text{cyan}},\ \mathrm{Rrs}_{\text{blue-green}}\big)}
+{\mathrm{Rrs}_{\text{green}}+\mathrm{Rrs}_{\text{red}}}\,,
+\qquad
+x \equiv \log_{10}(\mathrm{MBR}).
+\]</span></p>
+<ul>
+<li><span class="math inline">\(\mathrm{Rrs}_\lambda\)</span> is remote-sensing reflectance at wavelength <span class="math inline">\(\lambda\)</span>.<br>
+</li>
+<li>The <strong>numerator</strong> takes the maximum across several short-wavelength bands (capturing the strongest “blue” signal).<br>
+</li>
+<li>The <strong>denominator</strong> normalizes by a sum of longer-wavelength bands to stabilize brightness and damp illumination/geometry effects.<br>
+</li>
+<li>I model on <span class="math inline">\(x=\log_{10}(\mathrm{MBR})\)</span>; multiplicative constants in the ratio are irrelevant under <span class="math inline">\(\log_{10}\)</span>.</li>
+</ul>
+<p><strong>This study’s bands (SeaWiFS mapping).</strong> I instantiate those roles with SeaWiFS-like bands: - <strong>indigo</strong> <span class="math inline">\(\approx 411\)</span>–<span class="math inline">\(412\)</span> nm <span class="math inline">\(\rightarrow\ \mathrm{Rrs}_{411}\)</span><br>
+- <strong>blue</strong> <span class="math inline">\(\approx 443\)</span> nm <span class="math inline">\(\rightarrow\ \mathrm{Rrs}_{443}\)</span><br>
+- <strong>cyan</strong> <span class="math inline">\(\approx 488\)</span>–<span class="math inline">\(490\)</span> nm <span class="math inline">\(\rightarrow\ \mathrm{Rrs}_{489}\)</span><br>
+- <strong>blue-green</strong> <span class="math inline">\(\approx 510\)</span> nm <span class="math inline">\(\rightarrow\ \mathrm{Rrs}_{510}\)</span><br>
+- <strong>green</strong> <span class="math inline">\(\approx 547\)</span>–<span class="math inline">\(560\)</span> nm <span class="math inline">\(\rightarrow\ \mathrm{Rrs}_{555}\)</span><br>
+- <strong>red</strong> <span class="math inline">\(\approx 667\)</span>–<span class="math inline">\(681\)</span> nm <span class="math inline">\(\rightarrow\ \mathrm{Rrs}_{670}\)</span></p>
+<p><span class="math display">\[
+\mathrm{MBR}
+=\frac{\max\big(\mathrm{Rrs}_{411},\ \mathrm{Rrs}_{443},\ \mathrm{Rrs}_{489},\ \mathrm{Rrs}_{510}\big)}
+{\mathrm{Rrs}_{555}+\mathrm{Rrs}_{670}}.
+\]</span></p>
+<p><strong>Grouping for partial pooling.</strong> I also create a <strong>numerator-band group</strong>, which flags for each observation the band that makes up the <span class="math inline">\(\mathrm{MBR}\)</span> numerator. This defines the groups used in the hierarchical models and comparisons.</p>
+<hr>
+</section>
+<section id="model-ladder" class="level2 page-columns page-full" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="model-ladder"><span class="header-section-number">2</span> Model Ladder</h2>
+<p>I use an iterative Bayesian workflow. Each cycle fits, diagnoses, and compares models, using those diagnostics to guide the next design—aiming to improve in-sample and out-of-sample fit and to assess whether predictive uncertainty is calibrated (i.e., that a stated 94% prediction interval contains about 94% of new observations the model hasn’t seen). Starting with the OC-style model below are some of the models that make up the model ladder.</p>
+<ul>
+<li><strong>Model 1</strong> — Baseline polynomial (OC-style)<br>
+</li>
+<li><strong>Model 2</strong> — Hierarchical partial pooling<br>
+</li>
+<li><strong>Model 5</strong> — Heteroskedastic likelihood</li>
+</ul>
+<p>Each step adds structure → improves <strong>calibration</strong> (not merely accuracy). Model 3 and 4 are not included here for brevity. Refer to the Supplementary Materials section in the preprint of my <a href="https://doi.org/10.31223/X54J1J">preprint</a> for more details.</p>
+<div id="fig-model-ladder" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-model-ladder-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div class="column-page">
+<div class="grid">
+<div class="g-col-12">
+<p><a href="figures/model1_structure_dag.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;1: Directed acyclic graphs of the three models’ generative structure. Nodes are variables/parameters; arrows indicate conditional dependence; plates denote repetition across groups or observations; shaded nodes are observed. The hierarchical and heteroskedastic edges explain why calibration improves across the ladder.   \Rightarrow How to read it: Follow arrows from parameter priors → predictive mean/scale → that conditions observed data log(chl) via the likelihood. In Model 2, group plates and top level priors (hyperpriors) induce partial pooling through groups defined by the band in the MBR numerator; in Model 5, extra edges into \sigma encode heteroskedastic noise, producing better tail behavior and near-nominal 94% coverage.   Top (Model 1 — Baseline): Polynomial OC-style regression of log chlorophyll on log MBR with a single global noise scale (homoskedastic). Middle (Model 2 — Hierarchical):Partial pooling** over numerator groups (plates): group-level intercepts/slopes with hyperpriors borrow strength across groups; common noise scale. Bottom (Model 3 — Heteroskedastic): Hierarchical structure plus heteroskedasticity: the likelihood’s σ varies with predictor and/or group, improving tail fit and calibration."><img src="figures/model1_structure_dag.png" class="img-fluid figure-img" style="width:80.0%" alt="Model 1 DAG — OC-style polynomial baseline: log-chl ~ f(log-MBR) with a single global (homoskedastic) noise scale."></a></p>
+</div>
+<div class="g-col-12">
+<p><a href="figures/model2_structure_dag.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;1: Directed acyclic graphs of the three models’ generative structure. Nodes are variables/parameters; arrows indicate conditional dependence; plates denote repetition across groups or observations; shaded nodes are observed. The hierarchical and heteroskedastic edges explain why calibration improves across the ladder.   \Rightarrow How to read it: Follow arrows from parameter priors → predictive mean/scale → that conditions observed data log(chl) via the likelihood. In Model 2, group plates and top level priors (hyperpriors) induce partial pooling through groups defined by the band in the MBR numerator; in Model 5, extra edges into \sigma encode heteroskedastic noise, producing better tail behavior and near-nominal 94% coverage.   Top (Model 1 — Baseline): Polynomial OC-style regression of log chlorophyll on log MBR with a single global noise scale (homoskedastic). Middle (Model 2 — Hierarchical):Partial pooling** over numerator groups (plates): group-level intercepts/slopes with hyperpriors borrow strength across groups; common noise scale. Bottom (Model 3 — Heteroskedastic): Hierarchical structure plus heteroskedasticity: the likelihood’s σ varies with predictor and/or group, improving tail fit and calibration."><img src="figures/model2_structure_dag.png" class="img-fluid figure-img" style="width:80.0%" alt="Model 2 DAG — Hierarchical partial pooling: group-level intercepts/slopes by MBR numerator with hyperpriors; shared noise scale."></a></p>
+</div>
+<div class="g-col-12">
+<p><a href="figures/model5_structure_dag.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;1: Directed acyclic graphs of the three models’ generative structure. Nodes are variables/parameters; arrows indicate conditional dependence; plates denote repetition across groups or observations; shaded nodes are observed. The hierarchical and heteroskedastic edges explain why calibration improves across the ladder.   \Rightarrow How to read it: Follow arrows from parameter priors → predictive mean/scale → that conditions observed data log(chl) via the likelihood. In Model 2, group plates and top level priors (hyperpriors) induce partial pooling through groups defined by the band in the MBR numerator; in Model 5, extra edges into \sigma encode heteroskedastic noise, producing better tail behavior and near-nominal 94% coverage.   Top (Model 1 — Baseline): Polynomial OC-style regression of log chlorophyll on log MBR with a single global noise scale (homoskedastic). Middle (Model 2 — Hierarchical):Partial pooling** over numerator groups (plates): group-level intercepts/slopes with hyperpriors borrow strength across groups; common noise scale. Bottom (Model 3 — Heteroskedastic): Hierarchical structure plus heteroskedasticity: the likelihood’s σ varies with predictor and/or group, improving tail fit and calibration."><img src="figures/model5_structure_dag.png" class="img-fluid figure-img" style="width:80.0%" alt="Model 5 DAG — Heteroskedastic hierarchical: partial pooling plus predictor/group-dependent noise (σ varies with x and/or group)."></a></p>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-model-ladder-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Directed acyclic graphs of the three models’ generative structure. Nodes are variables/parameters; arrows indicate conditional dependence; plates denote repetition across groups or observations; shaded nodes are observed. The hierarchical and heteroskedastic edges explain why calibration improves across the ladder. <br> <u><span class="math inline">\(\Rightarrow\)</span> How to read it</u>: Follow arrows from parameter priors → predictive mean/scale → that conditions observed data <span class="math inline">\(log(chl)\)</span> via the likelihood. In Model 2, group plates and top level priors (hyperpriors) induce partial pooling through groups defined by the band in the MBR numerator; in Model 5, extra edges into <span class="math inline">\(\sigma\)</span> encode heteroskedastic noise, producing better tail behavior and near-nominal 94% coverage. <br> <u><b>Top (Model 1 — Baseline)</b></u>: Polynomial OC-style regression of log chlorophyll on log MBR with a single global noise scale (<strong>homoskedastic</strong>).<br>
+<u><b>Middle (Model 2 — Hierarchical)</b></u>:Partial pooling** over numerator groups (plates): group-level intercepts/slopes with hyperpriors borrow strength across groups; common noise scale.<br>
+<u><b>Bottom (Model 3 — Heteroskedastic)</b></u>: Hierarchical structure <strong>plus heteroskedasticity</strong>: the likelihood’s σ varies with predictor and/or group, improving tail fit and calibration.
+</figcaption>
+</figure>
+</div>
+<hr>
+</section>
+<section id="comparative-model-diagnostics" class="level2 page-columns page-full" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="comparative-model-diagnostics"><span class="header-section-number">3</span> Comparative Model Diagnostics</h2>
+<section id="loo-pit-94-envelope" class="level3 page-columns page-full" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="loo-pit-94-envelope"><span class="header-section-number">3.1</span> LOO-PIT (94% envelope)</h3>
+<div id="fig-loo-pit" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-loo-pit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div class="column-page">
+<div class="grid">
+<div class="g-col-12 g-col-lg-4">
+<p><a href="figures/model1_loo_pit.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;2: Left (Model 1 — Baseline): Three-panel diagnostic — PPC (top) shows mismatched spread; PIT KDE (bottom-left) departs from flat; ECDF − uniform (bottom-right) crosses outside the 94% envelope → over/under-confidence. Center (Model 2 — Hierarchical): Partial pooling improves calibration — PPC envelopes better match variance, in spite of a conspicuous localized departure; PIT KDE flatter than for model 1; ECDF − uniform closer to zero with smaller deviations. Right (Model 3 — Heteroskedastic): Best calibration — PPC accommodates heteroskedastic spread; PIT KDE ≈ flat; ECDF − uniform remains within the 94% envelope across x."><img src="figures/model1_loo_pit.png" class="img-fluid figure-img" style="width:100.0%" alt="Model 1 LOO-PIT (94% envelope): three-panel diagnostic with posterior predictive check (top), PIT KDE (bottom-left), and ECDF-minus-uniform (bottom-right)."></a></p>
+</div>
+<div class="g-col-12 g-col-lg-4">
+<p><a href="figures/model2_loo_pit.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Figure&nbsp;2: Left (Model 1 — Baseline): Three-panel diagnostic — PPC (top) shows mismatched spread; PIT KDE (bottom-left) departs from flat; ECDF − uniform (bottom-right) crosses outside the 94% envelope → over/under-confidence. Center (Model 2 — Hierarchical): Partial pooling improves calibration — PPC envelopes better match variance, in spite of a conspicuous localized departure; PIT KDE flatter than for model 1; ECDF − uniform closer to zero with smaller deviations. Right (Model 3 — Heteroskedastic): Best calibration — PPC accommodates heteroskedastic spread; PIT KDE ≈ flat; ECDF − uniform remains within the 94% envelope across x."><img src="figures/model2_loo_pit.png" class="img-fluid figure-img" style="width:100.0%" alt="Model 2 LOO-PIT (94% envelope): three-panel diagnostic with posterior predictive check (top), PIT KDE (bottom-left), and ECDF-minus-uniform (bottom-right)."></a></p>
+</div>
+<div class="g-col-12 g-col-lg-4">
+<p><a href="figures/model5_loo_pit.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Figure&nbsp;2: Left (Model 1 — Baseline): Three-panel diagnostic — PPC (top) shows mismatched spread; PIT KDE (bottom-left) departs from flat; ECDF − uniform (bottom-right) crosses outside the 94% envelope → over/under-confidence. Center (Model 2 — Hierarchical): Partial pooling improves calibration — PPC envelopes better match variance, in spite of a conspicuous localized departure; PIT KDE flatter than for model 1; ECDF − uniform closer to zero with smaller deviations. Right (Model 3 — Heteroskedastic): Best calibration — PPC accommodates heteroskedastic spread; PIT KDE ≈ flat; ECDF − uniform remains within the 94% envelope across x."><img src="figures/model5_loo_pit.png" class="img-fluid figure-img" style="width:100.0%" alt="Model 3 LOO-PIT (94% envelope): three-panel diagnostic with posterior predictive check (top), PIT KDE (bottom-left), and ECDF-minus-uniform (bottom-right)."></a></p>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-loo-pit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: <strong>Left (Model 1 — Baseline):</strong> Three-panel diagnostic — <strong>PPC</strong> (top) shows mismatched spread; <strong>PIT KDE</strong> (bottom-left) departs from flat; <strong>ECDF − uniform</strong> (bottom-right) crosses outside the 94% envelope → over/under-confidence.<br>
+<strong>Center (Model 2 — Hierarchical):</strong> Partial pooling improves calibration — PPC envelopes better match variance, in spite of a conspicuous localized departure; PIT KDE flatter than for model 1; ECDF − uniform closer to zero with smaller deviations.<br>
+<strong>Right (Model 3 — Heteroskedastic):</strong> Best calibration — PPC accommodates heteroskedastic spread; PIT KDE ≈ flat; ECDF − uniform remains within the 94% envelope across x.
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="in--and-out-of-sample-predictive-coverage-94-hdi" class="level3 page-columns page-full" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="in--and-out-of-sample-predictive-coverage-94-hdi"><span class="header-section-number">3.2</span> In- and Out-of-Sample Predictive Coverage (94% HDI)</h3>
+<div id="fig-coverage" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-coverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div class="column-page">
+<div class="grid">
+<div class="g-col-12 g-col-lg-4">
+<p><a href="figures/model1_predictive_coverage.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;3: Left (Model 1 — Baseline): Empirical coverage vs nominal 0.94 shows pockets of under/over-coverage across log-MBR and numerator groups → intervals too narrow/wide in places. Center (Model 2 — Hierarchical): Coverage moves closer to nominal 0.94 by capturing group-specific means/variance; fewer systematic departures. Right (Model 3 — Heteroskedastic): Near-nominal 0.94 across predictors and groups; remaining mismatches are localized and small."><img src="figures/model1_predictive_coverage.png" class="img-fluid figure-img" style="width:100.0%" alt="Model 1 predictive coverage at 94% HDI vs predictors/groups."></a></p>
+</div>
+<div class="g-col-12 g-col-lg-4">
+<p><a href="figures/model2_predictive_coverage.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Figure&nbsp;3: Left (Model 1 — Baseline): Empirical coverage vs nominal 0.94 shows pockets of under/over-coverage across log-MBR and numerator groups → intervals too narrow/wide in places. Center (Model 2 — Hierarchical): Coverage moves closer to nominal 0.94 by capturing group-specific means/variance; fewer systematic departures. Right (Model 3 — Heteroskedastic): Near-nominal 0.94 across predictors and groups; remaining mismatches are localized and small."><img src="figures/model2_predictive_coverage.png" class="img-fluid figure-img" style="width:100.0%" alt="Model 2 predictive coverage at 94% HDI vs predictors/groups."></a></p>
+</div>
+<div class="g-col-12 g-col-lg-4">
+<p><a href="figures/model5_predictive_coverage.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="Figure&nbsp;3: Left (Model 1 — Baseline): Empirical coverage vs nominal 0.94 shows pockets of under/over-coverage across log-MBR and numerator groups → intervals too narrow/wide in places. Center (Model 2 — Hierarchical): Coverage moves closer to nominal 0.94 by capturing group-specific means/variance; fewer systematic departures. Right (Model 3 — Heteroskedastic): Near-nominal 0.94 across predictors and groups; remaining mismatches are localized and small."><img src="figures/model5_predictive_coverage.png" class="img-fluid figure-img" style="width:100.0%" alt="Model 3 predictive coverage at 94% HDI vs predictors/groups."></a></p>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-coverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: <strong>Left (Model 1 — Baseline):</strong> Empirical coverage vs nominal <strong>0.94</strong> shows pockets of under/over-coverage across log-MBR and numerator groups → intervals too narrow/wide in places.<br>
+<strong>Center (Model 2 — Hierarchical):</strong> Coverage moves closer to nominal <strong>0.94</strong> by capturing group-specific means/variance; fewer systematic departures.<br>
+<strong>Right (Model 3 — Heteroskedastic):</strong> Near-nominal <strong>0.94</strong> across predictors and groups; remaining mismatches are localized and small.
+</figcaption>
+</figure>
+</div>
+<hr>
+</section>
+</section>
+<section id="model-comparison-psis-loo" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="model-comparison-psis-loo"><span class="header-section-number">4</span> Model comparison (PSIS-LOO)</h2>
+<div id="fig-model-comp" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-model-comp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="figures/post_comp_loocv.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="Model Comparison"><img src="figures/post_comp_loocv.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+<figcaption>Model Comparison</figcaption>
+</figure>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-model-comp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: PSIS-LOO model comparison (ΔELPD). Points show each model’s difference in expected log predictive density relative to the top model (higher is better); vertical bars are ±1 SE from the PSIS estimate. Intervals that overlap zero indicate no meaningful difference from the leader at this uncertainty level. Pareto- 𝑘 k diagnostics were within acceptable bounds (no refits required). The progression from the baseline polynomial to hierarchical partial pooling and then heteroskedastic likelihood yields monotonic gains in out-of-sample predictive accuracy, consistent with the calibration improvements seen in the LOO-PIT and 94% predictive coverage figures.
+</figcaption>
+</figure>
+</div>
+<hr>
+</section>
+<section id="takeaways" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="takeaways"><span class="header-section-number">5</span> Takeaways</h2>
+<ul>
+<li><strong>Calibration improves stepwise</strong> from baseline → hierarchical → hierarchical with heteroskedasticity.<br>
+</li>
+<li>Final model achieves <strong>the closest PIT-based assessment</strong> and better <strong>near-nominal 94% coverage</strong> of all models. There is still room for improvement however, though perhaps not with the <span class="math inline">\(\mathrm{MBR}\)</span> model type. This framework makes it easy to compare these with newer models. The present study remains useful as a benchmark to compare future work against.</li>
+</ul>
+<section id="why-it-matters" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="why-it-matters"><span class="header-section-number">5.1</span> Why it matters</h3>
+<p><strong>For stakeholders.</strong><br>
+Model trustworthiness and user buy-in depend on well-calibrated, accurate predictions. For continuous quantities, chlorophyll in this case, a single point estimate has essentially zero probability; what matters is the predictive distribution around it. Replacing bare point estimates with posterior predictive probabilities enables decisions (e.g., HAB screening) to be based on how likely outcomes are given the model and data, balancing calibration and sharpness.</p>
+<p><strong>For researchers.</strong><br>
+Uncertainty is quantifies the current lack of knowledge embodied in the model structure and data collected. This can show whether predictions match reality (via calibration and coverage plots below). Uncertainty can also highlight where new measurements would help most, and can therefore help inform future data collection efforts.</p>
+<hr>
+</section>
+</section>
+<section id="links" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="links"><span class="header-section-number">6</span> Links</h2>
+<ul>
+<li><strong>Code</strong> → Repo linked <a href="https://github.com/erdemkarakoylu/bayesian_chl_pub">here</a></li>
+<li><strong>Manuscript</strong> → Preprint linked <a href="https://doi.org/10.31223/X54J1J">here</a></li>
+</ul>
+
+
+</section>
+
+<script async="" defer="" src="https://scripts.simpleanalyticscdn.com/latest.js"></script></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://buymeacoffee.com/ofbozmjsvn">
+<p>☕ Buy Me a Coffee</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>

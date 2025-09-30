@@ -1,0 +1,72 @@
+---
+title: "What Does a Dollar in Ad Spend Really Buy?"
+description: "A Framework for Understanding CPO, ROAS, CPA, and LTV in Performance Marketing"
+author: "Erdem Karaköylü"
+date: "2025-08-20"
+format:
+  html:
+    toc: true
+    code-fold: false
+image: './figures/ad_metrics_relationship_diagram.png'
+---
+
+# A Framework for Understanding CPO, ROAS, CPA, and LTV
+
+In the fast-moving world of digital advertising, understanding how to measure performance is essential. But with so many metrics—CPO, ROAS, CPA, LTV—it’s easy to lose track of how they relate and when to use each. This post serves as a quick reference for understanding these core performance indicators through both definitions and a visual map.
+
+## Visual Summary
+
+Before diving into definitions, here's a high-level diagram showing how these metrics relate:
+
+- **Ad Spend** and **Revenue** flow into **ROAS**.
+- **Ad Spend** and **Orders** define **CPO**.
+- **Ad Spend** and **Acquisitions** give you **CPA**.
+- **Revenue** and **Orders** help compute **LTV**.
+
+![](./figures/ad_metrics_relationship_diagram.png)
+
+## Key Definitions and Relationships
+
+### 1. CPO – Cost Per Order
+
+- **Definition**: Total advertising spend divided by the number of completed orders.
+- **Formula**:  
+  `CPO = Ad Spend / Orders`
+- **Use Case**: Best for retail media networks or e-commerce businesses that can track purchases directly.
+- **Optimization Objective**: Lower CPO without sacrificing order volume.
+
+### 2. ROAS – Return on Ad Spend
+
+- **Definition**: Measures how much revenue is generated per dollar of ad spend.
+- **Formula**:  
+  `ROAS = Revenue / Ad Spend`
+- **Use Case**: Widely used in performance marketing to evaluate the efficiency of a campaign.
+- **Optimization Objective**: Maximize ROAS by increasing conversion value or reducing inefficient spend.
+
+### 3. CPA – Cost Per Acquisition
+
+- **Definition**: Measures how much it costs to get a user to take a specific action—install, signup, subscribe.
+- **Formula**:  
+  `CPA = Ad Spend / Acquisitions`
+- **Use Case**: Best suited to lead generation, app installs, and other conversion-oriented campaigns.
+- **Optimization Objective**: Reduce CPA while maintaining conversion quality.
+
+### 4. LTV – Lifetime Value
+
+- **Definition**: Estimates the total revenue a customer will generate over their relationship with the product or brand.
+- **Formula**:  
+  `LTV = Revenue / Orders` (approximation for single-purchase models)
+- **Use Case**: Important for businesses with recurring purchases or long customer cycles.
+- **Optimization Objective**: Improve LTV via retention, upsell, and product strategy.
+
+## Putting It All Together
+
+These metrics aren’t interchangeable—they each offer a different lens into campaign performance:
+
+- **CPO** and **CPA** measure cost-efficiency.
+- **ROAS** and **LTV** measure value generated.
+- **ROAS** is the mirror image of **CPO**, and should be evaluated together.
+- **LTV** helps contextualize whether a seemingly high **CPA** is actually acceptable.
+
+If you're tuning a performance ad system—whether it’s for real-time bidding, post-campaign analytics, or growth experimentation—this metric map gives you a foundation for choosing what to optimize, when to dig deeper, and how to evaluate trade-offs.
+

@@ -3,8 +3,6 @@ title: "Erdem Karaköylü – Data Scientist"
 format: html
 ---
 
-**Erdem Karaköylü**  
-University Park, MD  
 erdemk@protonmail.com | [erdemkarakoylu.github.io](https://erdemkarakoylu.github.io) | [LinkedIn](https://linkedin.com/in/erdem-karaköylü-49487455)
 
 ---
@@ -25,7 +23,6 @@ Causal Inference (incl. do-calculus in PyMC) · Bayesian Decision Theory
 
 **Technical Stack**  
 Python · PyMC · Scikit-learn · XGBoost · PyTorch · Pandas  · Git · Matplotlib · Seaborn · ArviZ · XArray · SQL
-
 
 ---
 

@@ -1,0 +1,161 @@
+---
+title: "Bypassing Atmospheric Correction with BART"
+date: 2025-07-18
+categories: 
+    - Bayesian Additive Regression Trees
+    - Remote Sensing
+    - Oceanography
+    - Plankton
+    - Atmospheric Correction
+draft: true
+format: html
+image: ../../assets/Under_construction_icon-orange.svg
+
+---
+
+> Predicting phytoplankton absorption directly from satellite top-of-atmosphere radiance using Bayesian Additive Regression Trees (BART).
+
+## Summary
+
+This study explores an alternative path in satellite ocean color retrieval: **predicting phytoplankton absorption directly from top-of-atmosphere (TOA) radiance** — without applying full atmospheric correction. Instead of correcting the signal, I **model the relationship between radiance and in-water optical properties** using **Bayesian Additive Regression Trees (BART)**.
+
+The approach is fully probabilistic, requires minimal preprocessing, and sidesteps one of the most error-prone steps in the ocean color pipeline.
+
+> 💡 **See the full modeling notebook**  
+> 📓 [Jupyter Notebook: BART Modeling of TOA Radiance](https://github.com/your-repo/path-to-notebook.ipynb)
+
+---
+
+## Why This Matters
+
+Most satellite algorithms for ocean color begin with full atmospheric correction, an elaborate process sensitive to sensor calibration, aerosol assumptions, and viewing geometry. That correction can introduce more noise than it removes — especially in optically complex waters.
+
+This approach bypasses this step entirely. By modeling the **direct statistical relationship between TOA radiance and phytoplankton absorption**, I reduce complexity and open the door to real-time and near-surface-only applications.
+
+---
+
+## Data Overview
+
+I use the synthetic hyperspectral dataset from **Valente et al. (2022)**, focusing on:
+
+- **Inputs**: log₁₀ TOA radiance at 6 bands (412, 443, 490, 510, 555, 670 nm), corrected only for Rayleigh scattering and Fresnel reflection.
+- **Targets**: log₁₀ phytoplankton absorption (a<sub>φ</sub>) at 443, 555, and 670 nm.
+
+These bands are common to legacy and upcoming satellite sensors, making the results widely applicable.
+
+---
+
+## Model Development
+
+We developed **three multivariate BART models**, each predicting **phytoplankton absorption at 443, 555, and 670 nm simultaneously**. All models share the same inputs — log₁₀-transformed Rayleigh- and Fresnel-corrected TOA radiance at six bands — but differ in how they model uncertainty and structure the noise term.
+
+This modeling progression allows us to test the sensitivity of results to increasingly flexible assumptions about the residual structure. While the mean structure (captured by BART) remains the same, the treatment of uncertainty becomes more sophisticated from Model 1 to Model 3.
+
+---
+
+### Model 1: Homoskedastic Noise, Independent Across Wavelengths
+
+The first model assumes a separate but **constant noise level** for each absorption wavelength. It uses a **half-normal prior** on the standard deviation for each band, treating the noise as homoskedastic and uncorrelated.
+
+This model serves as the baseline and is the most constrained in terms of uncertainty treatment.  
+See **Figure 1** for the model structure.
+
+![Model 1 structure](figures/model1_dag.pdf)
+**Figure 1.** BART model with separate homoskedastic noise terms for each target absorption band.
+
+---
+
+### Model 2: Hierarchical Noise Prior Across Wavelengths
+
+In the second model, we introduce a **hierarchical prior** on the standard deviation parameters across wavelengths. An exponential prior governs the variability between wavelength-specific σ values, allowing the model to **share information across bands** while still assigning each its own uncertainty scale.
+
+This encourages moderate regularization of the noise structure while remaining more flexible than Model 1.  
+See **Figure 2** for the model layout.
+
+![Model 2 structure](figures/model2_dag.pdf)
+**Figure 2.** BART model with a hierarchical exponential prior on wavelength-specific noise terms.
+
+---
+
+### Model 3: Input-Dependent (Heteroscedastic) Noise
+
+The third model allows the noise to **vary with the input radiance values themselves** — introducing a **heteroscedastic noise model**. The standard deviation for each wavelength is modeled as a function of TOA radiance through a linear transformation, followed by exponentiation to ensure positivity.
+
+This is the most flexible formulation and accounts for the fact that predictive uncertainty may increase (or decrease) in specific regions of input space.  
+The structure is illustrated in **Figure 3**.
+
+![Model 3 structure](./figures/model3_dag.pdf) 
+**Figure 3.** BART model with heteroscedastic noise, where the standard deviation depends on TOA radiance via learned slopes and intercepts.
+
+---
+
+By holding the BART mean function constant and varying only the noise structure, we can **compare calibration, sharpness, and predictive fit** across models — and better understand how uncertainty behaves across wavelengths and input regimes. This structure also positions us to extend to **full Bayesian multitask learning** in future work.
+
+
+
+---
+
+## Model Results
+
+Each target wavelength was modeled using a separate BART regression. The models effectively captured the nonlinear relationships between TOA radiance and phytoplankton absorption, yielding tight posterior predictive intervals with minimal bias across the optical range.
+
+Here is the posterior predictive check for a<sub>φ</sub>(443):
+
+![Posterior predictive check for 443 nm](path/to/ppc_443.png)
+
+And for a<sub>φ</sub>(555):
+
+![Posterior predictive check for 555 nm](path/to/ppc_555.png)
+
+And for a<sub>φ</sub>(670):
+
+![Posterior predictive check for 670 nm](path/to/ppc_670.png)
+
+The distributions of observed and simulated values closely align across wavelengths, indicating that the model generalizes well and captures relevant variance in the data.
+
+---
+
+## Calibration: Leave-One-Out PIT
+
+To assess model calibration, I used **LOO-PIT** (Leave-One-Out Probability Integral Transform). This diagnostic checks whether the model's predictive distribution is well-calibrated across observations.
+
+Here's the LOO-PIT plot for the three absorption bands:
+
+![LOO-PIT plots](path/to/loo_pit.png)
+
+A uniform distribution indicates perfect calibration. Minor deviations near the tails suggest small over- or under-dispersion at certain wavelengths, but the overall shape confirms good fit.
+
+> 📖 Learn more about this diagnostic in my blog post:  
+> [LOO-PIT Explained: Calibrating Bayesian Predictive Models](../blog/loo-pit-diagnostics.qmd)
+
+---
+
+## Key Takeaways
+
+- **No full atmospheric correction** is required to predict phytoplankton absorption.
+- **Bayesian Additive Regression Trees** offer a powerful way to capture nonlinear, multiband relationships with built-in uncertainty estimates.
+- Model predictions show excellent agreement with ground-truth absorption data, supported by tight posterior intervals and LOO-based validation.
+- This opens the door to new operational tools that are simpler, faster, and less reliant on ancillary assumptions.
+
+---
+
+## What’s Next?
+
+- Extend to other IOPs like **chlorophyll-a** and **non-algal particles**
+- Evaluate on **real sensor data** (e.g., Sentinel-3 OLCI)
+- Scale to **hyperspectral input** from missions like PACE
+- Experiment with **causal forests** and **heterogeneous effect estimation**
+
+---
+
+## Links
+
+- 🛰️ [Valente et al. Dataset](https://doi.org/10.5194/essd-2022-183)  
+- 📓 [Modeling Notebook](https://github.com/your-repo/path-to-notebook.ipynb)  
+- 📖 [Blog Post on LOO-PIT](../blog/loo-pit-diagnostics.qmd)  
+- 📝 [Draft Manuscript](https://your-overleaf-link.com)
+
+---
+
+*Part of a broader research effort to make satellite oceanography faster, more robust, and more Bayesian.*
+

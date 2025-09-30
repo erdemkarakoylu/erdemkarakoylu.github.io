@@ -1,0 +1,227 @@
+---
+title: "A Bayesian Workflow for Satellite Ocean Color (Chlorophyll-a)"
+author: "Erdem M. Karaköylü"
+date: 2025-10-29
+description: End-to-end Bayesian modeling for chlorophyll-a with PyMC & ArviZ — model ladder, LOO-PIT, and 94% predictive coverage.
+categories:
+  - Bayesian
+  - Ocean Color
+  - PyMC
+  - ArviZ
+  - Uncertainty
+image: 'assets/portfolio/bayesian-workflow-thumb.png'
+format:
+  html:
+    toc: true
+    number-sections: true
+    fig-cap-location: bottom
+    code-fold: false
+lightbox: auto
+execute:
+  echo: false
+  eval: false
+freeze: true
+page-layout: article
+citation: false 
+---
+
+::: {.callout-tip}
+## 📂 Code & Notebooks
+All code and demo notebooks are available in the [GitHub repository](https://github.com/erdemkarakoylu/bayesian_chl_pub).
+:::
+
+::: {.callout-note collapse=true open=true}
+## Abstract
+
+Traditional satellite ocean-color algorithms often provide single-point chlorophyll-a estimates without calibrated uncertainty. This project implements a full **Bayesian workflow**—priors, sampling, posterior predictive checks, and model comparison—to produce **uncertainty-aware** predictions for chlorophyll-a.
+
+I build a **model ladder**: (1) OC-style polynomial baseline, (2) hierarchical partial pooling, and (3) heteroskedastic likelihood. Using **LOO-PIT** and **predictive coverage at 94% HDI**, I show stepwise improvement in calibration: partial pooling reduces over/under-confidence, and heteroskedastic noise modeling yields near-uniform PIT and near-nominal coverage. This workflow supports risk-aware tasks like HAB threshold exceedance probabilities and regional uncertainty summaries.
+:::
+
+::: {.callout-important}
+## A Principled Definition of Uncertainty
+
+Uncertainty is still an ill-defined fuzzy concept in Oceanography that causes much headache, and would cause certainly more if replication was a more ingrained tradition in this field.
+
+The classical meaning of uncertainty boils down to *how an estimator behaves under repeated sampling of a frozen system (IID, no drift, no perturbation, etc)*. Here, <u><b>UNCERTAINTY</b></u> means how probable different values are, given the model and data. This lets me make statements like:
+
+- *“The probability that the quantity of interest lies between* $y_{\text{low}}$ *and* $y_{\text{high}}$ *is* $X\%$.”*  
+  Equivalently, $p\!\left(y_{\text{low}} \le Y \le y_{\text{high}} \mid x,\ \text{model},\ \text{data}\right)=X\%$.
+
+**What are typically reported .**  
+- **Parameters:** posterior summaries **with $X\%$ intervals**.  
+- **Predictions:** posterior predictive distributions and **$X\%$ prediction intervals** for future/held-out observations.
+- **Uncertainty Calibrations:** whether predictive uncertainty can be expected to reasonably reflect reality.
+
+**A Note on Significance level**
+The $X\%$ probability and interval used for reporting should be chosen through careful consideration, rather than expected dogma (like p<0.05). 100% is fine to report if it best suits the goal of a study. To help readers keep this in mind I used a quirky interval  - referred to as Highest Density Interval (HDI) - of 94%.
+
+:::
+
+
+---
+
+## Introduction: Maximum Band Ratio (MBR)
+
+**Why this approach.** Building on the long-standing **band-ratio (OCx) tradition**, I use the **Maximum Band Ratio (MBR)** as a compact, interpretable summary of spectral shape. Defining roles (indigo/blue/cyan/blue-green vs green/red) keeps the setup **sensor-agnostic**, and modeling a single covariate, $log_{10}(\mathrm{MBR})$, makes the workflow transparent. My contribution is to **apply a full Bayesian workflow**—with priors, partial pooling by numerator-band group, and a heteroskedastic likelihood—to this familiar framework to improve **predictive calibration** and interpretability.
+
+
+**Concept (sensor-agnostic).** Following the band-ratio (OCx) tradition, I use the **Maximum Band Ratio (MBR)** to encode spectral shape: take the strongest short-wavelength (“blue family”) signal and normalize by a longer-wavelength green/red reference. Naming bands by **roles** (indigo/blue/cyan/blue-green vs green/red) keeps the definition sensor-agnostic:
+
+
+$$
+\mathrm{MBR}
+=\frac{\max\big(\mathrm{Rrs}_{\text{indigo}},\ \mathrm{Rrs}_{\text{blue}},\ \mathrm{Rrs}_{\text{cyan}},\ \mathrm{Rrs}_{\text{blue-green}}\big)}
+{\mathrm{Rrs}_{\text{green}}+\mathrm{Rrs}_{\text{red}}}\,,
+\qquad
+x \equiv \log_{10}(\mathrm{MBR}).
+$$
+
+- $\mathrm{Rrs}_\lambda$ is remote-sensing reflectance at wavelength $\lambda$.  
+- The **numerator** takes the maximum across several short-wavelength bands (capturing the strongest “blue” signal).  
+- The **denominator** normalizes by a sum of longer-wavelength bands to stabilize brightness and damp illumination/geometry effects.  
+- I model on $x=\log_{10}(\mathrm{MBR})$; multiplicative constants in the ratio are irrelevant under $\log_{10}$.
+
+**This study’s bands (SeaWiFS mapping).** I instantiate those roles with SeaWiFS-like bands:
+- **indigo** $\approx 411$–$412$ nm $\rightarrow\ \mathrm{Rrs}_{411}$  
+- **blue** $\approx 443$ nm $\rightarrow\ \mathrm{Rrs}_{443}$  
+- **cyan** $\approx 488$–$490$ nm $\rightarrow\ \mathrm{Rrs}_{489}$  
+- **blue-green** $\approx 510$ nm $\rightarrow\ \mathrm{Rrs}_{510}$  
+- **green** $\approx 547$–$560$ nm $\rightarrow\ \mathrm{Rrs}_{555}$  
+- **red** $\approx 667$–$681$ nm $\rightarrow\ \mathrm{Rrs}_{670}$
+
+$$
+\mathrm{MBR}
+=\frac{\max\big(\mathrm{Rrs}_{411},\ \mathrm{Rrs}_{443},\ \mathrm{Rrs}_{489},\ \mathrm{Rrs}_{510}\big)}
+{\mathrm{Rrs}_{555}+\mathrm{Rrs}_{670}}.
+$$
+
+**Grouping for partial pooling.** I also create a **numerator-band group**, which flags for each observation the band that makes up the $\mathrm{MBR}$ numerator. This defines the groups used in the hierarchical models and comparisons.
+
+
+---
+
+## Model Ladder
+I use an iterative Bayesian workflow. Each cycle fits, diagnoses, and compares models, using those diagnostics to guide the next design—aiming to improve in-sample and out-of-sample fit and to assess whether predictive uncertainty is calibrated (i.e., that a stated 94% prediction interval contains about 94% of new observations the model hasn’t seen). Starting with the OC-style model below  are some of the models that make up the model ladder.
+
+- **Model 1** — Baseline polynomial (OC-style)  
+- **Model 2** — Hierarchical partial pooling  
+- **Model 5** — Heteroskedastic likelihood  
+
+Each step adds structure → improves **calibration** (not merely accuracy). Model 3 and 4 are not included here for brevity. Refer to the Supplementary Materials section in the preprint of my [preprint](https://doi.org/10.31223/X54J1J) for more details.
+
+
+::: {#fig-model-ladder}
+:::{.column-page}
+::: {.grid}
+
+::: {.g-col-12}
+![](figures/model1_structure_dag.png){fig-alt="Model 1 DAG — OC-style polynomial baseline: log-chl ~ f(log-MBR) with a single global (homoskedastic) noise scale." width=80%}
+:::
+
+::: {.g-col-12}
+![](figures/model2_structure_dag.png){fig-alt="Model 2 DAG — Hierarchical partial pooling: group-level intercepts/slopes by MBR numerator with hyperpriors; shared noise scale." width=80%}
+:::
+
+::: {.g-col-12}
+![](figures/model5_structure_dag.png){fig-alt="Model 5 DAG — Heteroskedastic hierarchical: partial pooling plus predictor/group-dependent noise (σ varies with x and/or group)." width=80%}
+:::
+
+:::
+:::
+
+Directed acyclic graphs of the three models’ generative structure. Nodes are variables/parameters; arrows indicate conditional dependence; plates denote repetition across groups or observations; shaded nodes are observed. The hierarchical and heteroskedastic edges explain why calibration improves across the ladder.
+<br>
+<u>$\Rightarrow$ How to read it</u>: Follow arrows from parameter priors → predictive mean/scale  → that conditions observed data $log(chl)$ via the likelihood. In Model 2, group plates and top level priors (hyperpriors) induce partial pooling through groups defined by the band in the MBR numerator; in Model 5, extra edges into $\sigma$ encode heteroskedastic noise, producing better tail behavior and near-nominal 94% coverage.
+<br>
+<u><b>Top (Model 1 — Baseline)</b></u>: Polynomial OC-style regression of log chlorophyll on log MBR with a single global noise scale (**homoskedastic**).  
+<u><b>Middle (Model 2 — Hierarchical)</b></u>:Partial pooling** over numerator groups (plates): group-level intercepts/slopes with hyperpriors borrow strength across groups; common noise scale.  
+<u><b>Bottom (Model 3 — Heteroskedastic)</b></u>: Hierarchical structure **plus heteroskedasticity**: the likelihood’s σ varies with predictor and/or group, improving tail fit and calibration.
+
+:::
+
+
+
+---
+
+## Comparative Model Diagnostics
+
+### LOO-PIT (94% envelope)
+
+::: {#fig-loo-pit}
+:::{.column-page}
+::: {.grid}
+::: {.g-col-12 .g-col-lg-4}
+![](figures/model1_loo_pit.png){fig-alt="Model 1 LOO-PIT (94% envelope): three-panel diagnostic with posterior predictive check (top), PIT KDE (bottom-left), and ECDF-minus-uniform (bottom-right)." width=100%}
+:::
+::: {.g-col-12 .g-col-lg-4}
+![](figures/model2_loo_pit.png){fig-alt="Model 2 LOO-PIT (94% envelope): three-panel diagnostic with posterior predictive check (top), PIT KDE (bottom-left), and ECDF-minus-uniform (bottom-right)." width=100%}
+:::
+::: {.g-col-12 .g-col-lg-4}
+![](figures/model5_loo_pit.png){fig-alt="Model 3 LOO-PIT (94% envelope): three-panel diagnostic with posterior predictive check (top), PIT KDE (bottom-left), and ECDF-minus-uniform (bottom-right)." width=100%}
+:::
+:::
+:::
+**Left (Model 1 — Baseline):** Three-panel diagnostic — **PPC** (top) shows mismatched spread; **PIT KDE** (bottom-left) departs from flat; **ECDF − uniform** (bottom-right) crosses outside the 94% envelope → over/under-confidence.  
+**Center (Model 2 — Hierarchical):** Partial pooling improves calibration — PPC envelopes better match variance, in spite of a conspicuous localized departure; PIT KDE flatter than for model 1; ECDF − uniform closer to zero with smaller deviations.  
+**Right (Model 3 — Heteroskedastic):** Best calibration — PPC accommodates heteroskedastic spread; PIT KDE ≈ flat; ECDF − uniform remains within the 94% envelope across x.
+:::
+
+
+### In- and Out-of-Sample Predictive Coverage (94% HDI)
+
+::: {#fig-coverage}
+:::{.column-page}
+::: {.grid}
+::: {.g-col-12 .g-col-lg-4}
+![](figures/model1_predictive_coverage.png){fig-alt="Model 1 predictive coverage at 94% HDI vs predictors/groups." width=100%}
+:::
+::: {.g-col-12 .g-col-lg-4}
+![](figures/model2_predictive_coverage.png){fig-alt="Model 2 predictive coverage at 94% HDI vs predictors/groups." width=100%}
+:::
+::: {.g-col-12 .g-col-lg-4}
+![](figures/model5_predictive_coverage.png){fig-alt="Model 3 predictive coverage at 94% HDI vs predictors/groups." width=100%}
+:::
+:::
+:::
+**Left (Model 1 — Baseline):** Empirical coverage vs nominal **0.94** shows pockets of under/over-coverage across log-MBR and numerator groups → intervals too narrow/wide in places.  
+**Center (Model 2 — Hierarchical):** Coverage moves closer to nominal **0.94** by capturing group-specific means/variance; fewer systematic departures.  
+**Right (Model 3 — Heteroskedastic):** Near-nominal **0.94** across predictors and groups; remaining mismatches are localized and small.
+:::
+
+
+---
+
+## Model comparison (PSIS-LOO)
+
+
+::: {#fig-model-comp}
+
+![Model Comparison](figures/post_comp_loocv.png){fig-align="center" width=100%}
+
+PSIS-LOO model comparison (ΔELPD). Points show each model’s difference in expected log predictive density relative to the top model (higher is better); vertical bars are ±1 SE from the PSIS estimate. Intervals that overlap zero indicate no meaningful difference from the leader at this uncertainty level. Pareto-
+𝑘
+k diagnostics were within acceptable bounds (no refits required). The progression from the baseline polynomial to hierarchical partial pooling and then heteroskedastic likelihood yields monotonic gains in out-of-sample predictive accuracy, consistent with the calibration improvements seen in the LOO-PIT and 94% predictive coverage figures.
+
+:::
+
+---
+
+## Takeaways
+
+- **Calibration improves stepwise** from baseline → hierarchical → hierarchical with heteroskedasticity.  
+- Final model achieves **the closest PIT-based assessment** and better **near-nominal 94% coverage** of all models. There is still room for improvement however, though perhaps not with the $\mathrm{MBR}$ model type. This framework makes it easy to compare these with newer models. The present study remains useful as a benchmark to compare future work against.
+
+### Why it matters
+
+**For stakeholders.**  
+Model trustworthiness and user buy-in depend on well-calibrated, accurate predictions. For continuous quantities, chlorophyll in this case, a single point estimate has essentially zero probability; what matters is the predictive distribution around it. Replacing bare point estimates with posterior predictive probabilities enables decisions (e.g., HAB screening) to be based on how likely outcomes are given the model and data, balancing calibration and sharpness.
+
+**For researchers.**  
+Uncertainty is quantifies the current lack of knowledge embodied in the model structure and data collected. This can show whether predictions match reality (via calibration and coverage plots below). Uncertainty can also highlight where new measurements would help most, and can therefore help inform future data collection efforts. 
+
+---
+
+## Links
+- **Code** → Repo linked [here](https://github.com/erdemkarakoylu/bayesian_chl_pub)
+- **Manuscript** → Preprint linked [here](https://doi.org/10.31223/X54J1J)

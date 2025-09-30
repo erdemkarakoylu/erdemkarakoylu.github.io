@@ -6,7 +6,7 @@ website:
   title: "Erdem Karaköylü"
   navbar:
     left:
-      - href: index.qmd
+      - href: about.qmd
         text: About
       
       - href: portfolio.qmd
@@ -21,6 +21,10 @@ website:
     <script async defer src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
     <noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif" alt="" referrerpolicy="no-referrer-when-downgrade" /></noscript>
 
+  page-footer:
+    right: 
+      - text: "☕ Buy Me a Coffee"
+        href: https://buymeacoffee.com/ofbozmjsvn
 format:
   html:
     theme: darkly

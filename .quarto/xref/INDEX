@@ -9,7 +9,8 @@
     "blog.html": "187cf6f3"
   },
   "resume.qmd": {
-    "resume.html": "b31c0637"
+    "resume.html": "b31c0637",
+    "resume.tex": "e9a9e825"
   },
   "blog/causailty_in_observation_data/index.qmd": {
     "index.html": "9b1a6430"
@@ -117,5 +118,23 @@
   },
   "blog/psis_loo/index.qmd": {
     "index.html": "5cf99c92"
+  },
+  "portfolio/bart_toa/index.qmd": {
+    "index.html": "eb9f1cc9"
+  },
+  "cv2.qmd": {
+    "cv2.tex": "15960895"
+  },
+  "portfolio/bayesian_chl/index.qmd": {
+    "index.html": "70205853"
+  },
+  "blog/bernoulli_fallacy_in_ml/index.qmd": {
+    "index.html": "4f59fdd8"
+  },
+  "blog/performance_marketing/index.qmd": {
+    "index.html": "5a5c1ccf"
+  },
+  "blog/performance_marketing/explore.ipynb": {
+    "explore.html": "616f07bf"
   }
 }
