@@ -6,15 +6,12 @@ website:
   title: "Erdem Karaköylü"
   navbar:
     left:
-      - href: about.qmd
-        text: About
-      
+      - href: blog.qmd
+        text: Blog
       - href: portfolio.qmd
         text: Portfolio
       - href: resume.qmd
         text: Resume
-      - href: blog.qmd
-        text: Blog
   
   body-footer: |
     <!-- 100% privacy-first analytics -->

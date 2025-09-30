@@ -155,10 +155,6 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../about.html"> 
-<span class="menu-text">About</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link" href="../../portfolio.html"> 
 <span class="menu-text">Portfolio</span></a>
   </li>  
@@ -373,7 +369,7 @@ SMD = \frac{\bar{X}_{treatment}-\bar{X}_{control}}
   hispan (mean (SD))      0.06 (0.24)       0.06 (0.24)    &lt;0.001
   black (mean (SD))       0.84 (0.37)       0.84 (0.36)     0.015
   white (mean (SD))       0.10 (0.30)       0.10 (0.30)     0.018
-  age (mean (SD))        25.34 (8.30)      25.82 (7.16)     0.062
+  age (mean (SD))        25.36 (8.29)      25.82 (7.16)     0.059
   educ (mean (SD))       10.45 (1.96)      10.35 (2.01)     0.054
   married (mean (SD))     0.19 (0.39)       0.19 (0.39)    &lt;0.001
   nodegree (mean (SD))    0.71 (0.46)       0.71 (0.46)    &lt;0.001
@@ -599,13 +595,13 @@ Discarded       0       0</code></pre>
     One Sample t-test
 
 data:  diff_outcome
-t = 0.21112, df = 184, p-value = 0.833
+t = 0.47754, df = 184, p-value = 0.6335
 alternative hypothesis: true mean is not equal to 0
 95 percent confidence interval:
- -1208.824  1498.538
+ -1022.653  1675.807
 sample estimates:
 mean of x 
- 144.8567 </code></pre>
+ 326.5771 </code></pre>
 </div>
 </div>
 <p><span class="math inline">\(\rightarrow\)</span> Propensity score matching (no caliper)</p>
@@ -746,7 +742,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp('/' + window.location.host + '/');
+      var filterRegex = new RegExp("https:\/\/erdemkarakoylu\.github\.io\/");
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }

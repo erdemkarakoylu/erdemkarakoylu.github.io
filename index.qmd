@@ -13,4 +13,4 @@ about:
       href: https://github.com/erdemkarakoylu
 ---
 
-Machine Learning Researcher -- Probabilistic Programmer -- All-around Bayesian Enthusiast!
+Oceanographer -- Probabilistic Machine Learning Researcher -- All-around Bayesian Enthusiast!

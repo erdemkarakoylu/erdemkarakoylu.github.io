@@ -149,10 +149,6 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./about.html"> 
-<span class="menu-text">About</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link active" href="./portfolio.html" aria-current="page"> 
 <span class="menu-text">Portfolio</span></a>
   </li>  
@@ -206,7 +202,7 @@ window.Quarto = {
 
 <div class="quarto-listing quarto-listing-container-grid" id="listing-listing">
 <div class="list grid quarto-listing-cols-3">
-<div class="g-col-1" data-index="0" data-categories="QmF5ZXNpYW4lMkNPY2VhbiUyMENvbG9yJTJDUHlNQyUyQ0FydmlaJTJDVW5jZXJ0YWludHk=" data-listing-date-sort="1761710400000" data-listing-file-modified-sort="1759269842763" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1486">
+<div class="g-col-1" data-index="0" data-categories="QmF5ZXNpYW4lMkNPY2VhbiUyMENvbG9yJTJDUHlNQyUyQ0FydmlaJTJDVW5jZXJ0YWludHk=" data-listing-date-sort="1761710400000" data-listing-file-modified-sort="1759270638767" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1486">
 <a href="./portfolio/bayesian_chl/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <p class="card-img-top">
@@ -256,32 +252,7 @@ Jul 1, 2025
 </div>
 </a>
 </div>
-<div class="g-col-1" data-index="2" data-categories="QmF5ZXNpYW4lMjBBZGRpdGl2ZSUyMFJlZ3Jlc3Npb24lMjBUcmVlcyUyQ1JlbW90ZSUyMFNlbnNpbmclMkNPY2Vhbm9ncmFwaHklMkNQbGFua3RvbiUyQ0F0bW9zcGhlcmljJTIwQ29ycmVjdGlvbg==" data-listing-date-sort="1752811200000" data-listing-file-modified-sort="1752925404793" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5" data-listing-word-count-sort="924">
-<a href="./portfolio/bart_toa/index.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top">
-<img loading="lazy" src="./assets/Under_construction_icon-orange.svg" class="thumbnail-image card-img" style="height: 150px;">
-</p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Bypassing Atmospheric Correction with BART
-</h5>
-<div class="card-text listing-description">
-
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-
-</div>
-<div class="listing-date">
-Jul 18, 2025
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="3" data-categories="UGxhbmt0b24lMkNSZWdyZXNzaW9uJTJDWEdCb29zdCUyQ1NoYXAlMkNFeHBsYWluYWJsZSUyMEFJ" data-listing-date-sort="1743220800000" data-listing-file-modified-sort="1751307974177" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="21" data-listing-word-count-sort="4171">
+<div class="g-col-1" data-index="2" data-categories="UGxhbmt0b24lMkNSZWdyZXNzaW9uJTJDWEdCb29zdCUyQ1NoYXAlMkNFeHBsYWluYWJsZSUyMEFJ" data-listing-date-sort="1743220800000" data-listing-file-modified-sort="1751307974177" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="21" data-listing-word-count-sort="4171">
 <a href="./portfolio/pfg_xgb/index.html" class="quarto-grid-link">
 <div class="quarto-grid-item card h-100 card-left">
 <p class="card-img-top">
@@ -401,7 +372,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp('/' + window.location.host + '/');
+      var filterRegex = new RegExp("https:\/\/erdemkarakoylu\.github\.io\/");
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
