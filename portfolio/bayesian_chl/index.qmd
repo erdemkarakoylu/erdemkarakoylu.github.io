@@ -9,7 +9,7 @@ categories:
   - PyMC
   - ArviZ
   - Uncertainty
-image: 'assets/portfolio/bayesian-workflow-thumb.png'
+image: 'figures/model5_structure_dag.png'
 format:
   html:
     toc: true

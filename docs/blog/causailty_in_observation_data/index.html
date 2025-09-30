@@ -155,7 +155,7 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../index.html"> 
+    <a class="nav-link" href="../../about.html"> 
 <span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item">
@@ -599,13 +599,13 @@ Discarded       0       0</code></pre>
     One Sample t-test
 
 data:  diff_outcome
-t = -0.0036922, df = 184, p-value = 0.9971
+t = 0.21112, df = 184, p-value = 0.833
 alternative hypothesis: true mean is not equal to 0
 95 percent confidence interval:
- -1355.801  1350.735
+ -1208.824  1498.538
 sample estimates:
 mean of x 
- -2.53255 </code></pre>
+ 144.8567 </code></pre>
 </div>
 </div>
 <p><span class="math inline">\(\rightarrow\)</span> Propensity score matching (no caliper)</p>
@@ -746,7 +746,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp("https:\/\/erdemkarakoylu\.github\.io\/");
+      var filterRegex = new RegExp('/' + window.location.host + '/');
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
@@ -1074,6 +1074,25 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://buymeacoffee.com/ofbozmjsvn">
+<p>☕ Buy Me a Coffee</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
 
 
 
