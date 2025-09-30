@@ -1,8 +1,8 @@
 ---
-title: "A Bayesian Workflow for Satellite Ocean Color (Chlorophyll-a)"
+title: "Redefining Uncertainty: Bayesian Modeling for Oceanography"
 author: "Erdem M. Karaköylü"
 date: 2025-10-29
-description: End-to-end Bayesian modeling for chlorophyll-a with PyMC & ArviZ — model ladder, LOO-PIT, and 94% predictive coverage.
+description: End-to-end Bayesian modeling for chlorophyll-a prediction from ocean color.
 categories:
   - Bayesian
   - Ocean Color
