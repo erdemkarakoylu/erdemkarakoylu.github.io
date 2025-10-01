@@ -1,5 +1,6 @@
 ---
 title: "Bayesian A/B Testing: A Fully Interactive App"
+author: "Erdem M. Karaköylü"
 description: "How to build an AWS-friendly Streamlit dashboard complete with session-aware data updates, posterior plots, and ROPE analysis for sound decision support"
 date: 2025-07-01
 categories: 

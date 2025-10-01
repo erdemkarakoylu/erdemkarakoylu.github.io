@@ -8,9 +8,9 @@
 
 <meta name="author" content="Erdem M. Karaköylü">
 <meta name="dcterms.date" content="2025-10-29">
-<meta name="description" content="End-to-end Bayesian modeling for chlorophyll-a with PyMC &amp; ArviZ — model ladder, LOO-PIT, and 94% predictive coverage.">
+<meta name="description" content="End-to-end Bayesian modeling for chlorophyll-a prediction from ocean color.">
 
-<title>A Bayesian Workflow for Satellite Ocean Color (Chlorophyll-a) – Erdem Karaköylü</title>
+<title>Redefining Uncertainty: Bayesian Modeling for Oceanography – Erdem Karaköylü</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -172,7 +172,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">A Bayesian Workflow for Satellite Ocean Color (Chlorophyll-a)</h1>
+<h1 class="title">Redefining Uncertainty: Bayesian Modeling for Oceanography</h1>
   <div class="quarto-categories">
     <div class="quarto-category">Bayesian</div>
     <div class="quarto-category">Ocean Color</div>
@@ -184,7 +184,7 @@ window.Quarto = {
 
 <div>
   <div class="description">
-    End-to-end Bayesian modeling for chlorophyll-a with PyMC &amp; ArviZ — model ladder, LOO-PIT, and 94% predictive coverage.
+    End-to-end Bayesian modeling for chlorophyll-a prediction from ocean color.
   </div>
 </div>
 
@@ -430,7 +430,8 @@ Figure&nbsp;4: PSIS-LOO model comparison (ΔELPD). Points show each model’s di
 <p><strong>For stakeholders.</strong><br>
 Model trustworthiness and user buy-in depend on well-calibrated, accurate predictions. For continuous quantities, chlorophyll in this case, a single point estimate has essentially zero probability; what matters is the predictive distribution around it. Replacing bare point estimates with posterior predictive probabilities enables decisions (e.g., HAB screening) to be based on how likely outcomes are given the model and data, balancing calibration and sharpness.</p>
 <p><strong>For researchers.</strong><br>
-Uncertainty is quantifies the current lack of knowledge embodied in the model structure and data collected. This can show whether predictions match reality (via calibration and coverage plots below). Uncertainty can also highlight where new measurements would help most, and can therefore help inform future data collection efforts.</p>
+Uncertainty - as defined here = quantifies <em>what we still don’t know</em> given the model and data. This can show whether predictions match reality (via calibration and coverage plots as see above). This can also highlight where new measurements would help most and so inform future data collection efforts. Finally it provides a pregress indicator. We can ask, “have new models and data reduced uncertainty, i.e.&nbsp;are we more knowledgeable about the data generation process?”, followed by the hard questions; “Why?”, “Why not?”</p>
+<p>Thank you for reading.</p>
 <hr>
 </section>
 </section>
@@ -445,6 +446,11 @@ Uncertainty is quantifies the current lack of knowledge embodied in the model st
 </section>
 
 <script async="" defer="" src="https://scripts.simpleanalyticscdn.com/latest.js"></script></main> <!-- /main -->
+<div class="bmac-cta">
+  <a class="bmac-btn" href="https://buymeacoffee.com/ofbozmjsvn" target="_blank" rel="noopener">
+    ☕ If you found this useful consider buying me a coffee
+  </a>
+</div>
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -535,7 +541,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp('/' + window.location.host + '/');
+      var filterRegex = new RegExp("https:\/\/erdemkarakoylu\.github\.io\/");
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
@@ -863,25 +869,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
-<footer class="footer">
-  <div class="nav-footer">
-    <div class="nav-footer-left">
-      &nbsp;
-    </div>   
-    <div class="nav-footer-center">
-      &nbsp;
-    </div>
-    <div class="nav-footer-right">
-      <ul class="footer-items list-unstyled">
-    <li class="nav-item">
-    <a class="nav-link" href="https://buymeacoffee.com/ofbozmjsvn">
-<p>☕ Buy Me a Coffee</p>
-</a>
-  </li>  
-</ul>
-    </div>
-  </div>
-</footer>
 <script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
 (function() {
   let previousOnload = window.onload;

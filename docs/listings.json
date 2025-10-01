@@ -17,9 +17,9 @@
   {
     "listing": "/portfolio.html",
     "items": [
-      "/portfolio/bayesian_chl/index.html",
       "/portfolio/bayesian_ab_testing/index.html",
-      "/portfolio/pfg_xgb/index.html"
+      "/portfolio/pfg_xgb/index.html",
+      "/portfolio/bayesian_chl/index.html"
     ]
   }
 ]

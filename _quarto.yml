@@ -18,10 +18,6 @@ website:
     <script async defer src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
     <noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif" alt="" referrerpolicy="no-referrer-when-downgrade" /></noscript>
 
-  page-footer:
-    right: 
-      - text: "☕ Buy Me a Coffee"
-        href: https://buymeacoffee.com/ofbozmjsvn
 format:
   html:
     theme: darkly

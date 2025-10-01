@@ -1,1 +1,29 @@
-/* css styles */
+/* End-of-article CTA block */
+.bmac-cta {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px dashed rgba(255,255,255,.2);
+}
+
+.bmac-btn {
+  display: inline-block;
+  text-decoration: none;
+  border-radius: 9999px;
+  padding: .5rem .9rem;
+  border: 1px solid rgba(255,255,255,.25);
+  background: rgba(255,255,255,.06);
+  color: inherit;
+  transition: background .2s, box-shadow .2s, transform .05s;
+}
+
+.bmac-btn:hover {
+  background: rgba(255,255,255,.10);
+  box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,.25);
+  transform: translateY(-1px);
+}
+
+.bmac-note {
+  margin-top: .4rem;
+  opacity: .8;
+  font-size: 0.9rem;
+}

@@ -218,8 +218,9 @@ k diagnostics were within acceptable bounds (no refits required). The progressio
 Model trustworthiness and user buy-in depend on well-calibrated, accurate predictions. For continuous quantities, chlorophyll in this case, a single point estimate has essentially zero probability; what matters is the predictive distribution around it. Replacing bare point estimates with posterior predictive probabilities enables decisions (e.g., HAB screening) to be based on how likely outcomes are given the model and data, balancing calibration and sharpness.
 
 **For researchers.**  
-Uncertainty is quantifies the current lack of knowledge embodied in the model structure and data collected. This can show whether predictions match reality (via calibration and coverage plots below). Uncertainty can also highlight where new measurements would help most, and can therefore help inform future data collection efforts. 
+Uncertainty - as defined here = quantifies *what we still don’t know* given the model and data. This can show whether predictions match reality (via calibration and coverage plots as see above). This can also highlight where new measurements would help most and so inform future data collection efforts. Finally it provides a pregress indicator. We can ask, "have new models and data reduced uncertainty, i.e. are we more knowledgeable about the data generation process?", followed by the hard questions; "Why?", "Why not?" 
 
+Thank you for reading.
 ---
 
 ## Links
