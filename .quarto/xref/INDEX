@@ -136,5 +136,8 @@
   },
   "blog/performance_marketing/explore.ipynb": {
     "explore.html": "616f07bf"
+  },
+  "portfolio/iop_from_toa/index.qmd": {
+    "index.html": "a8850d9c"
   }
 }

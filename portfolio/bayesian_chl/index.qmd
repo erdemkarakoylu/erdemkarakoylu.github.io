@@ -1,7 +1,7 @@
 ---
 title: "Redefining Uncertainty: Bayesian Modeling for Oceanography"
 author: "Erdem M. Karaköylü"
-date: 2025-10-29
+date: 2025-09-29
 description: End-to-end Bayesian modeling for chlorophyll-a prediction from ocean color.
 categories:
   - Bayesian
@@ -9,7 +9,7 @@ categories:
   - PyMC
   - ArviZ
   - Uncertainty
-image: 'figures/model5_structure_dag.png'
+image: 'figures/seastar.webp'
 format:
   html:
     toc: true

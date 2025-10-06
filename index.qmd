@@ -1,6 +1,6 @@
 ---
 title: "Erdem Karaköylü"
-subtitle: "Welcome!"
+#subtitle: <center> "Probabilistic Machine Learning -- Statistical Oceanography -- Causal Inference"
 image: assets/erdem_bodrum.jpg
 about:
   template: jolla
@@ -13,4 +13,8 @@ about:
       href: https://github.com/erdemkarakoylu
 ---
 
-Oceanographer -- Probabilistic Machine Learning Researcher -- All-around Bayesian Enthusiast!
+##### Statistical Oceanography & Marine Ecology -- Probabilistic Machine Learning -- Causal Inference
+
+\
+
+I develop probabilistic models and reproducible workflows that surface signal, quantify uncertainty, and deliver decision-ready insights for complex scientific and operational problems.

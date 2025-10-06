@@ -28,7 +28,7 @@ bibliography: references.bib
 
 ::: {.callout-tip}
 ## 📂 Code & Notebooks
-All code and demo notebooks are available in the [GitHub repository](https://github.com/erdemkarakoylu/toa_2_phyto_ml).
+All code and demo notebooks are available in the [GitHub repository](https://github.com/erdemkarakoylu/pace_pcc_ml).
 :::
 
 ::: {.callout-note collapse=true open=true}
