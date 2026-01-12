@@ -245,6 +245,7 @@ Non-Photochemical Quenching (NPQ): What is it?
 </div>
 </div>
 <p>The analysis is intended as a methodological demonstration, rather than a definitive replacement for existing correction schemes. In particular, I emphasize assumption transparency, principled uncertainty quantification, and the importance of causal thinking in modeling the NPQ process.</p>
+<p>To my knowledge NPQ corrections are formulated as globally learned relationships between irradiance and fluorescence quenching. However, both optical conditions and phytoplankton community structure vary across sites, making it unlikely that a single correction curve applies uniformly. A Bayesian generative model allows this heterogeneity to be represented explicitly, rather than treated as noise.</p>
 </section>
 <section id="the-npq-correction-problem-at-a-glance" class="level2">
 <h2 class="anchored" data-anchor-id="the-npq-correction-problem-at-a-glance">The NPQ correction problem at a glance</h2>
@@ -371,6 +372,7 @@ Figure&nbsp;8: <em>Uncertainty-aware NPQ predictions versus depth. This plot is 
 </figcaption>
 </figure>
 </div>
+<p><a href="#fig-npq-vs-depth" class="quarto-xref">Figure&nbsp;8</a> shows posterior NPQ correction curves for individual locations, with 95% credible intervals. Differences across sites likely reflect a combination of ecological variability, measurement conditions, and unobserved state variables. Importantly, the width of the credible intervals varies by site, indicating where the data meaningfully constrain the correction and where uncertainty remains high.</p>
 <div id="fig-npq-curve" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-npq-curve-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
