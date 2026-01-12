@@ -7,10 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Erdem Karaköylü">
-<meta name="dcterms.date" content="2025-08-20">
-<meta name="description" content="A Framework for Understanding CPO, ROAS, CPA, and LTV in Performance Marketing">
 
-<title>What Does a Dollar in Ad Spend Really Buy? – Erdem Karaköylü</title>
+<title>Rethinking NPQ Correction with Bayesian Hierarchical Models – Erdem Karaköylü</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -119,18 +117,9 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#a-framework-for-understanding-cpo-roas-cpa-and-ltv" id="toc-a-framework-for-understanding-cpo-roas-cpa-and-ltv" class="nav-link active" data-scroll-target="#a-framework-for-understanding-cpo-roas-cpa-and-ltv">A Framework for Understanding CPO, ROAS, CPA, and LTV</a>
-  <ul class="collapse">
-  <li><a href="#visual-summary" id="toc-visual-summary" class="nav-link" data-scroll-target="#visual-summary">Visual Summary</a></li>
-  <li><a href="#key-definitions-and-relationships" id="toc-key-definitions-and-relationships" class="nav-link" data-scroll-target="#key-definitions-and-relationships">Key Definitions and Relationships</a>
-  <ul class="collapse">
-  <li><a href="#cpo-cost-per-order" id="toc-cpo-cost-per-order" class="nav-link" data-scroll-target="#cpo-cost-per-order">1. CPO – Cost Per Order</a></li>
-  <li><a href="#roas-return-on-ad-spend" id="toc-roas-return-on-ad-spend" class="nav-link" data-scroll-target="#roas-return-on-ad-spend">2. ROAS – Return on Ad Spend</a></li>
-  <li><a href="#cpa-cost-per-acquisition" id="toc-cpa-cost-per-acquisition" class="nav-link" data-scroll-target="#cpa-cost-per-acquisition">3. CPA – Cost Per Acquisition</a></li>
-  <li><a href="#ltv-lifetime-value" id="toc-ltv-lifetime-value" class="nav-link" data-scroll-target="#ltv-lifetime-value">4. LTV – Lifetime Value</a></li>
-  </ul></li>
-  <li><a href="#putting-it-all-together" id="toc-putting-it-all-together" class="nav-link" data-scroll-target="#putting-it-all-together">Putting It All Together</a></li>
-  </ul></li>
+  <li><a href="#preamble" id="toc-preamble" class="nav-link active" data-scroll-target="#preamble">Preamble</a></li>
+  <li><a href="#scope-and-positioning" id="toc-scope-and-positioning" class="nav-link" data-scroll-target="#scope-and-positioning">Scope and positioning</a></li>
+  <li><a href="#the-npq-correction-problem-at-a-glance" id="toc-the-npq-correction-problem-at-a-glance" class="nav-link" data-scroll-target="#the-npq-correction-problem-at-a-glance">The NPQ correction problem at a glance</a></li>
   </ul>
 </nav>
     </div>
@@ -139,14 +128,16 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">What Does a Dollar in Ad Spend Really Buy?</h1>
-</div>
-
-<div>
-  <div class="description">
-    A Framework for Understanding CPO, ROAS, CPA, and LTV in Performance Marketing
+<h1 class="title">Rethinking NPQ Correction with Bayesian Hierarchical Models</h1>
+<p class="subtitle lead">A generative, uncertainty-aware reanalysis using Lake George fluorescence data</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">Quenching and fluorescence</div>
+    <div class="quarto-category">Bayesian modeling</div>
+    <div class="quarto-category">Oceanography</div>
+    <div class="quarto-category">Causal thinking</div>
   </div>
-</div>
+  </div>
+
 
 
 <div class="quarto-title-meta">
@@ -161,7 +152,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">August 20, 2025</p>
+      <p class="date">Invalid Date</p>
     </div>
   </div>
   
@@ -173,82 +164,32 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="a-framework-for-understanding-cpo-roas-cpa-and-ltv" class="level1">
-<h1>A Framework for Understanding CPO, ROAS, CPA, and LTV</h1>
-<p>In the fast-moving world of digital advertising, understanding how to measure performance is essential. But with so many metrics—CPO, ROAS, CPA, LTV—it’s easy to lose track of how they relate and when to use each. This post serves as a quick reference for understanding these core performance indicators through both definitions and a visual map.</p>
-<section id="visual-summary" class="level2">
-<h2 class="anchored" data-anchor-id="visual-summary">Visual Summary</h2>
-<p>Before diving into definitions, here’s a high-level diagram showing how these metrics relate:</p>
-<ul>
-<li><strong>Ad Spend</strong> and <strong>Revenue</strong> flow into <strong>ROAS</strong>.</li>
-<li><strong>Ad Spend</strong> and <strong>Orders</strong> define <strong>CPO</strong>.</li>
-<li><strong>Ad Spend</strong> and <strong>Acquisitions</strong> give you <strong>CPA</strong>.</li>
-<li><strong>Revenue</strong> and <strong>Orders</strong> help compute <strong>LTV</strong>.</li>
-</ul>
-<p><img src="./figures/ad_metrics_relationship_diagram.png" class="img-fluid"></p>
+<section id="preamble" class="level2">
+<h2 class="anchored" data-anchor-id="preamble">Preamble</h2>
+<p>Non-photochemical quenching (NPQ) is one of those phenomena that everyone working with in situ fluorescence learns to live with early on. It is well understood physiologically, widely acknowledged as a practical problem, and yet still handled in a largely ad hoc way in many data products and workflows.</p>
+<p>This post explores NPQ correction from a deliberately different angle. Rather than proposing yet another correction formula, the goal is to ask a simpler question: <em>what does it mean to treat NPQ correction as a generative statistical problem, with uncertainty and partial pooling made explicit?</em></p>
+<p>The analysis is exploratory by design. It is not a benchmark study, not a survey of the full NPQ literature, and not a proposal for an operational algorithm. Instead, it is a worked example meant to clarify assumptions, highlight trade-offs, and serve as a starting point for further collaboration.</p>
 </section>
-<section id="key-definitions-and-relationships" class="level2">
-<h2 class="anchored" data-anchor-id="key-definitions-and-relationships">Key Definitions and Relationships</h2>
-<section id="cpo-cost-per-order" class="level3">
-<h3 class="anchored" data-anchor-id="cpo-cost-per-order">1. CPO – Cost Per Order</h3>
-<ul>
-<li><strong>Definition</strong>: Total advertising spend divided by the number of completed orders.</li>
-<li><strong>Formula</strong>:<br>
-<code>CPO = Ad Spend / Orders</code></li>
-<li><strong>Use Case</strong>: Best for retail media networks or e-commerce businesses that can track purchases directly.</li>
-<li><strong>Optimization Objective</strong>: Lower CPO without sacrificing order volume.</li>
-</ul>
+<section id="scope-and-positioning" class="level2">
+<h2 class="anchored" data-anchor-id="scope-and-positioning">Scope and positioning</h2>
+<p>A brief clarification of scope is important up front. NPQ has been studied for decades using a wide range of approaches, including mechanistic photophysiological models, radiative transfer–based corrections, diel heuristics, and empirical adjustments tailored to specific sensors or environments.</p>
+<p>The discussion here is not intended as a comprehensive review. Instead, it focuses on three <em>recent and representative framings</em> of NPQ correction that have appeared in the past few years and that motivate different modeling choices. These examples are used to illustrate contrasts in how assumptions are encoded, not to imply that they exhaust the space of possible approaches.</p>
+<p>A practical constraint also shapes what follows. The empirical analysis in this post relies on the dataset assembled and released by Lucius et al.&nbsp;(2020). This choice is primarily pragmatic: the data are publicly available, well-documented, and already organized in a form that facilitates rapid exploratory modeling.</p>
+<p>Using this dataset should not be interpreted as an endorsement of any particular correction philosophy, nor as a claim that the Lucius et al.&nbsp;approach is uniquely representative. Rather, the dataset serves as a convenient substrate for demonstrating how different modeling framings—including the Bayesian approach developed here—can be expressed, compared, and interrogated within a common workflow.</p>
 </section>
-<section id="roas-return-on-ad-spend" class="level3">
-<h3 class="anchored" data-anchor-id="roas-return-on-ad-spend">2. ROAS – Return on Ad Spend</h3>
-<ul>
-<li><strong>Definition</strong>: Measures how much revenue is generated per dollar of ad spend.</li>
-<li><strong>Formula</strong>:<br>
-<code>ROAS = Revenue / Ad Spend</code></li>
-<li><strong>Use Case</strong>: Widely used in performance marketing to evaluate the efficiency of a campaign.</li>
-<li><strong>Optimization Objective</strong>: Maximize ROAS by increasing conversion value or reducing inefficient spend.</li>
-</ul>
-</section>
-<section id="cpa-cost-per-acquisition" class="level3">
-<h3 class="anchored" data-anchor-id="cpa-cost-per-acquisition">3. CPA – Cost Per Acquisition</h3>
-<ul>
-<li><strong>Definition</strong>: Measures how much it costs to get a user to take a specific action—install, signup, subscribe.</li>
-<li><strong>Formula</strong>:<br>
-<code>CPA = Ad Spend / Acquisitions</code></li>
-<li><strong>Use Case</strong>: Best suited to lead generation, app installs, and other conversion-oriented campaigns.</li>
-<li><strong>Optimization Objective</strong>: Reduce CPA while maintaining conversion quality.</li>
-</ul>
-</section>
-<section id="ltv-lifetime-value" class="level3">
-<h3 class="anchored" data-anchor-id="ltv-lifetime-value">4. LTV – Lifetime Value</h3>
-<ul>
-<li><strong>Definition</strong>: Estimates the total revenue a customer will generate over their relationship with the product or brand.</li>
-<li><strong>Formula</strong>:<br>
-<code>LTV = Revenue / Orders</code> (approximation for single-purchase models)</li>
-<li><strong>Use Case</strong>: Important for businesses with recurring purchases or long customer cycles.</li>
-<li><strong>Optimization Objective</strong>: Improve LTV via retention, upsell, and product strategy.</li>
-</ul>
-</section>
-</section>
-<section id="putting-it-all-together" class="level2">
-<h2 class="anchored" data-anchor-id="putting-it-all-together">Putting It All Together</h2>
-<p>These metrics aren’t interchangeable—they each offer a different lens into campaign performance:</p>
-<ul>
-<li><strong>CPO</strong> and <strong>CPA</strong> measure cost-efficiency.</li>
-<li><strong>ROAS</strong> and <strong>LTV</strong> measure value generated.</li>
-<li><strong>ROAS</strong> is the mirror image of <strong>CPO</strong>, and should be evaluated together.</li>
-<li><strong>LTV</strong> helps contextualize whether a seemingly high <strong>CPA</strong> is actually acceptable.</li>
-</ul>
-<p>If you’re tuning a performance ad system—whether it’s for real-time bidding, post-campaign analytics, or growth experimentation—this metric map gives you a foundation for choosing what to optimize, when to dig deeper, and how to evaluate trade-offs.</p>
+<section id="the-npq-correction-problem-at-a-glance" class="level2">
+<h2 class="anchored" data-anchor-id="the-npq-correction-problem-at-a-glance">The NPQ correction problem at a glance</h2>
+<p>Figure 1.1 summarizes, at a high level, the physical and biological processes involved in NPQ correction. Subsurface irradiance drives photophysiological quenching, which suppresses fluorescence yield relative to latent chlorophyll concentration. Reference fluorescence provides a low-NPQ proxy, while several biological and optical processes remain unobserved.</p>
+<p>This diagram is intentionally schematic. Its purpose is not to assert a complete causal model, but to provide a shared conceptual starting point for the discussion that follows.</p>
+<p><img src="figures/npq_conceptual_dag.png" class="img-fluid"></p>
 
 
-</section>
 </section>
 
 <script async="" defer="" src="https://scripts.simpleanalyticscdn.com/latest.js"></script></main> <!-- /main -->
 <div class="bmac-cta">
   <a class="bmac-btn" href="https://buymeacoffee.com/ofbozmjsvn" target="_blank" rel="noopener">
-    ☕ If you found this content useful, consider buying me a coffee and help fuel continued work!
+    ☕ If you found this useful consider buying me a coffee
   </a>
 </div>
 <script id="quarto-html-after-body" type="application/javascript">
@@ -341,7 +282,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp("https:\/\/erdemkarakoylu\.github\.io\/");
+      var filterRegex = new RegExp('/' + window.location.host + '/');
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }

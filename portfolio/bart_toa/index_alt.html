@@ -6,11 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Erdem Karaköylü">
-<meta name="dcterms.date" content="2025-08-20">
-<meta name="description" content="A Framework for Understanding CPO, ROAS, CPA, and LTV in Performance Marketing">
 
-<title>What Does a Dollar in Ad Spend Really Buy? – Erdem Karaköylü</title>
+<title>index_alt – Erdem Karaköylü</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -70,6 +67,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -119,127 +145,162 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#a-framework-for-understanding-cpo-roas-cpa-and-ltv" id="toc-a-framework-for-understanding-cpo-roas-cpa-and-ltv" class="nav-link active" data-scroll-target="#a-framework-for-understanding-cpo-roas-cpa-and-ltv">A Framework for Understanding CPO, ROAS, CPA, and LTV</a>
+  <li><a href="#predicting-phytoplankton-absorption-directly-from-satellite-toa-radiance" id="toc-predicting-phytoplankton-absorption-directly-from-satellite-toa-radiance" class="nav-link active" data-scroll-target="#predicting-phytoplankton-absorption-directly-from-satellite-toa-radiance">Predicting Phytoplankton Absorption Directly from Satellite TOA Radiance</a>
   <ul class="collapse">
-  <li><a href="#visual-summary" id="toc-visual-summary" class="nav-link" data-scroll-target="#visual-summary">Visual Summary</a></li>
-  <li><a href="#key-definitions-and-relationships" id="toc-key-definitions-and-relationships" class="nav-link" data-scroll-target="#key-definitions-and-relationships">Key Definitions and Relationships</a>
-  <ul class="collapse">
-  <li><a href="#cpo-cost-per-order" id="toc-cpo-cost-per-order" class="nav-link" data-scroll-target="#cpo-cost-per-order">1. CPO – Cost Per Order</a></li>
-  <li><a href="#roas-return-on-ad-spend" id="toc-roas-return-on-ad-spend" class="nav-link" data-scroll-target="#roas-return-on-ad-spend">2. ROAS – Return on Ad Spend</a></li>
-  <li><a href="#cpa-cost-per-acquisition" id="toc-cpa-cost-per-acquisition" class="nav-link" data-scroll-target="#cpa-cost-per-acquisition">3. CPA – Cost Per Acquisition</a></li>
-  <li><a href="#ltv-lifetime-value" id="toc-ltv-lifetime-value" class="nav-link" data-scroll-target="#ltv-lifetime-value">4. LTV – Lifetime Value</a></li>
-  </ul></li>
-  <li><a href="#putting-it-all-together" id="toc-putting-it-all-together" class="nav-link" data-scroll-target="#putting-it-all-together">Putting It All Together</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#why-this-matters" id="toc-why-this-matters" class="nav-link" data-scroll-target="#why-this-matters">Why This Matters</a></li>
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
+  <li><a href="#model-progression" id="toc-model-progression" class="nav-link" data-scroll-target="#model-progression">Model Progression</a></li>
+  <li><a href="#results-overview" id="toc-results-overview" class="nav-link" data-scroll-target="#results-overview">Results Overview</a></li>
+  <li><a href="#figures" id="toc-figures" class="nav-link" data-scroll-target="#figures">Figures</a></li>
+  <li><a href="#links-resources" id="toc-links-resources" class="nav-link" data-scroll-target="#links-resources">Links &amp; Resources</a></li>
   </ul></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
+<main class="content page-columns page-full" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
 
-<header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title">What Does a Dollar in Ad Spend Really Buy?</h1>
+
+
+
+<section id="predicting-phytoplankton-absorption-directly-from-satellite-toa-radiance" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="predicting-phytoplankton-absorption-directly-from-satellite-toa-radiance">Predicting Phytoplankton Absorption Directly from Satellite TOA Radiance</h2>
+<blockquote class="blockquote">
+<p><strong>Bypassing atmospheric correction with Bayesian models</strong></p>
+</blockquote>
+<section id="summary" class="level3">
+<h3 class="anchored" data-anchor-id="summary">Summary</h3>
+<p>This study revisits an idea first explored in our <em>2019 preprint</em> on direct retrieval of phytoplankton absorption (<span class="math inline">\(a_{\phi}\)</span>) from top-of-atmosphere (TOA) radiance.<br>
+In that earlier work (Craig &amp; Karaköylü, 2019), we demonstrated that probabilistic machine learning could bypass full atmospheric correction (AC) by learning the relationship between TOA radiance and in-water optical properties.</p>
+<p>This new version updates that concept using a <strong>fully Bayesian workflow</strong>, modern <strong>PyMC v5</strong> implementations, and a set of progressively richer models to test what model structure most faithfully captures the data-generating process.</p>
+<blockquote class="blockquote">
+<p>💡 <strong>See the full modeling notebook</strong><br>
+📓 <a href="https://github.com/your-repo/path-to-notebook.ipynb">Jupyter Notebook: Bayesian Modeling of TOA Radiance → <span class="math inline">\(a_{\phi}\)</span></a><br>
+📄 <a href="PLACEHOLDER_LINK">Preprint (in preparation)</a></p>
+</blockquote>
+<hr>
+</section>
+<section id="why-this-matters" class="level3">
+<h3 class="anchored" data-anchor-id="why-this-matters">Why This Matters</h3>
+<p>Atmospheric correction often fails in optically complex coastal and inland waters, where the standard assumptions (e.g., dark NIR, co-varying constituents) are violated.<br>
+These failures cause large retrieval errors and data gaps in exactly the ecosystems where biogeochemical information is most needed.</p>
+<p>This work explores a <strong>Bayesian alternative</strong>: directly linking TOA radiance (after Rayleigh and Fresnel corrections) to phytoplankton absorption without subtracting the atmospheric contribution.<br>
+By modeling uncertainty explicitly, we gain calibrated interval estimates and insight into how well each model generalizes to unseen data.</p>
+<hr>
+</section>
+<section id="data" class="level3">
+<h3 class="anchored" data-anchor-id="data">Data</h3>
+<ul>
+<li><strong>Dataset:</strong> Modified NOMAD–SeaWiFS matchup dataset (Werdell &amp; Bailey 2005).<br>
+</li>
+<li><strong>Predictors:</strong> TOA radiance at 412, 443, 490, 510, 555, 670 nm (log-transformed).<br>
+</li>
+<li><strong>Targets:</strong> <span class="math inline">\(a_{\phi}\)</span> at 443, 555, 670 nm (log-transformed).<br>
+</li>
+<li><strong>Sample size:</strong> 163 collocated matchups.</li>
+</ul>
+<p>No feature engineering or PCA was applied — only logarithmic transformation to stabilize variance and maintain interpretability.</p>
+<hr>
+</section>
+<section id="model-progression" class="level3">
+<h3 class="anchored" data-anchor-id="model-progression">Model Progression</h3>
+<p>We developed four Bayesian models of increasing structural richness:</p>
+<ol type="1">
+<li><strong>Linear model</strong> — Baseline regression with diagonal covariance (independent errors).<br>
+</li>
+<li><strong>Hierarchical linear model</strong> — Partial pooling across absorption bands to share statistical strength.<br>
+</li>
+<li><strong>Bayesian Additive Regression Trees (BART)</strong> — Nonlinear mean, diagonal covariance.<br>
+</li>
+<li><strong>Multivariate linear model (MVN)</strong> — Linear mean with a <strong>full covariance matrix</strong> across bands.</li>
+</ol>
+<p>The first three models used independent error terms to isolate the effect of the mean-function structure.<br>
+We then introduced a full covariance structure in the fourth model to explicitly capture <strong>cross-band residual correlations</strong>, a physically realistic feature of ocean-color retrievals.</p>
+<blockquote class="blockquote">
+<p>The non-hierarchical form was chosen for the covariance test to isolate the effect of <span class="math inline">\(\Sigma\)</span>-structure alone, avoiding confounding between group pooling and covariance learning.</p>
+</blockquote>
+<hr>
+</section>
+<section id="results-overview" class="level3">
+<h3 class="anchored" data-anchor-id="results-overview">Results Overview</h3>
+<p>All covariance-enabled models improved calibration and coverage.<br>
+Among them, the <strong>multivariate linear model</strong> achieved the best predictive performance and near-nominal <span class="math inline">\(94\%\)</span> coverage, showing that properly modeling covariance outweighed mean-function complexity.</p>
+<blockquote class="blockquote">
+<p><strong>Takeaway:</strong><br>
+The best-performing model wasn’t the most flexible, but the one most faithful to the data-generating process — capturing how <span class="math inline">\(a_{\phi}\)</span> bands covary in nature.</p>
+</blockquote>
+<hr>
+</section>
+<section id="figures" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="figures">Figures</h3>
+<section id="model-structures" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="model-structures">Model structures</h4>
+<div id="fig-model-ladder" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-model-ladder-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div class="column-page">
+<div class="grid">
+<div class="g-col-12">
+<p><img src="figures/model1_structure_dag.png" class="img-fluid figure-img" alt="Model 1: Linear baseline (diagonal covariance)."></p>
 </div>
-
-<div>
-  <div class="description">
-    A Framework for Understanding CPO, ROAS, CPA, and LTV in Performance Marketing
-  </div>
+<div class="g-col-12">
+<p><img src="figures/model2_structure_dag.png" class="img-fluid figure-img" alt="Model 2: Hierarchical linear model (partial pooling across absorption bands)."></p>
 </div>
-
-
-<div class="quarto-title-meta">
-
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Erdem Karaköylü </p>
-          </div>
-  </div>
-    
-    <div>
-    <div class="quarto-title-meta-heading">Published</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">August 20, 2025</p>
-    </div>
-  </div>
-  
-    
-  </div>
-  
-
-
-</header>
-
-
-<section id="a-framework-for-understanding-cpo-roas-cpa-and-ltv" class="level1">
-<h1>A Framework for Understanding CPO, ROAS, CPA, and LTV</h1>
-<p>In the fast-moving world of digital advertising, understanding how to measure performance is essential. But with so many metrics—CPO, ROAS, CPA, LTV—it’s easy to lose track of how they relate and when to use each. This post serves as a quick reference for understanding these core performance indicators through both definitions and a visual map.</p>
-<section id="visual-summary" class="level2">
-<h2 class="anchored" data-anchor-id="visual-summary">Visual Summary</h2>
-<p>Before diving into definitions, here’s a high-level diagram showing how these metrics relate:</p>
-<ul>
-<li><strong>Ad Spend</strong> and <strong>Revenue</strong> flow into <strong>ROAS</strong>.</li>
-<li><strong>Ad Spend</strong> and <strong>Orders</strong> define <strong>CPO</strong>.</li>
-<li><strong>Ad Spend</strong> and <strong>Acquisitions</strong> give you <strong>CPA</strong>.</li>
-<li><strong>Revenue</strong> and <strong>Orders</strong> help compute <strong>LTV</strong>.</li>
-</ul>
-<p><img src="./figures/ad_metrics_relationship_diagram.png" class="img-fluid"></p>
+<div class="g-col-12">
+<p><img src="figures/model3_structure_dag.png" class="img-fluid figure-img" alt="Model 3: Bayesian additive regression trees (nonlinear mean)."></p>
+</div>
+<div class="g-col-12">
+<p><img src="figures/model4_structure_dag.png" class="img-fluid figure-img" alt="Model 4: Multivariate linear model with full covariance."></p>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-model-ladder-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Directed acyclic graphs of the four models’ generative structure. Arrows indicate conditional dependencies; plates denote repeated dimensions; shaded nodes represent observed quantities.
+</figcaption>
+</figure>
+</div>
+<hr>
 </section>
-<section id="key-definitions-and-relationships" class="level2">
-<h2 class="anchored" data-anchor-id="key-definitions-and-relationships">Key Definitions and Relationships</h2>
-<section id="cpo-cost-per-order" class="level3">
-<h3 class="anchored" data-anchor-id="cpo-cost-per-order">1. CPO – Cost Per Order</h3>
-<ul>
-<li><strong>Definition</strong>: Total advertising spend divided by the number of completed orders.</li>
-<li><strong>Formula</strong>:<br>
-<code>CPO = Ad Spend / Orders</code></li>
-<li><strong>Use Case</strong>: Best for retail media networks or e-commerce businesses that can track purchases directly.</li>
-<li><strong>Optimization Objective</strong>: Lower CPO without sacrificing order volume.</li>
-</ul>
+<section id="posterior-calibration-and-coverage" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="posterior-calibration-and-coverage">Posterior calibration and coverage</h4>
+<div class="column-page">
+<div class="grid">
+<div class="g-col-12">
+<p><img src="figures/loo_pit_mvn.png" class="img-fluid" alt="LOO-PIT calibration plot for the multivariate model."></p>
+</div>
+<div class="g-col-12">
+<p><img src="figures/predictive_coverage_hdi.png" class="img-fluid" alt="Empirical coverage of HDI intervals for each $a_{\phi}$ band (443, 555, 670 nm)."></p>
+</div>
+</div>
+</div>
+<p>Model calibration diagnostics. A flat LOO-PIT distribution indicates well-calibrated uncertainty; coverage near nominal (<span class="math inline">\(94\%\)</span>) confirms reliable predictive intervals. :::</p>
+<hr>
 </section>
-<section id="roas-return-on-ad-spend" class="level3">
-<h3 class="anchored" data-anchor-id="roas-return-on-ad-spend">2. ROAS – Return on Ad Spend</h3>
-<ul>
-<li><strong>Definition</strong>: Measures how much revenue is generated per dollar of ad spend.</li>
-<li><strong>Formula</strong>:<br>
-<code>ROAS = Revenue / Ad Spend</code></li>
-<li><strong>Use Case</strong>: Widely used in performance marketing to evaluate the efficiency of a campaign.</li>
-<li><strong>Optimization Objective</strong>: Maximize ROAS by increasing conversion value or reducing inefficient spend.</li>
-</ul>
-</section>
-<section id="cpa-cost-per-acquisition" class="level3">
-<h3 class="anchored" data-anchor-id="cpa-cost-per-acquisition">3. CPA – Cost Per Acquisition</h3>
-<ul>
-<li><strong>Definition</strong>: Measures how much it costs to get a user to take a specific action—install, signup, subscribe.</li>
-<li><strong>Formula</strong>:<br>
-<code>CPA = Ad Spend / Acquisitions</code></li>
-<li><strong>Use Case</strong>: Best suited to lead generation, app installs, and other conversion-oriented campaigns.</li>
-<li><strong>Optimization Objective</strong>: Reduce CPA while maintaining conversion quality.</li>
-</ul>
-</section>
-<section id="ltv-lifetime-value" class="level3">
-<h3 class="anchored" data-anchor-id="ltv-lifetime-value">4. LTV – Lifetime Value</h3>
-<ul>
-<li><strong>Definition</strong>: Estimates the total revenue a customer will generate over their relationship with the product or brand.</li>
-<li><strong>Formula</strong>:<br>
-<code>LTV = Revenue / Orders</code> (approximation for single-purchase models)</li>
-<li><strong>Use Case</strong>: Important for businesses with recurring purchases or long customer cycles.</li>
-<li><strong>Optimization Objective</strong>: Improve LTV via retention, upsell, and product strategy.</li>
-</ul>
+<section id="model-comparison" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="model-comparison">Model comparison</h4>
+<div class="column-page">
+<p><img src="figures/model_comparison_table.png" class="img-fluid" style="width:80.0%" alt="Cross-validated model comparison showing relative expected predictive accuracy."></p>
+</div>
+<p>Cross-validation-based comparison of the four models. The multivariate linear model provides the highest predictive accuracy, confirming that covariance modeling yields the largest gain.</p>
+<hr>
 </section>
 </section>
-<section id="putting-it-all-together" class="level2">
-<h2 class="anchored" data-anchor-id="putting-it-all-together">Putting It All Together</h2>
-<p>These metrics aren’t interchangeable—they each offer a different lens into campaign performance:</p>
+<section id="links-resources" class="level3">
+<h3 class="anchored" data-anchor-id="links-resources">Links &amp; Resources</h3>
 <ul>
-<li><strong>CPO</strong> and <strong>CPA</strong> measure cost-efficiency.</li>
-<li><strong>ROAS</strong> and <strong>LTV</strong> measure value generated.</li>
-<li><strong>ROAS</strong> is the mirror image of <strong>CPO</strong>, and should be evaluated together.</li>
-<li><strong>LTV</strong> helps contextualize whether a seemingly high <strong>CPA</strong> is actually acceptable.</li>
+<li>📂 <strong>GitHub Repository:</strong> <a href="https://github.com/your-repo/path">TOA → <span class="math inline">\(a_{\phi}\)</span> Modeling Code and Data</a><br>
+</li>
+<li>📄 <strong>2019 Preprint (Earlier Version):</strong> <em>Craig &amp; Karaköylü (2019). Bayesian Models for Deriving Biogeochemical Information from Satellite Ocean Color</em> — <a href="PLACEHOLDER_LINK_2019">Link</a><br>
+</li>
+<li>📄 <strong>Updated Preprint (This Work):</strong> <em>Predicting Phytoplankton Absorption Directly from TOA Radiance Using Bayesian Models</em> — <a href="PLACEHOLDER_LINK_CURRENT">Link</a></li>
 </ul>
-<p>If you’re tuning a performance ad system—whether it’s for real-time bidding, post-campaign analytics, or growth experimentation—this metric map gives you a foundation for choosing what to optimize, when to dig deeper, and how to evaluate trade-offs.</p>
+<hr>
+<blockquote class="blockquote">
+<p><strong>Next:</strong><br>
+Full manuscript in preparation, with expanded discussion of LOO-PIT interpretation, predictive coverage diagnostics, and implications for PACE and future hyperspectral missions.</p>
+</blockquote>
 
 
 </section>
@@ -248,7 +309,7 @@ ul.task-list li input[type="checkbox"] {
 <script async="" defer="" src="https://scripts.simpleanalyticscdn.com/latest.js"></script></main> <!-- /main -->
 <div class="bmac-cta">
   <a class="bmac-btn" href="https://buymeacoffee.com/ofbozmjsvn" target="_blank" rel="noopener">
-    ☕ If you found this content useful, consider buying me a coffee and help fuel continued work!
+    ☕ If you found this useful consider buying me a coffee
   </a>
 </div>
 <script id="quarto-html-after-body" type="application/javascript">
@@ -341,7 +402,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp("https:\/\/erdemkarakoylu\.github\.io\/");
+      var filterRegex = new RegExp('/' + window.location.host + '/');
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }

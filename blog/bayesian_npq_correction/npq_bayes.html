@@ -7,10 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Erdem Karaköylü">
-<meta name="dcterms.date" content="2025-05-16">
-<meta name="description" content="Inferring Phytoplankton Absorption with BART">
+<meta name="dcterms.date" content="2025-12-30">
 
-<title>Satellite Oceanography without Atmospheric Correction – Erdem Karaköylü</title>
+<title>Bayesian NPQ Correction – Erdem Karaköylü</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -168,18 +167,23 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#preamble" id="toc-preamble" class="nav-link active" data-scroll-target="#preamble">Preamble</a></li>
-  <li><a href="#atmospheric-correction-in-brief" id="toc-atmospheric-correction-in-brief" class="nav-link" data-scroll-target="#atmospheric-correction-in-brief">Atmospheric Correction in Brief</a></li>
-  <li><a href="#about-bart" id="toc-about-bart" class="nav-link" data-scroll-target="#about-bart">About BART</a></li>
-  <li><a href="#data-overview" id="toc-data-overview" class="nav-link" data-scroll-target="#data-overview">Data Overview</a></li>
-  <li><a href="#modeling" id="toc-modeling" class="nav-link" data-scroll-target="#modeling">Modeling</a></li>
-  <li><a href="#abbreviated-bayesian-workflow" id="toc-abbreviated-bayesian-workflow" class="nav-link" data-scroll-target="#abbreviated-bayesian-workflow">Abbreviated Bayesian Workflow</a></li>
-  <li><a href="#conclusion-and-next-steps" id="toc-conclusion-and-next-steps" class="nav-link" data-scroll-target="#conclusion-and-next-steps">Conclusion and Next Steps</a>
+  <li><a href="#background" id="toc-background" class="nav-link active" data-scroll-target="#background">Background</a></li>
+  <li><a href="#the-npq-correction-problem-at-a-glance" id="toc-the-npq-correction-problem-at-a-glance" class="nav-link" data-scroll-target="#the-npq-correction-problem-at-a-glance">The NPQ correction problem at a glance</a></li>
+  <li><a href="#some-recent-framings-of-npq-correction" id="toc-some-recent-framings-of-npq-correction" class="nav-link" data-scroll-target="#some-recent-framings-of-npq-correction">Some recent framings of NPQ correction</a>
   <ul class="collapse">
-  <li><a href="#interpretable-machine-learning" id="toc-interpretable-machine-learning" class="nav-link" data-scroll-target="#interpretable-machine-learning">Interpretable Machine Learning</a></li>
-  <li><a href="#model-generalization" id="toc-model-generalization" class="nav-link" data-scroll-target="#model-generalization">Model Generalization</a></li>
+  <li><a href="#a-feature-rich-predictive-framing" id="toc-a-feature-rich-predictive-framing" class="nav-link" data-scroll-target="#a-feature-rich-predictive-framing">A feature-rich predictive framing</a></li>
+  <li><a href="#a-structured-par-driven-correction" id="toc-a-structured-par-driven-correction" class="nav-link" data-scroll-target="#a-structured-par-driven-correction">A structured PAR-driven correction</a></li>
   </ul></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  <li><a href="#a-hierarchical-bayesian-approach-to-npq-correction" id="toc-a-hierarchical-bayesian-approach-to-npq-correction" class="nav-link" data-scroll-target="#a-hierarchical-bayesian-approach-to-npq-correction">A hierarchical Bayesian approach to NPQ correction</a>
+  <ul class="collapse">
+  <li><a href="#modeling-framework" id="toc-modeling-framework" class="nav-link" data-scroll-target="#modeling-framework">Modeling framework</a></li>
+  </ul></li>
+  <li><a href="#model-diagnostics-and-posterior-predictive-checks" id="toc-model-diagnostics-and-posterior-predictive-checks" class="nav-link" data-scroll-target="#model-diagnostics-and-posterior-predictive-checks">Model diagnostics and posterior predictive checks</a>
+  <ul class="collapse">
+  <li><a href="#optimization-behavior" id="toc-optimization-behavior" class="nav-link" data-scroll-target="#optimization-behavior">Optimization behavior</a></li>
+  <li><a href="#distributional-posterior-predictive-check" id="toc-distributional-posterior-predictive-check" class="nav-link" data-scroll-target="#distributional-posterior-predictive-check">Distributional posterior predictive check</a></li>
+  <li><a href="#npq-with-depth" id="toc-npq-with-depth" class="nav-link" data-scroll-target="#npq-with-depth">NPQ with depth</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -188,20 +192,16 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Satellite Oceanography without Atmospheric Correction</h1>
+<h1 class="title">Bayesian NPQ Correction</h1>
+<p class="subtitle lead">A generative, uncertainty-aware approach</p>
   <div class="quarto-categories">
-    <div class="quarto-category">Bayesian Additive Regression Trees</div>
-    <div class="quarto-category">Remote Sensing</div>
-    <div class="quarto-category">Phytoplankton Ecology</div>
-    <div class="quarto-category">PyMC</div>
+    <div class="quarto-category">Quenching and fluorescence</div>
+    <div class="quarto-category">Bayesian modeling</div>
+    <div class="quarto-category">Oceanography</div>
+    <div class="quarto-category">Causal thinking</div>
   </div>
   </div>
 
-<div>
-  <div class="description">
-    Inferring Phytoplankton Absorption with BART
-  </div>
-</div>
 
 
 <div class="quarto-title-meta">
@@ -216,7 +216,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 16, 2025</p>
+      <p class="date">December 30, 2025</p>
     </div>
   </div>
   
@@ -228,143 +228,177 @@ window.Quarto = {
 </header>
 
 
-<section id="preamble" class="level2">
-<h2 class="anchored" data-anchor-id="preamble">Preamble</h2>
-<p>Tired of wrestling with atmospheric models when all you want is ocean data? To oceanographers using satellite observations, the atmosphere is an obstacle to the development of good predictive models of marine processes. Bayesian Additive Regression Trees - BART - offers a robust solution, blending the flexibility of tree-based machine learning with Bayesian uncertainty quantification to directly predict phytoplankton absorption from top-of-the-atmosphere (TOA) radiance.</p>
+<section id="background" class="level2">
+<h2 class="anchored" data-anchor-id="background">Background</h2>
+<p>This work presents an exploratory Bayesian re-analysis of non-photochemical quenching (NPQ) correction using in situ fluorescence data from Lake George. The goal is to demonstrate how hierarchical Bayesian modeling can be used to (i) represent uncertainty in NPQ correction explicitly, (ii) borrow strength across study sites via partial pooling, and (iii) separate model (epistemic) uncertainty regarding the underlying light–response relationship from the measurement (aleatoric) uncertainty inherent in observation-level noise.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Non-Photochemical Quenching (NPQ): What is it?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Non-Photochemical Quenching (NPQ): What is it?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Fluorescence is widely used in aquatic sciences as a non-invasive, high-resolution proxy for chlorophyll-a to estimate phytoplankton biomass and primary productivity across diverse ecosystems. However, non-photochemical quenching (NPQ)—a photoprotective process where algae dissipate excess light energy as heat—artificially depresses this signal under bright conditions, leading to significant underestimates of actual biomass if left uncorrected.</p>
+</div>
+</div>
+<p>The analysis is intended as a methodological demonstration, rather than a definitive replacement for existing correction schemes. In particular, I emphasize assumption transparency, principled uncertainty quantification, and the importance of causal thinking in modeling the NPQ process.</p>
 </section>
-<section id="atmospheric-correction-in-brief" class="level2">
-<h2 class="anchored" data-anchor-id="atmospheric-correction-in-brief">Atmospheric Correction in Brief</h2>
-<p>Atmospheric correction is the process of removing the atmospheric contribution from satellite measurements of TOA radiance to isolate the weak oceanic signal. Sunlight reaching the sensor includes both direct atmospheric paths (scattered by air molecules and aerosols) and reflected sunlight from the ocean surface. Only a small fraction of this signal — the water-leaving radiance — actually carries information about oceanic properties like chlorophyll and suspended particles. While simpler components like Rayleigh scattering and surface reflection (Fresnel effects) can be corrected relatively easily, the remaining atmospheric signal, especially from aerosols, is far more complex. Being able to bypass or reduce the need for full atmospheric correction is a significant advancement - if predictive performance can be preserved. Doing so simplifies the retrieval pipeline and avoids introducing uncertainty from external assumptions and models.</p>
-</section>
-<section id="about-bart" class="level2">
-<h2 class="anchored" data-anchor-id="about-bart">About BART</h2>
-<p>BART has been around for about 2 decades; it has gained significant traction for its robust predictive performance and ability to quantify uncertainty across diverse fields. Because of its nonparametric nature, BART can capture complex, nonlinear relationships and interactions without requiring explicit specification <span class="citation" data-cites="Chipman2010">(<a href="#ref-Chipman2010" role="doc-biblioref">Chipman, George, and McCulloch 2010</a>)</span>. BART has been applied in variety of fields, including;</p>
-<ol type="1">
-<li>Causal Inference: BART is widely used for estimating causal effects in observational studies due to its flexibility in modeling confounding relationships <span class="citation" data-cites="Hill2011">(<a href="#ref-Hill2011" role="doc-biblioref">J. L. Hill 2011</a>)</span>.</li>
-<li>Biomedical Research: It has been applied in areas like biomarker discovery, predicting disease outcomes, and estimating individual treatment effects <span class="citation" data-cites="Logan2019">(<a href="#ref-Logan2019" role="doc-biblioref">Logan et al. 2019</a>)</span>.</li>
-<li>Environmental Science: BART has found use in predicting air pollution concentrations, as well as in various ecological modeling tasks <span class="citation" data-cites="Zhang2020">(<a href="#ref-Zhang2020" role="doc-biblioref">Zhang et al. 2020</a>)</span>.</li>
-<li>Social Sciences and Economics: Its ability to handle high-dimensional data and provide uncertainty estimates makes it valuable for analyzing complex survey data and estimating policy impacts.</li>
-</ol>
-<p>BART’s building block is the regression tree, which partitions the covariate space into subgroups. As its name suggests BART’s formulation then consists in summing such trees. What makes it Bayesian is its regularization priors. These limit both depth and the fit - he magnitude of predictions at the leaves - of each tree. This yields an ensemble of weak learners, with the goal of avoiding - or more realistically avoiding overfitting; <em>cf.</em> <span class="citation" data-cites="Hill2020bart">J. Hill, Linero, and Murray (<a href="#ref-Hill2020bart" role="doc-biblioref">2020</a>)</span> for more.</p>
-<p>The choice of BART in this study is also motivated by the multicollinearity present in the input features. Regression models - be they linear or neural networks - struggle with highly correlated predictors, often producing unstable or uninterpretable parameter estimates. In contrast, tree-based methods like BART inherently handle multicollinearity by making hierarchical splits, rather than estimating global coefficients. This makes BART especially well-suited to remote sensing data, where reflectance values at adjacent wavelengths are often highly correlated due to physical constraints on the optical signal. Importantly, this robustness also eliminates the need for dimensionality reduction techniques like PCA, which are commonly used to mitigate multicollinearity but can obscure the physical meaning of spectral features. By working directly with the original TOA bands, BART preserves interpretability while still learning a stable mapping from radiance to absorption.</p>
-<div id="fig-labyrinth" class="quarto-float quarto-figure quarto-figure-center anchored">
+<section id="the-npq-correction-problem-at-a-glance" class="level2">
+<h2 class="anchored" data-anchor-id="the-npq-correction-problem-at-a-glance">The NPQ correction problem at a glance</h2>
+<p><a href="#fig-npq-dag" class="quarto-xref">Figure&nbsp;1</a> summarizes the physical and biological processes involved in NPQ correction. In a nutshell, incident surface light determines subsurface irradiance, which drives NPQ. In turn, NPQ suppresses fluorescence yield relative to latent chlorophyll concentration. Reference fluorescence provides a low-NPQ proxy, while several biological and optical processes remain unobserved.</p>
+<blockquote class="blockquote">
+<p><strong><em>“Latent”</em> variables are not directly measured (such as the true chlorophyll concentration or the physiological quenching state) but influence the observed data and that can be inferred through careful modeling.</strong></p>
+</blockquote>
+<div id="fig-npq-dag" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-labyrinth-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="./figures/labyrinth3.png" class="img-fluid figure-img">
+<div aria-describedby="fig-npq-dag-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/npq_conceptual_dag.png" class="img-fluid figure-img">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-labyrinth-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: In search of a generalizable solution…
-</figcaption>
-</figure>
-</div>
-<p>This post is a brief demonstration of work I am currently wrapping up, and that improves on previous work <span class="citation" data-cites="Craig2020bayesian">(<a href="#ref-Craig2020bayesian" role="doc-biblioref">Craig and Karaköylü 2020</a>)</span>. The goal of the project is to assess the feasibility of simplifying the modeling process by avoiding most of atmospheric correction. It builds on work published previously.</p>
-</section>
-<section id="data-overview" class="level2">
-<h2 class="anchored" data-anchor-id="data-overview">Data Overview</h2>
-<p>The predictive features consist of six wavelengths of TOA (top-of-atmosphere) radiance measurements from satellite remote sensing. These have been corrected for Fresnel reflection and Rayleigh scattering. The Fresnel correction removes the specular component of sunlight reflected off a flat ocean surface, while the Rayleigh correction accounts for molecular scattering by air molecules in the atmosphere. Both are relatively straightforward, physics-based corrections that depend primarily on viewing geometry and standard atmospheric conditions, without requiring full atmospheric state data.</p>
-<p>However, the data is not corrected for more complex atmospheric interactions — most notably, aerosol scattering and absorption. These effects are typically handled by full atmospheric correction algorithms, which attempt to isolate the weak water-leaving radiance signal from the much stronger atmospheric contribution. One key aspect of this signal is that ocean color is shaped not just by what is reflected, but also by what is absorbed. For example, phytoplankton pigments like chlorophyll-a absorb strongly in the blue and red parts of the spectrum. In practice, this means we observe less radiance at those wavelengths than we otherwise would — so absorption often reveals itself as a missing or diminished signal where one would expect more. Interpreting these spectral “absences” is fundamental to retrieving information about oceanic constituents.</p>
-<p>Another characteristic of these features is their high multicollinearity (<a href="#fig-rrc" class="quarto-xref">Figure&nbsp;2</a>). Multicollinearity can pose challenges for many modeling approaches by producing unstable coefficient estimates; however, tree-based models — including BART — are generally more robust in such cases. Nonetheless, care should be taken when interpreting variable importance or partial dependence. This aspect will be explored in more depth in a future post.</p>
-<div id="fig-rrc" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-rrc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="./figures/figure1.png" class="img-fluid figure-img">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-rrc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: Pair plot demonstrating the multicollinear nature of the input features; Rayleigh- and Fresnel-corrected top-of-the-atmosphhere radiance.
-</figcaption>
-</figure>
-</div>
-<p>The prediction targets are phytoplankton absorption (AΦ) at three wavelengths; 443, 555, 670nm; their distribution is seen in <a href="#fig-aphi" class="quarto-xref">Figure&nbsp;3</a>. The present BART model was written to predicted all three targets simultaneously.</p>
-<div id="fig-aphi" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-aphi-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="./figures/figure2.png" class="img-fluid figure-img">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-aphi-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: Kernel density estimation of the output, phytoplankton absorption at 3 wavelengths; 443, 555, and 670 nm.
-</figcaption>
-</figure>
-</div>
-<p>Overall the only preprocessing step applied to the data in addition to the aforementioned corrections was to <span class="math inline">\(log_{10}\)</span>-transformed them - both input features and prediction targets - as doing so stabilized their variance, which eases model fitting. Interpretation remains easy since data thus transformed refer to magnitude. All plots in this post will be shown in <span class="math inline">\(log_{10}\)</span> scale.</p>
-</section>
-<section id="modeling" class="level2">
-<h2 class="anchored" data-anchor-id="modeling">Modeling</h2>
-<p><a href="#fig-graph" class="quarto-xref">Figure&nbsp;4</a> shows the model structure, written in <a href="https://pymc.io">PyMC</a> and <a href="https://www.pymc.io/projects/bart/en/latest/">PyMC-BART</a>. There are a few things to note here. (1) BART is only a component of the model, taking in the 6 features <span class="math inline">\(Rrc(λ\_toa)\)</span> and producing the mean μ of each of the three phytoplanktong absorption bands (<span class="math inline">\(λ\_aφ\)</span>). The full notebook with code - still very much a living document - can be found <a href="https://github.com/erdemkarakoylu/bayesian_TOA_2_IOP/blob/main/02_01_%20model_building_bart.ipynb">here.</a></p>
-<div id="fig-graph" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-graph-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="./figures/figure3.png" class="img-fluid figure-img">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-graph-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4: Model graph depicting priors, likelihood, data and how these are connected per model formulation. Note that BART is only a component of the full Bayesian model; namely the mean, μ.
-</figcaption>
-</figure>
-</div>
-<p><strong>BART Priors</strong> – The BART prior encodes a belief that the underlying function can be approximated by a sum of shallow regression trees. Here, I use a tree structure prior with parameters <span class="math inline">\((α = 0.95)\)</span> and <span class="math inline">\((β = 2.0)\)</span>; these define the probability of a node splitting at depth <span class="math inline">\(( d )\)</span> as <span class="math inline">\(( α (1 + d)^{-β})\)</span> . This formulation favors smaller trees, encouraging regularization by limiting model complexity. Each terminal node (leaf) has a prior over its predicted value, typically drawn from a normal distribution with variance scaled by the number of trees; here I’ve set this number to <span class="math inline">\(m = 10\)</span>. Each tree contributes only weakly to the overall prediction, which helps avoid overfitting and encourages generalization. The prior over each terminal node value is typically a zero-centered normal distribution, with variance scaled by the number of trees (e.g., <span class="math inline">\(( \mathcal{N}(0, τ^2/m))\)</span>), further regularizing the contribution of individual trees in the ensemble. The overall BART model thus represents the mean function as a sum of these weak learners, with uncertainty in predictions captured through Bayesian posterior sampling. I also placed a prior on the observation noise to reflect uncertainty in the data-generating process.</p>
-</section>
-<section id="abbreviated-bayesian-workflow" class="level2">
-<h2 class="anchored" data-anchor-id="abbreviated-bayesian-workflow">Abbreviated Bayesian Workflow</h2>
-<p>Part of the Bayesian workflow is to simulate model output before fitting data. This is a verification step to make sure modeling assumptions, encoded as priors, produce reasonable target values. This is referred to as Prior Predictive Checks. After fitting the process is repeated, which shows whether the model has learned from the data, and how simulated data compares to actual observations</p>
-<div id="fig-prior-n-post-ppc" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-prior-n-post-ppc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="./figures/figure4.png" class="img-fluid figure-img">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-prior-n-post-ppc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;5: Did the model learn from the data? <em>Left</em> - p Prior predictive checks: draws from the model’s prior predictive distribution, where outputs (log-transformed <span class="math inline">\(aΦ\)</span>) are simulated without conditioning on observed data. This verifies whether the prior assumptions can plausibly generate target-like values. This plot shows Kernel Density Estimation (KDE) of multiple simulation draws, their mean and how the observation data. <em>Right</em> - posterior predictive checks, similar but now the simulated output is conditioned on the observations.
-</figcaption>
-</figure>
-</div>
-<div id="fig-3-way-ppc" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-3-way-ppc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="./figures/figure5.png" class="img-fluid figure-img">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-3-way-ppc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6: Posterior Predictive Checks - The trained Bayesian model can now be used to simulate phytoplankton absorption at all 3 wavelengths. These can in turn be compared with observatiosn. From left to right and top to bottom; phytoplankton absorption at 443, 555, 670 nm, and all bands. Black line: distribution of observations; each grey line represents the distribution of a simulation outcome; orange dashed line is the simulation mean distribution.
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-npq-dag-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: <em>Conceptual DAG of the NPQ correction problem. Subsurface irradiance drives a latent NPQ state that suppresses fluorescence yield relative to true chlorophyll concentration, while reference fluorescence provides a low-NPQ proxy. Observed quantities are shown in blue and latent processes in gray. This diagram is intentionally schematic. Its purpose is not to assert a complete causal model, but to provide a shared conceptual starting point for the discussion that follows.</em>
 </figcaption>
 </figure>
 </div>
 </section>
-<section id="conclusion-and-next-steps" class="level2">
-<h2 class="anchored" data-anchor-id="conclusion-and-next-steps">Conclusion and Next Steps</h2>
-<section id="interpretable-machine-learning" class="level3">
-<h3 class="anchored" data-anchor-id="interpretable-machine-learning">Interpretable Machine Learning</h3>
-<p>Like other tree-based algorithms, BART is relatively transparent and exploring variable importance in driving inference is relatively easy. In the full project (soon to be found in the portfolio) I will be assessing what makes the BART component of the model tick. To do so I will use Partial Dependency Plots to determine the average impact of each feature on each output, Individual Conditional Expectation to determine each each observations’s feature on corresponding outputs, and Variable Importance Estimation (note that given feature multicollinearity, I don’t expect one feature to be significantly more important the another.)</p>
+<section id="some-recent-framings-of-npq-correction" class="level2">
+<h2 class="anchored" data-anchor-id="some-recent-framings-of-npq-correction">Some recent framings of NPQ correction</h2>
+<p>Several recent approaches to NPQ correction illustrate different ways of operationalizing the conceptual picture above. Rather than reviewing the full literature, the examples below highlight contrasting modeling choices that have appeared in the past few years and that motivate different assumptions about physiology, optics, and uncertainty.</p>
+<section id="a-feature-rich-predictive-framing" class="level3">
+<h3 class="anchored" data-anchor-id="a-feature-rich-predictive-framing">A feature-rich predictive framing</h3>
+<p>In this framing examplified by <span class="citation" data-cites="Lucius2020NPQ">(<a href="#ref-Lucius2020NPQ" role="doc-biblioref">Lucius et al. 2020</a>)</span>, NPQ is treated as a target variable to be predicted from a broad set of covariates. The emphasis is on predictive performance rather than on explicit representation of latent processes, making the approach flexible but less transparent in terms of which assumptions drive the correction.</p>
+<div id="fig-lucius2020-dag" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-lucius2020-dag-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/dag_lucius_2020_encoded.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-lucius2020-dag-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: <em>DAG representation of the <span class="citation" data-cites="Lucius2020NPQ">(<a href="#ref-Lucius2020NPQ" role="doc-biblioref">Lucius et al. 2020</a>)</span> framing. NPQ is modeled directly as a function of multiple observed environmental and sensor-derived predictors, while latent physiological processes are left implicit.</em>
+</figcaption>
+</figure>
+</div>
+<p>In this approach <span class="citation" data-cites="Sharp2025NPQ">(<a href="#ref-Sharp2025NPQ" role="doc-biblioref">Sharp et al. 2025</a>)</span>, NPQ is not predicted directly but inferred through a prescribed functional relationship with subsurface irradiance. This yields a more structured and mechanistically motivated correction, at the cost of collapsing diverse physiological responses into a fixed form.</p>
 </section>
-<section id="model-generalization" class="level3">
-<h3 class="anchored" data-anchor-id="model-generalization">Model Generalization</h3>
-<p><em>Approximating Out-of-Sample Predictions</em> — Ensuring the model generalizes well is critical. To avoid overfitting the training data while capturing meaningful signal, I chose a Normal likelihood, which imposes a unimodal structure on the predictive distribution. The apparent bimodality in the observed data may reflect sampling variability rather than true structure, given the limited sample size.</p>
-<p>While I don’t report traditional metrics like RMSE—which reduce uncertainty to point estimates and are of limited relevance in a Bayesian framework—I will assess model calibration in the full project using the Leave-One-Out Probability Integral Transform (LOO-PIT). This method provides a principled way to check whether the predictive distributions are well-calibrated without relying on frequentist error metrics. This is also a recommended appraoch when dealing with small datasets, as in this case, where splitting into training/testing tiers is not a reasonable proposition.</p>
+<section id="a-structured-par-driven-correction" class="level3">
+<h3 class="anchored" data-anchor-id="a-structured-par-driven-correction">A structured PAR-driven correction</h3>
+<div id="fig-sharp2025-dag" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-sharp2025-dag-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/dag_sharp_2025_encoded.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-sharp2025-dag-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: <em>DAG representation of the <span class="citation" data-cites="Sharp2025NPQ">Sharp et al. (<a href="#ref-Sharp2025NPQ" role="doc-biblioref">2025</a>)</span> framing. Subsurface irradiance is treated as the primary driver of NPQ through a prescribed functional relationship, with physiological complexity summarized by a small number of parameters.</em>
+</figcaption>
+</figure>
+</div>
+<p>These recent approaches illustrate two contrasting strategies: one that treats NPQ as a derived response to be modeled conditionally on many observed covariates, and another that prescribes a fixed functional relationship between irradiance and fluorescence correction. Both motivate an alternative framing in which NPQ correction is treated as a latent process inferred jointly with uncertainty.</p>
 </section>
 </section>
-<section id="references" class="level2 unnumbered">
-<h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
-<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
-<div id="ref-Chipman2010" class="csl-entry" role="listitem">
-Chipman, Hugh A, Edward I George, and Robert E McCulloch. 2010. <span>“BART: Bayesian Additive Regression Trees.”</span> <em>The Annals of Applied Statistics</em> 4 (1): 266–98. <a href="https://doi.org/10.1214/09-AOAS285">https://doi.org/10.1214/09-AOAS285</a>.
+<section id="a-hierarchical-bayesian-approach-to-npq-correction" class="level2">
+<h2 class="anchored" data-anchor-id="a-hierarchical-bayesian-approach-to-npq-correction">A hierarchical Bayesian approach to NPQ correction</h2>
+<p>Here, NPQ correction is treated as a latent quantity inferred from the data, rather than as a derived response modeled conditionally on many predictors or as the result of a prescribed functional adjustment. The focus is on modeling the correction itself while making uncertainty and shared structure explicit.</p>
+<p>The model targets the NPQ correction δ, defined as the difference between reference fluorescence and observed fluorescence. Working on this scale keeps the model close to the measurement process and allows uncertainty to propagate directly to corrected fluorescence.</p>
+<p>The dependence of NPQ correction on irradiance is represented using a flexible nonlinear function. This allows the data to inform the shape of the light–NPQ relationship without committing to a fixed parametric form or a specific physiological parameterization.</p>
+<p>Depth and temperature are included as additional predictors of the mean correction, capturing well-known environmental influences on fluorescence yield while remaining agnostic about the underlying mechanisms. Other available variables are intentionally excluded to preserve interpretability and avoid conditioning on downstream proxies.</p>
+<p>Measurements from multiple sites are modeled jointly using partial pooling. A shared irradiance response is learned across sites, while allowing site-level deviations through hierarchical effects. This structure balances borrowing strength across datasets with the recognition that local conditions modulate NPQ behavior.</p>
+<div id="fig-my-model-concept" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-my-model-concept-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/dag_our_model_encoded.png" class="img-fluid figure-img">
 </div>
-<div id="ref-Craig2020bayesian" class="csl-entry" role="listitem">
-Craig, Susanne E., and Erdem M. Karaköylü. 2020. <span>“Bayesian Models for Deriving Biogeochemical Information from Satellite Ocean Color.”</span> <a href="https://doi.org/10.31223/osf.io/shp6y">https://doi.org/10.31223/osf.io/shp6y</a>.
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-my-model-concept-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: <em>DAG summarizing the Bayesian NPQ correction model. The correction δ is treated as a latent quantity driven by irradiance and contextual variables, with shared structure and site-level variation modeled explicitly.</em>
+</figcaption>
+</figure>
 </div>
-<div id="ref-Hill2011" class="csl-entry" role="listitem">
-Hill, Jennifer L. 2011. <span>“Bayesian Nonparametric Modeling for Causal Inference.”</span> <em>Journal of Computational and Graphical Statistics</em> 20 (1): 217–40. <a href="https://doi.org/10.1198/jcgs.2010.08162">https://doi.org/10.1198/jcgs.2010.08162</a>.
+<section id="modeling-framework" class="level3">
+<h3 class="anchored" data-anchor-id="modeling-framework">Modeling framework</h3>
+<p>The statistical model is implemented in PyMC. In addition to the conceptual DAG above, the probabilistic structure of the implementation can be summarized by its computational graph (<em>cf.</em> <a href="#fig-pymc-model" class="quarto-xref">Figure&nbsp;5</a>). This graph makes explicit the quantities treated as random variables, the deterministic transformations used, and how information flows during inference.</p>
+<div id="fig-pymc-model" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pymc-model-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/npq_hier_spline.png" class="img-fluid figure-img">
 </div>
-<div id="ref-Hill2020bart" class="csl-entry" role="listitem">
-Hill, Jennifer, Antonio Linero, and Jared Murray. 2020. <span>“Bayesian Additive Regression Trees: A Review and Look Forward.”</span> <em>Annual Review of Statistics and Its Application</em> 7: 251–78. <a href="https://doi.org/10.1146/annurev-statistics-031219-041110">https://doi.org/10.1146/annurev-statistics-031219-041110</a>.
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pymc-model-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: <em>PyMC Graphviz representation of the NPQ correction model. Plates indicate repeated structure: the observation plate (≈50k) indexes the likelihood and deterministic transformations, the spline basis (5 functions) indexes both the irradiance design matrix and its shared coefficients, and the site plate (2) indexes site-specific parameters. The graph emphasizes how a small number of shared parameters generate observation-level corrections at scale.</em>
+</figcaption>
+</figure>
 </div>
-<div id="ref-Logan2019" class="csl-entry" role="listitem">
-Logan, Brent R., Rodney Sparapani, Robert E. McCulloch, and Purushottam W. Laud. 2019. <span>“Decision Making and Uncertainty Quantification for Individualized Treatments Using Bayesian Additive Regression Trees.”</span> <em>Statistical Methods in Medical Research</em> 28 (4): 1079–93. <a href="https://doi.org/10.1177/0962280217746191">https://doi.org/10.1177/0962280217746191</a>.
+<p>Inference is performed using automatic differentiation variational inference, <span class="citation" data-cites="Kucukelbir2015AVI">(ADVI, <a href="#ref-Kucukelbir2015AVI" role="doc-biblioref">Kucukelbir et al. 2015</a>)</span> to accommodate the large number of observations. ADVI approximates the posterior with a parametric distribution by optimizing a variational objective using gradient-based methods, trading exactness for speed and scalability. The intent here is exploratory: to examine model behavior, uncertainty, and implied corrections in a computationally tractable setting.</p>
+</section>
+</section>
+<section id="model-diagnostics-and-posterior-predictive-checks" class="level2">
+<h2 class="anchored" data-anchor-id="model-diagnostics-and-posterior-predictive-checks">Model diagnostics and posterior predictive checks</h2>
+<p>Model diagnostics focus on two questions: whether the variational optimization has stabilized (Figure <a href="#fig-advi-opt" class="quarto-xref">Figure&nbsp;6</a>), and whether the fitted model reproduces key features of the observed data (Figure <a href="#fig-ppc-distribution" class="quarto-xref">Figure&nbsp;7</a>). Given the exploratory use of variational inference, emphasis is placed on posterior predictive behavior rather than asymptotic sampling guarantees.</p>
+<section id="optimization-behavior" class="level3">
+<h3 class="anchored" data-anchor-id="optimization-behavior">Optimization behavior</h3>
+<div id="fig-advi-opt" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-advi-opt-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/optim_history.png" class="img-fluid figure-img">
 </div>
-<div id="ref-Zhang2020" class="csl-entry" role="listitem">
-Zhang, Tong, Guannan Geng, Yang Liu, and Howard H. Chang. 2020. <span>“Application of Bayesian Additive Regression Trees for Estimating Daily Concentrations of PM<sub>2.5</sub> Components.”</span> <em>Atmosphere</em> 11 (11): 1233. <a href="https://doi.org/10.3390/atmos11111233">https://doi.org/10.3390/atmos11111233</a>.
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-advi-opt-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: <em>ADVI optimization history. The rapid decrease and subsequent stabilization of the variational objective indicate convergence of the optimization procedure.</em>
+</figcaption>
+</figure>
 </div>
+</section>
+<section id="distributional-posterior-predictive-check" class="level3">
+<h3 class="anchored" data-anchor-id="distributional-posterior-predictive-check">Distributional posterior predictive check</h3>
+<div id="fig-ppc-distribution" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ppc-distribution-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/rep_obs.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ppc-distribution-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: <em>Population-level (across sites) observed standardized NPQ corrections (δ) are compared to simulated δ generated by sampling from the posterior predictive distribution of the fitted hierarchical model. The blue histogram shows the empirical (observed) distribution of δ, while the overlaid gray histograms correspond to multiple draws from the posterior predictive distribution. Good agreement indicates that the model captures both the central tendency and tail behavior of the correction, including heavy-tailed variability modeled via a Student-t likelihood. At the same time, systematic discrepancies in location, spread, or tails suggest model mis-specification or underestimation of uncertainty. The posterior predictive distribution reproduces the overall location of the data but is broader and more symmetric than the observed distribution, which exhibits a sharper and asymmetric shape. This residual mismatch in dispersion and shape suggests that the model may not fully capture the complexity of the data’s tail behavior, consistent with known limitations of mean-field variational inference, which can oversmooth variability and favor approximately near-Gaussian predictive behavior.</em>
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="npq-with-depth" class="level3">
+<h3 class="anchored" data-anchor-id="npq-with-depth">NPQ with depth</h3>
+<div id="fig-npq-vs-depth" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-npq-vs-depth-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<iframe src="figures/interactive/npq_corr.html" width="100%" height="520" style="border: 0;" loading="lazy">
+</iframe>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-npq-vs-depth-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8: <em>Uncertainty-aware NPQ predictions versus depth. This plot is interactive <span class="math inline">\(\Rightarrow\)</span> hover to inspect points and zoom to explore depth ranges where NPQ behavior changes. Black triangle <span class="math inline">\(\rightarrow\)</span> observed data; colored points <span class="math inline">\(\rightarrow\)</span> median predictions; colored horizontal bars <span class="math inline">\(\rightarrow\)</span> 94% credibility intervals.</em>
+</figcaption>
+</figure>
+</div>
+<div id="fig-npq-curve" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-npq-curve-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<iframe src="figures/interactive/npq_curve.html" width="100%" height="520" style="border: 0;" loading="lazy">
+</iframe>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-npq-curve-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;9: <em>Learned NPQ–irradiance response (population-level spline on <span class="math inline">\(log_{10}\)</span>-transformed irradiance)</em>
+</figcaption>
+</figure>
 </div>
 
 
+
+</section>
 </section>
 
-<script async="" defer="" src="https://scripts.simpleanalyticscdn.com/latest.js"></script></main> <!-- /main -->
+<script async="" defer="" src="https://scripts.simpleanalyticscdn.com/latest.js"></script><div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-Kucukelbir2015AVI" class="csl-entry" role="listitem">
+Kucukelbir, Alp, Rajesh Ranganath, Andrew Gelman, and David M. Blei. 2015. <span>“Automatic Variational Inference in <span>Stan</span>.”</span> <em>arXiv Preprint arXiv:1506.03431</em>. <a href="http://arxiv.org/abs/1506.03431">http://arxiv.org/abs/1506.03431</a>.
+</div>
+<div id="ref-Lucius2020NPQ" class="csl-entry" role="listitem">
+Lucius, Mark A., Kenneth E. Johnston, Lawrence W. Eichler, Jeremy L. Farrell, Vincent W. Moriarty, and Rick A. Relyea. 2020. <span>“Using Machine Learning to Correct for Nonphotochemical Quenching in High-Frequency, in Vivo Fluorometer Data.”</span> <em>Limnology and Oceanography: Methods</em> 18 (9): 477–94. <a href="https://doi.org/10.1002/lom3.10378">https://doi.org/10.1002/lom3.10378</a>.
+</div>
+<div id="ref-Sharp2025NPQ" class="csl-entry" role="listitem">
+Sharp, Samantha L., Alexander L. Forrest, Derek C. Roberts, Alicia Cortés, and S. Geoffrey Schladow. 2025. <span>“A Correction Model for Quenching Effects on Chlorophyll a Fluorescence Measurements in Lakes.”</span> <em>Limnology and Oceanography: Methods</em> 23 (8): 543–61. <a href="https://doi.org/10.1002/lom3.10697">https://doi.org/10.1002/lom3.10697</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <div class="bmac-cta">
   <a class="bmac-btn" href="https://buymeacoffee.com/ofbozmjsvn" target="_blank" rel="noopener">
     ☕ If you found this content useful, consider buying me a coffee and help fuel continued work!
