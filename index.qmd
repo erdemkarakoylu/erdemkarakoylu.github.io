@@ -15,6 +15,4 @@ about:
 
 ##### Statistical Oceanography & Marine Ecology -- Probabilistic Machine Learning -- Causal Inference
 
-\
-
 I develop probabilistic models and reproducible workflows that surface signal, quantify uncertainty, and deliver decision-ready insights for complex scientific and operational problems.

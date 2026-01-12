@@ -139,5 +139,14 @@
   },
   "portfolio/iop_from_toa/index.qmd": {
     "index.html": "a8850d9c"
+  },
+  "portfolio/bart_toa/index_alt.qmd": {
+    "index_alt.html": "92b80646"
+  },
+  "blog/bayesian_npq_correction/index.qmd": {
+    "index.html": "6eef27d8"
+  },
+  "blog/bayesian_npq_correction/npq_bayes.qmd": {
+    "npq_bayes.html": "f725aa6a"
   }
 }

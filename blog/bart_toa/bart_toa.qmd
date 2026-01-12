@@ -10,7 +10,7 @@ categories:
   - PyMC
 image: ./figures/cover8.png
 format: html
-bibliography: litterature.bib
+bibliography: literature.bib
 ---
 
 ## Preamble

@@ -61,151 +61,129 @@ We use a **modified version of the NOMAD–SeaWiFS matchup dataset** (Werdell & 
 
 ## The Modeling Story  
 
-We compared four Bayesian models to evaluate how structural assumptions affect predictive skill and uncertainty:  
+### Workflow, Evaluation, and Model Development
 
-1. **Linear regression (independent residuals):** baseline model with diagonal Gaussian noise.  
-2. **Hierarchical linear regression:** partial pooling across absorption bands, stabilizing estimates with modest data.  
-3. **Bayesian Additive Regression Trees (BART):** nonlinear mean function with independent residuals.  
-4. **Multivariate linear regression (full covariance):** linear mean plus cross-band residual covariance (LKJ prior).  
+The modeling followed a structured **Bayesian workflow** aimed at building up complexity only when it was warranted by the data:
+
+1. **Prior predictive checks** — to confirm that the chosen priors generate physically plausible values of $a_{\phi}$ before observing data.  
+2. **Posterior sampling** — models were fit with Hamiltonian Monte Carlo (NUTS) using PyMC v5, ensuring reproducible, well-mixed posteriors.  
+3. **Posterior predictive checks (PPC)** — to assess whether simulated data resembled observed $\log_{10}(a_{\phi})$.  
+4. **Calibration diagnostics** — using the leave-one-out probability integral transform (LOO-PIT) to gauge whether predictive uncertainty was well calibrated.  
+5. **Predictive coverage** — to test whether $50\%$, $80\%$, and $94\%$ credible intervals contained the true observations at the expected rate.  
+6. **Cross-validation** — to compare models on expected out-of-sample predictive performance.
+
+We then compared four Bayesian models of increasing structural richness:
+
+1. **Linear model (M1)** — Baseline regression linking $\log_{10}$ TOA radiance to $\log_{10}(a_{\phi})$ for each band, assuming independent Gaussian errors (diagonal $\Sigma$).  
+2. **Hierarchical linear model (M2)** — Adds partial pooling across $a_{\phi}$ bands, sharing statistical strength via shared hyperpriors; still diagonal $\Sigma$.  
+3. **Bayesian Additive Regression Trees (BART, M3)** — Introduces nonlinear mean functions while retaining independent residuals (diagonal $\Sigma$).  
+4. **Multivariate linear model (M4)** — Keeps a linear mean but introduces a full residual covariance matrix $\Sigma$ across bands, capturing cross-band dependencies in the errors.
+
+The first three models used independent errors to isolate effects of the **mean function** (linearity, hierarchy, nonlinearity).  
+The fourth added a full $\Sigma$ to test whether explicitly modeling **residual covariance** improved calibration and predictive skill.
+
+> *The non-hierarchical form of M4 was intentional — to isolate the benefit of covariance structure without conflating it with hierarchical pooling.*
+
+
+### Model Structures (click a panel to zoom)
+
+::: {.grid .center style="gap: 16px;"}
+
+::: {.g-col-6}
+**M1 — Linear (independent errors)**  
+![Linear model](figures/m1_dag.png){.lightbox height="220" width="100%" style="object-fit:contain; display:block; margin-top:4px;"}
+
+*Regress log10(aph) on log10 TOA radiance; errors are independent across bands.*
+:::
+
+::: {.g-col-6}
+**M2 — BART (independent errors)**  
+![BART model](figures/m2_dag.png){.lightbox height="220" width="100%" style="object-fit:contain; display:block; margin-top:4px;"}
+
+*Nonlinear mean function using Bayesian additive regression trees; residuals are independent across bands.*
+:::
+
+::: {.g-col-6}
+**M3 — Hierarchical linear (independent errors)**  
+![Hierarchical model](figures/m3_dag.png){.lightbox height="220" width="100%" style="object-fit:contain; display:block; margin-top:4px;"}
+
+*Partial pooling across aph bands via shared hyperparameters; intercepts and slopes vary by band while errors remain independent.*
+:::
+
+::: {.g-col-6}
+**M4 — Multivariate (full covariance)**  
+![Multivariate model](figures/m4_dag.png){.lightbox height="220" width="100%" style="object-fit:contain; display:block; margin-top:4px;"}
+
+*Linear mean with a full residual covariance matrix (Sigma) across bands; captures cross-band error dependence.*
+:::
+
+:::
+
+*Tip: Click any panel to view a full-resolution DAG with its own caption.*
 
 ---
 
-## Workflow & Evaluation  
+### Results and Comparison
 
-The workflow followed a standard **Bayesian model-building cycle**:  
+All models captured the general relationship between TOA radiance and $a_{\phi}$, but their **uncertainty behavior** differed markedly.
 
-- Check prior plausibility.  
-- Fit models and examine posterior predictive checks (PPC).  
-- Assess calibration with LOO-PIT diagnostics.  
-- Test predictive coverage of credible intervals.  
-- Compare models using cross-validation of out-of-sample predictive performance.  
 
----
+#### PSIS-LOO Model Comparison
 
-## Results Snapshot  
+The figure below provides the quickest way to ...
 
-- The **multivariate linear model** performed best, showing the importance of modeling covariance among bands.  
-- **Hierarchical linear regression** improved calibration over the simple linear baseline.  
-- **BART underperformed**, likely due to the small sample size (N=163) and strong collinearity among predictors.  
-- Overall, **capturing covariance in the error structure mattered more than adding nonlinear flexibility to the mean function**.  
+- The **multivariate linear model** produced the most realistic posterior predictive intervals and the highest expected predictive accuracy under cross-validation.
+- **Hierarchical pooling** improved stability and calibration relative to the simple linear baseline.
+- **BART** underperformed at this sample size ($N = 163$), where predictor collinearity limits the benefit of nonlinear flexibility.
+- Incorporating covariance among bands yielded the largest gains in both calibration and coverage.
+
+> **Takeaway:**  
+> The best-performing model was not the one with the most flexible mean function, but the one that best represented the data-generating process by capturing cross-band covariance in the residuals.
 
 ---
 
-## Figures  
+### Figures
 
-### Model DAGs  
+---
 
-::: {#fig-model-ladder}
-:::{.column-page}
+#### Posterior Calibration and Coverage
+
+::: {.column-page}
 ::: {.grid}
 
 ::: {.g-col-12}
-![](figures/model1_structure_dag.png){fig-alt="Model 1 DAG — Linear regression with independent residuals (diagonal covariance)." width=80%}
+![](figures/loo_pit_mvn.png){fig-alt="LOO-PIT calibration plot for the multivariate model."}
 :::
 
 ::: {.g-col-12}
-![](figures/model2_structure_dag.png){fig-alt="Model 2 DAG — Hierarchical linear regression with partial pooling across absorption bands." width=80%}
-:::
-
-::: {.g-col-12}
-![](figures/model3_structure_dag.png){fig-alt="Model 3 DAG — Bayesian Additive Regression Trees (BART), a flexible nonlinear mean with independent residuals." width=80%}
-:::
-
-::: {.g-col-12}
-![](figures/model4_structure_dag.png){fig-alt="Model 4 DAG — Multivariate linear regression with full residual covariance (LKJ prior)." width=80%}
+![](figures/predictive_coverage_hdi.png){fig-alt="Empirical coverage of HDI intervals for each $a_{\phi}$ band (443, 555, 670 nm)."}
 :::
 
 :::
 :::
-
-Directed acyclic graphs of the four models’ generative structure. Nodes are variables/parameters; arrows indicate conditional dependence; plates denote repetition across observations; shaded nodes are observed.  
-
-<u>How to read it</u>: Follow arrows from priors → predictive mean/scale → likelihood on \( \log_{10}(a_\phi) \).  
+Calibration and coverage diagnostics.  
+A flat LOO-PIT density indicates well-calibrated uncertainty; coverage near nominal ($94\%$) confirms reliable predictive intervals across the $a_{\phi}$ bands.
+:::
 
 ---
 
-### Posterior Predictive Checks  
+#### Model Comparison
 
-::: {#fig-ppc}
-:::{.column-page}
-::: {.grid}
-
-::: {.g-col-12}
-![](figures/ppc_all_models.png){fig-alt="Posterior predictive checks across models. Shaded areas: predictive distributions; points: observed log absorption." width=100%}
+::: {.column-page}
+![](figures/model_comparison_table.png){fig-alt="Cross-validated model comparison showing relative expected predictive accuracy." width=80%}
 :::
 
+Cross-validation ranking of the four models.  
+The multivariate linear model yields the lowest expected out-of-sample predictive error, confirming that modeling residual covariance provides the largest performance gain.
 :::
-:::
-
-Posterior predictive checks compare simulated vs. observed absorption. Hierarchical and multivariate models reproduce spread and tails more faithfully; BART lags.  
 
 ---
 
-### LOO-PIT Diagnostics  
+### Links and Resources
 
-::: {#fig-loopit}
-:::{.column-page}
-::: {.grid}
+- 📊 **Data Used** [NOMAD v2 – Matchup Dataset (Werdell & Bailey, 2005)](https://oceancolor.gsfc.nasa.gov/docs/technical/NOMAD/)
 
-::: {.g-col-12}
-![](figures/loo_pit_all_models.png){fig-alt="LOO-PIT calibration plots. KDE ideally flat; ECDF deviations ideally near zero." width=100%}
-:::
+- 📂 **GitHub Repository:** [TOA → $a_{\phi}$ Modeling Code](https://github.com/your-repo/path)  
+- 📄 **2019 Preprint (Earlier Version):** *Craig & Karaköylü (2019). Bayesian Models for Deriving Biogeochemical Information from Satellite Ocean Color* — [Link](PLACEHOLDER_LINK_2019)  
+- 📄 **Updated Preprint (This Work):** *Predicting Phytoplankton Absorption Directly from TOA Radiance Using Bayesian Models* — [Link](PLACEHOLDER_LINK_CURRENT)
 
-:::
-:::
-
-LOO-PIT plots assess calibration. The multivariate linear model shows the flattest KDE and smallest deviations, indicating the most honest uncertainty.  
-
----
-
-### Predictive Coverage  
-
-::: {#fig-coverage}
-:::{.column-page}
-::: {.grid}
-
-::: {.g-col-12}
-![](figures/predictive_coverage.png){fig-alt="Predictive coverage of 50%, 80%, and 95% posterior intervals by model." width=100%}
-:::
-
-:::
-:::
-
-Coverage close to nominal for multivariate and hierarchical models; BART shows under-dispersion.  
-
----
-
-### Model Comparison  
-
-::: {#fig-model-compare}
-:::{.column-page}
-::: {.grid}
-
-::: {.g-col-12}
-![](figures/model_comparison.png){fig-alt="Relative model performance comparison using cross-validation of out-of-sample predictive accuracy. Lower values indicate better expected predictive performance; bars show uncertainty." width=100%}
-:::
-
-:::
-:::
-
-Cross-validation ranks the models as: **Multivariate Linear > Hierarchical Linear > Linear > BART**.  
-
----
-
-## Takeaway  
-
-This case study illustrates the **value of a Bayesian workflow in satellite oceanography**:  
-
-- Start simple, check priors and fits.  
-- Incrementally add structure (hierarchies, covariance).  
-- Compare models with principled metrics (LOO, coverage, calibration).  
-
-The best-performing model wasn’t the one with the most flexible mean function, but the one that best represented the data-generating process by capturing cross-band covariance.  
-
----
-
-## Resources  
-
-- 📂 [GitHub Repository](#)  
-- 📄 [Preprint](#)  
-- 📊 [NOMAD–SeaWiFS matchup dataset (Werdell & Bailey, 2005)](#)  
