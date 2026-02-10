@@ -1,6 +1,7 @@
 ---
 title: "Musings & Crumbs"
 listing: 
+    sort:
     contents: blog
     type: grid
 ---

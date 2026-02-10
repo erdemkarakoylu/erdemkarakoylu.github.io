@@ -148,5 +148,14 @@
   },
   "blog/bayesian_npq_correction/npq_bayes.qmd": {
     "npq_bayes.html": "f725aa6a"
+  },
+  "blog/fish_pace_2026/fishpace_presentation.qmd": {
+    "fishpace_presentation.html": "5ab9e40e"
+  },
+  "blog/fish_pace_2026/05_collate_pace_insitu.ipynb": {
+    "05_collate_pace_insitu.html": "8f39f327"
+  },
+  "blog/climate_risk_par_1/climate_risk_part_1.qmd": {
+    "climate_risk_part_1.html": "05fc5145"
   }
 }
