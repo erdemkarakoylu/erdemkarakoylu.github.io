@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Erdem Karaköylü">
+<meta name="dcterms.date" content="2026-02-10">
+<meta name="description" content="A proof-of-concept climate risk assessment using Hurricane Maria to demonstrate scenario-based physical damage modeling at the municipal scale.">
+
+<title>Climate Risk Assessment (Part 1) – Erdem Karaköylü</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b53751a350365c71b6c909e95f209ed1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-22381ab97ffb8a420d3841344730e94d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Erdem Karaköylü</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../portfolio.html"> 
+<span class="menu-text">Portfolio</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../resume.html"> 
+<span class="menu-text">Resume</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#executive-summary" id="toc-executive-summary" class="nav-link active" data-scroll-target="#executive-summary">Executive Summary</a></li>
+  <li><a href="#study-area-and-exposure-representation" id="toc-study-area-and-exposure-representation" class="nav-link" data-scroll-target="#study-area-and-exposure-representation">2. Study Area and Exposure Representation</a>
+  <ul class="collapse">
+  <li><a href="#study-area" id="toc-study-area" class="nav-link" data-scroll-target="#study-area">2.1 Study Area</a></li>
+  <li><a href="#exposure-representation" id="toc-exposure-representation" class="nav-link" data-scroll-target="#exposure-representation">2.2 Exposure Representation</a></li>
+  <li><a href="#exposure-assumptions-and-scope" id="toc-exposure-assumptions-and-scope" class="nav-link" data-scroll-target="#exposure-assumptions-and-scope">2.3 Exposure Assumptions and Scope</a></li>
+  <li><a href="#implications-for-interpretation" id="toc-implications-for-interpretation" class="nav-link" data-scroll-target="#implications-for-interpretation">2.4 Implications for Interpretation</a></li>
+  </ul></li>
+  <li><a href="#hazard-characterization-hurricane-maria-wind-fields" id="toc-hazard-characterization-hurricane-maria-wind-fields" class="nav-link" data-scroll-target="#hazard-characterization-hurricane-maria-wind-fields">3. Hazard Characterization: Hurricane Maria Wind Fields</a>
+  <ul class="collapse">
+  <li><a href="#event-selection-and-context" id="toc-event-selection-and-context" class="nav-link" data-scroll-target="#event-selection-and-context">3.1 Event Selection and Context</a></li>
+  <li><a href="#wind-hazard-modeling-approach" id="toc-wind-hazard-modeling-approach" class="nav-link" data-scroll-target="#wind-hazard-modeling-approach">3.2 Wind Hazard Modeling Approach</a></li>
+  <li><a href="#spatial-representation-of-hazard" id="toc-spatial-representation-of-hazard" class="nav-link" data-scroll-target="#spatial-representation-of-hazard">3.3 Spatial Representation of Hazard</a></li>
+  <li><a href="#interpretation-and-limitations-of-the-hazard-model" id="toc-interpretation-and-limitations-of-the-hazard-model" class="nav-link" data-scroll-target="#interpretation-and-limitations-of-the-hazard-model">3.4 Interpretation and Limitations of the Hazard Model</a></li>
+  </ul></li>
+  <li><a href="#impact-modeling-framework" id="toc-impact-modeling-framework" class="nav-link" data-scroll-target="#impact-modeling-framework">4. Impact Modeling Framework</a>
+  <ul class="collapse">
+  <li><a href="#conceptual-approach" id="toc-conceptual-approach" class="nav-link" data-scroll-target="#conceptual-approach">4.1 Conceptual Approach</a></li>
+  <li><a href="#vulnerability-representation" id="toc-vulnerability-representation" class="nav-link" data-scroll-target="#vulnerability-representation">4.2 Vulnerability Representation</a></li>
+  <li><a href="#interpretation-of-loss-ratios" id="toc-interpretation-of-loss-ratios" class="nav-link" data-scroll-target="#interpretation-of-loss-ratios">4.3 Interpretation of Loss Ratios</a></li>
+  <li><a href="#impact-calculation" id="toc-impact-calculation" class="nav-link" data-scroll-target="#impact-calculation">4.4 Impact Calculation</a></li>
+  <li><a href="#scope-and-limitations" id="toc-scope-and-limitations" class="nav-link" data-scroll-target="#scope-and-limitations">4.5 Scope and Limitations</a></li>
+  </ul></li>
+  <li><a href="#results-scenario-losses-under-hurricane-maria" id="toc-results-scenario-losses-under-hurricane-maria" class="nav-link" data-scroll-target="#results-scenario-losses-under-hurricane-maria">5. Results: Scenario Losses under Hurricane Maria</a>
+  <ul class="collapse">
+  <li><a href="#overview-of-scenario-results" id="toc-overview-of-scenario-results" class="nav-link" data-scroll-target="#overview-of-scenario-results">5.1 Overview of Scenario Results</a></li>
+  <li><a href="#asset-level-impacts" id="toc-asset-level-impacts" class="nav-link" data-scroll-target="#asset-level-impacts">5.2 Asset-Level Impacts</a></li>
+  <li><a href="#spatial-distribution-of-losses" id="toc-spatial-distribution-of-losses" class="nav-link" data-scroll-target="#spatial-distribution-of-losses">5.3 Spatial Distribution of Losses</a></li>
+  <li><a href="#aggregate-losses" id="toc-aggregate-losses" class="nav-link" data-scroll-target="#aggregate-losses">5.4 Aggregate Losses</a></li>
+  <li><a href="#interpretation-and-implications" id="toc-interpretation-and-implications" class="nav-link" data-scroll-target="#interpretation-and-implications">5.5 Interpretation and Implications</a></li>
+  </ul></li>
+  <li><a href="#limitations-and-next-steps" id="toc-limitations-and-next-steps" class="nav-link" data-scroll-target="#limitations-and-next-steps">6. Limitations and Next Steps</a>
+  <ul class="collapse">
+  <li><a href="#key-limitations" id="toc-key-limitations" class="nav-link" data-scroll-target="#key-limitations">6.1 Key Limitations</a></li>
+  <li><a href="#path-to-a-full-hurricane-risk-assessment" id="toc-path-to-a-full-hurricane-risk-assessment" class="nav-link" data-scroll-target="#path-to-a-full-hurricane-risk-assessment">6.2 Path to a Full Hurricane Risk Assessment</a></li>
+  <li><a href="#implications-for-decision-making" id="toc-implications-for-decision-making" class="nav-link" data-scroll-target="#implications-for-decision-making">6.3 Implications for Decision-Making</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Climate Risk Assessment (Part 1)</h1>
+<p class="subtitle lead">Scenario-Based Hurricane Wind Risk in Culebra</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">climate-risk</div>
+    <div class="quarto-category">hurricanes</div>
+    <div class="quarto-category">physical-risk</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    A proof-of-concept climate risk assessment using Hurricane Maria to demonstrate scenario-based physical damage modeling at the municipal scale.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Erdem Karaköylü </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 10, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="executive-summary" class="level1">
+<h1>Executive Summary</h1>
+<p>This report presents a <strong>climate risk proof-of-concept</strong> for <strong>Culebra, Puerto Rico</strong>, using <strong>Hurricane Maria (2017)</strong> as a historical stress-test scenario. The objective is to demonstrate a transparent, physics-informed workflow for estimating <strong>storm-driven physical damage</strong> to residential assets at the municipal scale, suitable as a foundation for more comprehensive climate risk analytics.</p>
+<p>The analysis integrates three core components:</p>
+<ol type="1">
+<li>A parametric <em>tropical cyclone wind hazard</em> model driven by historical storm track data,</li>
+<li>A spatially explicit but synthetic <em>residential exposure proxy</em>, and</li>
+<li>An illustrative <em>wind vulnerability function</em> linking wind intensity to structural damage.</li>
+</ol>
+<p>Using this framework, the study estimates scenario-based physical losses associated with Hurricane Maria-level winds affecting Culebra. Results indicate that, under modeled conditions, residential structures may experience <em>meaningful physical damage</em> with asset-level loss ratios reaching up to 70%+ of replacement value in the most exposed areas. Aggregate modeled losses for the synthetic exposure portfolio are on the order of $500,000 USD (see Table 1).</p>
+<p><strong>Table 1. Modeled Residential Loss Summary – Hurricane Maria (2017)</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Value</th>
+<th>Units</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Number of residential assets</td>
+<td>6</td>
+<td>count</td>
+</tr>
+<tr class="even">
+<td>Total exposed value</td>
+<td>750,000.00</td>
+<td>USD</td>
+</tr>
+<tr class="odd">
+<td>Total modeled loss</td>
+<td>527,130.36</td>
+<td>USD</td>
+</tr>
+<tr class="even">
+<td>Mean loss ratio</td>
+<td>0.70</td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td>Maximum loss ratio</td>
+<td>0.72</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="study-area-and-exposure-representation" class="level1">
+<h1>2. Study Area and Exposure Representation</h1>
+<section id="study-area" class="level2">
+<h2 class="anchored" data-anchor-id="study-area">2.1 Study Area</h2>
+<p>The study area for this proof-of-concept analysis is <strong>Culebra</strong>, an island municipality located east of the main island of Puerto Rico. Culebra’s small geographic extent, coastal exposure, and limited infrastructure redundancy make it a suitable case for demonstrating localized climate risk analytics.</p>
+<p>The analysis domain is defined using an administrative boundary polygon for the municipality. All spatial data are represented in geographic coordinates (latitude/longitude, EPSG:4326), consistent with the storm track and hazard modeling inputs.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./assets/figures/culebra_boundary.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 1. Study Area Boundary – Culebra, Puerto Rico</figcaption>
+</figure>
+</div>
+<hr>
+</section>
+<section id="exposure-representation" class="level2">
+<h2 class="anchored" data-anchor-id="exposure-representation">2.2 Exposure Representation</h2>
+<p>This proof-of-concept uses a <strong>synthetic residential exposure proxy</strong> rather than parcel-level or building inventory data. The objective is to demonstrate analytical workflow and model integration rather than to estimate definitive loss magnitudes.</p>
+<p>The exposure proxy consists of a small set of representative residential assets distributed across the island. Each asset is characterized by: - a geographic location, - an asset class (“residential”), and - an assigned <strong>replacement value</strong> in U.S. dollars.</p>
+<p>Replacement value is interpreted as the cost to rebuild the structure under normal conditions. It is distinct from market value, insured value, or tax assessment value.</p>
+<blockquote class="blockquote">
+<p><strong>Interpretive note:</strong><br>
+Loss estimates scale linearly with exposure value. Absolute loss magnitudes in this report therefore reflect the assumed proxy exposure and should not be interpreted as comprehensive estimates of total residential losses for Culebra.</p>
+</blockquote>
+<hr>
+</section>
+<section id="exposure-assumptions-and-scope" class="level2">
+<h2 class="anchored" data-anchor-id="exposure-assumptions-and-scope">2.3 Exposure Assumptions and Scope</h2>
+<p>The exposure proxy makes several simplifying assumptions:</p>
+<ul>
+<li>All assets represent residential structures with broadly similar construction characteristics.</li>
+<li>Asset values are illustrative and intended to support relative comparisons rather than absolute valuation.</li>
+<li>No distinction is made between building structure and contents.</li>
+<li>Critical infrastructure, commercial assets, and public buildings are excluded.</li>
+</ul>
+<p>The above simplifications allow the analysis to focus on the interaction between hazard intensity and structural vulnerability.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./assets/figures/culebra_exposure_proxy.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 2. Synthetic Residential Exposure Proxy – Culebra. Numbered points indicate individual residential assets (Asset IDs 1–6).</figcaption>
+</figure>
+</div>
+<hr>
+</section>
+<section id="implications-for-interpretation" class="level2">
+<h2 class="anchored" data-anchor-id="implications-for-interpretation">2.4 Implications for Interpretation</h2>
+<p>Because exposure data are synthetic, results from this analysis should be interpreted as <strong>scenario-based indicators of potential damage patterns</strong>, not as a comprehensive accounting of municipal-scale losses.</p>
+<p>In a full production assessment, this exposure layer would be replaced with:</p>
+<ul>
+<li>parcel-level building inventories,</li>
+<li>construction-type classifications,</li>
+<li>occupancy and use information, and</li>
+<li>updated replacement cost estimates.</li>
+</ul>
+<p>Such extensions are discussed in Section 6.</p>
+<hr>
+</section>
+</section>
+<section id="hazard-characterization-hurricane-maria-wind-fields" class="level1">
+<h1>3. Hazard Characterization: Hurricane Maria Wind Fields</h1>
+<section id="event-selection-and-context" class="level2">
+<h2 class="anchored" data-anchor-id="event-selection-and-context">3.1 Event Selection and Context</h2>
+<p>Hurricane Maria (2017) is used as the hazard scenario for this proof-of-concept analysis. Maria was one of the most destructive hurricanes to affect Puerto Rico in recent history and therefore provides a relevant stress-test for localized wind risk.</p>
+<p>Storm track and intensity information are derived from the IBTrACS global tropical cyclone archive. The track represents the <strong>location of the storm center (eye) over time</strong>, not the spatial footprint of damaging winds.</p>
+<p>This distinction is important: damaging winds extend outward from the eye and may affect locations that the track itself does not directly intersect.</p>
+<hr>
+</section>
+<section id="wind-hazard-modeling-approach" class="level2">
+<h2 class="anchored" data-anchor-id="wind-hazard-modeling-approach">3.2 Wind Hazard Modeling Approach</h2>
+<p>Wind hazard is modeled using a <strong>parametric tropical cyclone wind model</strong>, which estimates surface wind speed as a function of:</p>
+<ul>
+<li>storm intensity,</li>
+<li>radial distance from the storm center, and</li>
+<li>storm evolution over time.</li>
+</ul>
+<p>For each spatial evaluation point (“centroid”), the model computes the <strong>maximum 1-minute sustained wind speed at 10 meters above ground level</strong> experienced over the duration of the event. Wind speeds are expressed in meters per second (m/s).</p>
+<p>This approach is physics-informed and computationally efficient, making it suitable for both scenario analysis and large-scale risk modeling.</p>
+<hr>
+</section>
+<section id="spatial-representation-of-hazard" class="level2">
+<h2 class="anchored" data-anchor-id="spatial-representation-of-hazard">3.3 Spatial Representation of Hazard</h2>
+<p>Wind intensity is evaluated on a regular spatial grid covering the study area and its immediate surroundings. This grid is independent of the exposure locations and serves as the basis for sampling wind intensity at asset locations during impact calculation.</p>
+<p>Modeled peak wind speeds in the vicinity of Culebra reach approximately <strong>O(50–60 m/s)</strong> under this scenario. These values reflect model assumptions and spatial averaging and should not be interpreted as direct observations at specific structures.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/figures/culebra_hazard_maria_wind.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 3. Modeled Hurricane Maria Wind Hazard near Culebra</figcaption>
+</figure>
+</div>
+<hr>
+</section>
+<section id="interpretation-and-limitations-of-the-hazard-model" class="level2">
+<h2 class="anchored" data-anchor-id="interpretation-and-limitations-of-the-hazard-model">3.4 Interpretation and Limitations of the Hazard Model</h2>
+<p>Several points are important for interpreting the modeled hazard:</p>
+<ul>
+<li>The wind field is <strong>modeled</strong>, not observed.</li>
+<li>Local effects such as topography, shielding, and surface roughness are simplified.</li>
+<li>Wind intensity represents peak sustained wind, not gusts.</li>
+<li>The analysis considers a <strong>single historical event</strong>, not a probabilistic distribution of storms.</li>
+</ul>
+<p>Despite these limitations, the modeled wind field provides a physically consistent representation of hurricane wind hazard suitable for scenario-based impact estimation.</p>
+<hr>
+</section>
+</section>
+<section id="impact-modeling-framework" class="level1">
+<h1>4. Impact Modeling Framework</h1>
+<section id="conceptual-approach" class="level2">
+<h2 class="anchored" data-anchor-id="conceptual-approach">4.1 Conceptual Approach</h2>
+<p>Physical impact is estimated using a standard catastrophe risk modeling formulation that combines <strong>hazard</strong>, <strong>exposure</strong>, and <strong>vulnerability</strong>:</p>
+<p><span class="math display">\[
+\text{Impact} = \text{Hazard} \times \text{Exposure} \times \text{Vulnerability}
+\]</span></p>
+<p>In this context:</p>
+<ul>
+<li><strong>Hazard</strong> represents modeled wind intensity at specific locations,</li>
+<li><strong>Exposure</strong> represents the value and location of assets at risk, and</li>
+<li><strong>Vulnerability</strong> describes how assets respond to hazard intensity in terms of physical damage.</li>
+</ul>
+<p>This framework separates physical processes (wind forcing and structural response) from economic or financial considerations, allowing each component to be examined and refined independently.</p>
+<hr>
+</section>
+<section id="vulnerability-representation" class="level2">
+<h2 class="anchored" data-anchor-id="vulnerability-representation">4.2 Vulnerability Representation</h2>
+<p>Vulnerability is represented using an <strong>illustrative residential wind vulnerability function</strong> that maps wind speed (m/s) to expected structural damage.</p>
+<p>Damage is expressed as a <strong>loss ratio</strong>, defined as the fraction of an asset’s replacement value that is expected to be lost due to wind damage under a given hazard intensity.</p>
+<p>For this proof-of-concept:</p>
+<ul>
+<li>Vulnerability is defined using a smooth, monotonic damage curve.</li>
+<li>The curve reflects increasing damage severity with increasing wind speed.</li>
+<li>All assets are assumed to be affected once wind speeds exceed low thresholds.</li>
+</ul>
+<p>The vulnerability function is intentionally simple and transparent. Its purpose is to demonstrate model mechanics rather than to provide engineering-grade damage estimates.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/figures/vulnerability_residential_wind.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 4. Illustrative Residential Wind Vulnerability Curve</figcaption>
+</figure>
+</div>
+<hr>
+</section>
+<section id="interpretation-of-loss-ratios" class="level2">
+<h2 class="anchored" data-anchor-id="interpretation-of-loss-ratios">4.3 Interpretation of Loss Ratios</h2>
+<p>A modeled loss ratio takes values between 0 and 1 and is interpreted as follows:</p>
+<ul>
+<li><strong>0.0</strong>: no physical damage<br>
+</li>
+<li><strong>0.2</strong>: damage equivalent to approximately 20% of replacement cost<br>
+</li>
+<li><strong>1.0</strong>: total loss (asset effectively destroyed)</li>
+</ul>
+<p>In this formulation, the loss ratio can be written as:</p>
+<p><span class="math display">\[
+\text{Loss Ratio} = \frac{\text{Modeled Loss}}{\text{Replacement Value}}
+\]</span></p>
+<p>Loss ratios represent <strong>expected physical damage</strong>, not realized repair costs. They do not include:</p>
+<ul>
+<li>post-disaster cost inflation,</li>
+<li>code upgrades or retrofits,</li>
+<li>debris removal,</li>
+<li>indirect economic losses, or</li>
+<li>insurance or financing effects.</li>
+</ul>
+<p>As a result, actual repair expenditures following a disaster may exceed modeled losses.</p>
+<hr>
+</section>
+<section id="impact-calculation" class="level2">
+<h2 class="anchored" data-anchor-id="impact-calculation">4.4 Impact Calculation</h2>
+<p>For each residential asset, modeled wind intensity is sampled from the hazard field and combined with the vulnerability function to compute asset-level loss ratios and monetary losses.</p>
+<p>At the asset level, modeled loss is computed as:</p>
+<p><span class="math display">\[
+\text{Modeled Loss}_i = \text{Loss Ratio}_i \times \text{Replacement Value}_i
+\]</span></p>
+<p>Losses are then aggregated across assets to produce scenario-level estimates of physical damage under Hurricane Maria–like conditions.</p>
+<p><strong>Table 2. Asset-Level and Aggregate Impact Metrics – Hurricane Maria Scenario.</strong><br>
+Peak wind speed corresponds to modeled maximum sustained wind at the asset location. Loss ratios represent expected physical damage as a fraction of replacement value. Small non-monotonicities arise from discretization and spatial sampling.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 12%">
+<col style="width: 25%">
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Asset ID</th>
+<th>Asset Type</th>
+<th>Replacement Value (USD)</th>
+<th>Peak Wind Speed (m/s)</th>
+<th>Loss Ratio</th>
+<th>Modeled Loss (USD)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Residential</td>
+<td>150,000.00</td>
+<td>50.11</td>
+<td>0.716</td>
+<td>107,347.06</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Residential</td>
+<td>140,000.00</td>
+<td>50.13</td>
+<td>0.716</td>
+<td>100,208.98</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Residential</td>
+<td>130,000.00</td>
+<td>50.32</td>
+<td>0.685</td>
+<td>89,089.43</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Residential</td>
+<td>120,000.00</td>
+<td>49.32</td>
+<td>0.722</td>
+<td>86,692.86</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Residential</td>
+<td>110,000.00</td>
+<td>48.62</td>
+<td>0.657</td>
+<td>72,314.29</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Residential</td>
+<td>100,000.00</td>
+<td>50.13</td>
+<td>0.715</td>
+<td>71,477.74</td>
+</tr>
+<tr class="odd">
+<td><strong>Total</strong></td>
+<td>—</td>
+<td><strong>750,000.00</strong></td>
+<td>—</td>
+<td>—</td>
+<td><strong>527,130.36</strong></td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="scope-and-limitations" class="level2">
+<h2 class="anchored" data-anchor-id="scope-and-limitations">4.5 Scope and Limitations</h2>
+<p>The impact modeling approach used here is subject to several limitations:</p>
+<ul>
+<li>Only one historical event is considered.</li>
+<li>Exposure data are synthetic.</li>
+<li>Vulnerability is illustrative and not calibrated to local construction practices.</li>
+<li>Losses represent physical damage only.</li>
+</ul>
+<p>In addition, small non-monotonic variations in asset-level loss ratios may occur when comparing nearby assets with similar wind exposure (<em>cf</em>. Table 2). These arise from discretization of hazard intensity on a spatial grid and from sampling of vulnerability functions defined at discrete intensity levels, rather than from physically meaningful differences in wind forcing.</p>
+<p>Despite these limitations, the framework provides a coherent and extensible basis for scenario-based climate risk analysis.</p>
+<p>In a full assessment, this component would be expanded to include multiple events, probabilistic weighting, and sensitivity analyses.</p>
+</section>
+</section>
+<section id="results-scenario-losses-under-hurricane-maria" class="level1">
+<h1>5. Results: Scenario Losses under Hurricane Maria</h1>
+<section id="overview-of-scenario-results" class="level2">
+<h2 class="anchored" data-anchor-id="overview-of-scenario-results">5.1 Overview of Scenario Results</h2>
+<p>This section presents the modeled physical damage to residential assets in Culebra under a Hurricane Maria–like wind scenario. Results reflect <strong>scenario-based physical impacts</strong> derived from the modeled wind hazard, synthetic exposure proxy, and illustrative vulnerability function described in previous sections.</p>
+<p>All results should be interpreted as <strong>conditional on the modeled event</strong>, not as expected or probabilistic losses.</p>
+<hr>
+</section>
+<section id="asset-level-impacts" class="level2">
+<h2 class="anchored" data-anchor-id="asset-level-impacts">5.2 Asset-Level Impacts</h2>
+<p>Asset-level results are summarized in <strong>Table 2</strong>, which reports:</p>
+<ul>
+<li>modeled peak wind speed at each asset location,</li>
+<li>corresponding loss ratios, and</li>
+<li>modeled monetary losses based on replacement value.</li>
+</ul>
+<p>Loss ratios vary across assets due to spatial differences in modeled wind intensity and discretization effects in hazard sampling and vulnerability representation. As noted previously, small non-monotonic variations in loss ratios may occur for assets with similar wind exposure due to spatial and numerical resolution.</p>
+<p>Overall, the results indicate that residential assets exposed to peak sustained winds on the order of <strong>50 m/s</strong> experience <strong>substantial physical damage</strong>, with loss ratios reaching on the order of <em>up to 72%</em> of replacement value.</p>
+<hr>
+</section>
+<section id="spatial-distribution-of-losses" class="level2">
+<h2 class="anchored" data-anchor-id="spatial-distribution-of-losses">5.3 Spatial Distribution of Losses</h2>
+<p>The spatial pattern of modeled loss ratios reflects the interaction between storm proximity and local wind intensity. Assets located closer to the zone of highest modeled winds experience higher expected damage, while more sheltered locations exhibit lower loss ratios.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/figures/culebra_maria_loss_ratio.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 5. Modeled Residential Loss Ratios under Hurricane Maria. Numbered points indicate individual residential assets (Asset IDs 1–6).</figcaption>
+</figure>
+</div>
+<p>This spatial representation provides an intuitive visualization of how hazard intensity translates into differential asset-level impacts across a small geographic area.</p>
+<hr>
+</section>
+<section id="aggregate-losses" class="level2">
+<h2 class="anchored" data-anchor-id="aggregate-losses">5.4 Aggregate Losses</h2>
+<p>Aggregating losses across the residential exposure proxy yields a total modeled physical loss of approximately <strong>$527,130.36</strong></p>
+<p>This aggregate value represents the sum of expected physical damage across the synthetic residential portfolio for this single historical event. It does not account for:</p>
+<ul>
+<li>indirect economic impacts,</li>
+<li>post-disaster cost inflation,</li>
+<li>insurance coverage, or</li>
+<li>recovery timelines and opportunity costs.</li>
+</ul>
+<hr>
+</section>
+<section id="interpretation-and-implications" class="level2">
+<h2 class="anchored" data-anchor-id="interpretation-and-implications">5.5 Interpretation and Implications</h2>
+<p>The results demonstrate that even for a small set of residential assets, hurricane wind hazard can lead to <strong>material physical damage</strong> under severe storm conditions. While absolute loss magnitudes depend on exposure assumptions, relative differences between assets highlight the importance of spatial variability in hazard intensity.</p>
+<p>These findings underscore the value of spatially explicit risk analysis for municipal-scale planning and provide a foundation for extending the analysis toward probabilistic risk assessment and financial stress testing.</p>
+</section>
+</section>
+<section id="limitations-and-next-steps" class="level1">
+<h1>6. Limitations and Next Steps</h1>
+<section id="key-limitations" class="level2">
+<h2 class="anchored" data-anchor-id="key-limitations">6.1 Key Limitations</h2>
+<p>This proof-of-concept analysis is designed to demonstrate methodology rather than to provide definitive loss estimates. As such, several important limitations should be noted:</p>
+<ul>
+<li><p><strong>Single-event focus:</strong><br>
+The analysis considers only Hurricane Maria (2017) and does not represent the full range or frequency of hurricane hazard affecting Culebra.</p></li>
+<li><p><strong>Synthetic exposure data:</strong><br>
+Residential assets are represented using a simplified, synthetic exposure proxy rather than parcel- or building-level inventories.</p></li>
+<li><p><strong>Illustrative vulnerability model:</strong><br>
+The wind vulnerability function is generic and not calibrated to local construction practices, building codes, or asset heterogeneity.</p></li>
+<li><p><strong>Physical damage only:</strong><br>
+Modeled losses represent expected structural damage and exclude indirect economic impacts, post-disaster cost inflation, insurance terms, and recovery dynamics.</p></li>
+<li><p><strong>Spatial and numerical resolution:</strong><br>
+Hazard intensity and vulnerability are evaluated on discrete grids and intensity bins. Small non-monotonic variations in asset-level loss ratios may therefore arise from discretization and spatial sampling rather than from physically meaningful differences in exposure.</p></li>
+</ul>
+<p>These limitations are appropriate for a proof-of-concept and are explicitly acknowledged to ensure transparent interpretation of results.</p>
+<hr>
+</section>
+<section id="path-to-a-full-hurricane-risk-assessment" class="level2">
+<h2 class="anchored" data-anchor-id="path-to-a-full-hurricane-risk-assessment">6.2 Path to a Full Hurricane Risk Assessment</h2>
+<p>The framework demonstrated here provides a foundation for a more comprehensive hurricane risk analysis. Key extensions include:</p>
+<ul>
+<li><p><strong>Probabilistic hazard modeling:</strong><br>
+Incorporation of a multi-event tropical cyclone catalog to estimate event frequency, return periods, and expected annual losses.</p></li>
+<li><p><strong>Improved exposure data:</strong><br>
+Integration of parcel-level building inventories, construction type classifications, and updated replacement cost estimates.</p></li>
+<li><p><strong>Refined vulnerability functions:</strong><br>
+Calibration of wind damage curves to local building practices and differentiation across asset classes.</p></li>
+<li><p><strong>Economic and financial metrics:</strong><br>
+Translation of physical damage into repair costs, recovery timelines, and financially relevant risk measures, such as impacts on municipal revenues or debt service capacity.</p></li>
+<li><p><strong>Scenario stress testing:</strong><br>
+Evaluation of plausible future climate scenarios to assess changes in hazard intensity and risk over time.</p></li>
+</ul>
+<hr>
+</section>
+<section id="implications-for-decision-making" class="level2">
+<h2 class="anchored" data-anchor-id="implications-for-decision-making">6.3 Implications for Decision-Making</h2>
+<p>While limited in scope, this proof-of-concept demonstrates that <strong>localized, scenario-based climate risk insights</strong> can be generated using transparent assumptions and reproducible workflows. Such analyses can support early-stage planning, prioritization of data investments, and engagement with stakeholders interested in understanding climate-related physical risk.</p>
+<p>Future work building on this framework can progressively increase realism and decision relevance while maintaining methodological clarity.</p>
+
+
+</section>
+</section>
+
+<script async="" defer="" src="https://scripts.simpleanalyticscdn.com/latest.js"></script></main> <!-- /main -->
+<div class="bmac-cta">
+  <a class="bmac-btn" href="https://buymeacoffee.com/ofbozmjsvn" target="_blank" rel="noopener">
+    ☕ If you found this content useful, consider buying me a coffee and help fuel continued work!
+  </a>
+</div>
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/erdemkarakoylu\.github\.io\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
