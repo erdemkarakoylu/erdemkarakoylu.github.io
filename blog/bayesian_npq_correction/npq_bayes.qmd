@@ -1,5 +1,6 @@
 ---
 title: Bayesian NPQ Correction
+description: "A generative, uncertainty-aware approach to NPQ correction using in situ fluorescence data from Lake George."
 subtitle: A generative, uncertainty-aware approach
 author: Erdem Karaköylü
 date: '2025-12-30'

@@ -1,7 +1,7 @@
 ---
 title: "Musings & Crumbs"
 listing: 
-    sort:
+    sort: "date desc"
     contents: blog
     type: grid
 ---

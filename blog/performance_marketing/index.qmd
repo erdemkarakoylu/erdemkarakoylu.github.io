@@ -1,6 +1,6 @@
 ---
 title: "What Does a Dollar in Ad Spend Really Buy?"
-description: "A Framework for Understanding CPO, ROAS, CPA, and LTV in Performance Marketing"
+description: "A Framework for Understanding CPO, ROAS, CPA, and LTV in Performance Marketing."
 author: "Erdem Karaköylü"
 date: "2025-08-20"
 format:

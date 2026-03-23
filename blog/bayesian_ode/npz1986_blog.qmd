@@ -1,8 +1,9 @@
 ---
 title: A Bayesian Approach to Marine Modeling
+subtitle: Obtaining uncertainty-aware parameter estimates for a NPZ model using Bayesian inference.
 author: Erdem Karaköylü
 date: '2025-03-16'
-description: Fitting data to a system of Differential Equations
+description: Obtaining uncertainty-aware parameter estimates for a NPZ model using Bayesian inference.
 categories:
   - Bayesian Inference
   - Biological Oceanography
