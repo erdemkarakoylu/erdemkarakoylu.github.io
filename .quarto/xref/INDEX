@@ -157,5 +157,11 @@
   },
   "blog/climate_risk_par_1/climate_risk_part_1.qmd": {
     "climate_risk_part_1.html": "05fc5145"
+  },
+  "blog/prior_elicitation/prior_elicitation_blog.qmd": {
+    "prior_elicitation_blog.html": "2761073f"
+  },
+  "blog/garden_fork_phyto/index.qmd": {
+    "index.html": "3ddab225"
   }
 }

@@ -1,0 +1,426 @@
+---
+title: "What Is a Water Quality Warning Worth?"
+subtitle: "Why a model that scores well can still cry wolf, and why it depends on where you use it"
+author: "Your Name"
+date: 2026-10-12
+categories: [water quality, prediction, decision making, statistics]
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-summary: "Show code"
+    fig-align: center
+    callout-appearance: simple
+execute:
+  warning: false
+  message: false
+jupyter: python3
+---
+
+Water quality managers increasingly rely on models. A lab culture for fecal indicator bacteria takes a day or more to come back, so by the time a sample confirms that the water was unsafe, people have already been exposed. Whether the use is swimming, shellfish harvesting, or a drinking water intake, the appeal of a same-day prediction is obvious: issue the warning *before* exposure rather than after.
+
+When someone hands you such a model, it usually comes with a headline number saying how good it is. This post is about why that number, on its own, cannot tell you what you actually need to know: **when the model raises an alarm, how likely is it that the water is really unsafe?**
+
+These ideas come straight out of a NASA-funded project we are working on, which develops predictive models of bacterial contamination at recreational beaches. That work is ongoing and its data can't be shared yet, so everything below uses **simulated data** built to reproduce the same problems we ran into. The numbers are illustrative and are not the project's results.
+
+::: {.callout-note title="How to read this post"}
+The main text is self-contained and written for decision makers; no statistics background is needed. Shaded boxes titled **For the technically inclined** are collapsed by default and hold the formal definitions, curves and terminology for analysts. Code for every figure is folded under **Show code**.
+:::
+
+```{python}
+#| label: setup
+#| code-summary: "Show code: simulate three beaches"
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.stats import norm
+from scipy.special import logit
+from sklearn.metrics import roc_auc_score, roc_curve
+from sklearn.linear_model import LogisticRegression
+from IPython.display import Markdown
+
+# ---- Plot style -------------------------------------------------------------
+BLUE, ORANGE, AQUA = "#2a78d6", "#eb6834", "#1baf7a"
+INK, INK2, GRID, QUIET = "#0b0b0b", "#52514e", "#e4e3df", "#d9d8d4"
+plt.rcParams.update({
+    "figure.dpi": 110, "font.size": 10, "axes.edgecolor": INK2,
+    "axes.labelcolor": INK, "xtick.color": INK2, "ytick.color": INK2,
+    "axes.spines.top": False, "axes.spines.right": False,
+    "axes.grid": True, "grid.color": GRID, "grid.linewidth": 0.8,
+    "axes.axisbelow": True, "legend.frameon": False,
+})
+
+def md(x):
+    """Wrap a value for inline display in the text."""
+    return Markdown(str(x))
+
+def pct(x, digits=0):
+    return md(f"{100 * x:.{digits}f}%")
+
+# ---- Simulated beaches --------------------------------------------------------
+# Three fictional beaches that differ only in their typical contamination level.
+# Concentrations are on a log10 scale; the safety threshold is 100 per 100 mL.
+rng = np.random.default_rng(2026)
+BEACHES = {"Sandpiper Beach": 0.85, "Harbor Cove": 1.08, "Creekmouth Beach": 1.42}
+COLORS = dict(zip(BEACHES, [BLUE, ORANGE, AQUA]))
+N_DAYS = 1000
+THRESHOLD = 2.0          # log10(100)
+DETECTION = 1.0          # log10(10): lab can't measure below this
+
+frames = []
+for beach, baseline in BEACHES.items():
+    day = np.arange(N_DAYS)
+    season = 0.25 * np.sin(2 * np.pi * day / 365)
+    rain = np.log1p(rng.gamma(0.4, 8, N_DAYS))            # antecedent rainfall
+    turbidity = 0.5 * rain + rng.normal(0, 0.6, N_DAYS)   # partly driven by rain
+    unmeasured = rng.normal(0, 0.35, N_DAYS)              # things nobody measures
+    log_conc = baseline + season + 0.22 * rain + 0.15 * turbidity + unmeasured
+    frames.append(pd.DataFrame({
+        "beach": beach, "day": day, "log_conc": log_conc,
+        # what the model actually gets to see: imperfect measurements
+        "rain_obs": rain + rng.normal(0, 0.15, N_DAYS),
+        "turb_obs": turbidity + rng.normal(0, 0.2, N_DAYS),
+        # a richer data stream that also captures part of the unmeasured term
+        "rain_true": rain, "turb_true": turbidity,
+        "extra_obs": unmeasured + rng.normal(0, 0.5, N_DAYS),
+    }))
+df = pd.concat(frames, ignore_index=True)
+df["unsafe"] = (df.log_conc > THRESHOLD).astype(int)
+
+# ---- The models ---------------------------------------------------------------
+def fit_probability(columns):
+    """Per-beach baseline plus linear effects; returns P(unsafe) per day."""
+    X = pd.concat([pd.get_dummies(df.beach).astype(float), df[columns]], axis=1).values
+    beta, *_ = np.linalg.lstsq(X, df.log_conc.values, rcond=None)
+    mean = X @ beta
+    spread = np.std(df.log_conc.values - mean)
+    return norm.sf(THRESHOLD, mean, spread)
+
+p_honest = fit_probability(["rain_obs", "turb_obs"])
+# The model we "deploy": same ranking of days, but probabilities run too low,
+# the way models with too-thin upper tails tend to behave.
+df["p_model"] = p_honest ** 1.8
+# Recalibration: a monotone remap of the model's probabilities.
+z = logit(np.clip(df.p_model, 1e-12, 1 - 1e-12)).values.reshape(-1, 1)
+recal = LogisticRegression(C=1e6).fit(z, df.unsafe)
+df["p_recal"] = recal.predict_proba(z)[:, 1]
+# A model fed better information.
+df["p_better"] = fit_probability(["rain_true", "turb_true", "extra_obs"])
+
+# ---- Summary numbers used in the text ------------------------------------------
+rate = df.groupby("beach").unsafe.mean()
+r_sand, r_harb, r_creek = (rate[b] for b in BEACHES)
+below_dl = (df.log_conc < DETECTION).mean()
+```
+
+## An old puzzle from medicine
+
+Doctors have known about this trap for decades. Imagine a screening test that catches 90% of people who have a disease and wrongly flags only 9% of people who don't. Sounds reliable. Now use it on a population where 1 person in 100 has the disease. Out of 1,000 people tested, about 9 of the 10 who are sick test positive, but so do about 89 of the 990 who are healthy. **Fewer than 1 in 10 positive results is a real case.**
+
+Nothing is wrong with the test. The problem is that the disease is rare, so even a small false alarm rate applied to a large healthy majority swamps the true positives. How often the condition actually occurs, its *background rate*, is the missing ingredient.
+
+A water quality alert is a test in exactly this sense. The "disease" is a day when the water exceeds the safety threshold. And the background rate, how often the water is actually unsafe, varies enormously from one site to the next.
+
+## Three fictional beaches
+
+To make this concrete, picture a stretch of coastline with three beaches, each sampled on `{python} md(f"{N_DAYS:,}")` days. They share the same weather and the same physics, and they differ in only one way: how contaminated they tend to be.
+
+- **Sandpiper Beach** is usually clean. Its water exceeds the safety threshold on `{python} pct(r_sand, 1)` of days.
+- **Harbor Cove** is in between, at `{python} pct(r_harb, 1)`.
+- **Creekmouth Beach** sits near a stream outlet and is unsafe on `{python} pct(r_creek, 1)` of days.
+
+```{python}
+#| label: fig-beaches
+#| fig-cap: "Simulated bacteria concentrations on each sampling day. Days above the dashed line are unsafe. The shaded band marks levels too low for the lab to measure."
+fig, ax = plt.subplots(figsize=(7.5, 3.4))
+for i, (beach, g) in enumerate(df.groupby("beach", sort=False)):
+    jitter = rng.uniform(-0.28, 0.28, len(g))
+    safe = g.unsafe == 0
+    ax.scatter(i + jitter[safe], g.log_conc[safe], s=6, color=QUIET, linewidths=0)
+    ax.scatter(i + jitter[~safe], g.log_conc[~safe], s=9, color=COLORS[beach], linewidths=0)
+ax.axhline(THRESHOLD, color=INK, ls="--", lw=1.2)
+ax.text(2.42, THRESHOLD + 0.04, " safety\n threshold", ha="left", va="bottom", color=INK)
+ax.axhspan(-1, DETECTION, color=GRID, alpha=0.6, zorder=0)
+ax.text(2.42, DETECTION - 0.45, " below\n detection", ha="left", va="center", color=INK2)
+ax.set_xticks(range(3), [f"{b}\nunsafe {rate[b]:.0%} of days" for b in BEACHES])
+ax.set_yticks([0, 1, 2, 3], ["1", "10", "100", "1,000"])
+ax.set_ylabel("Bacteria per 100 mL")
+ax.set_ylim(-0.3, 3.4)
+ax.set_xlim(-0.5, 2.95)
+ax.grid(axis="x", visible=False)
+plt.show()
+```
+
+Real records look like this too: `{python} pct(below_dl)` of these simulated samples fall below what the lab can measure, and unsafe days are a minority everywhere. That last point is the one that matters here.
+
+Now suppose we build one forecasting model for all three beaches. It uses rainfall and water clarity (turbidity), both measured imperfectly, plus what it has learned about each beach's usual level. Each morning it produces a probability that the water is unsafe, and an alert goes out when that probability crosses a chosen setting.
+
+## Same model, very different warnings
+
+```{python}
+#| label: equal-recall
+#| code-summary: "Show code: tune each beach to catch 7 in 10 unsafe days"
+TARGET_CATCH = 0.70
+ops = []
+for beach, g in df.groupby("beach", sort=False):
+    setting = np.quantile(g.loc[g.unsafe == 1, "p_model"], 1 - TARGET_CATCH)
+    warned = g.p_model >= setting
+    ops.append(dict(
+        beach=beach, background=g.unsafe.mean(),
+        hits=int((warned & (g.unsafe == 1)).sum()),
+        misses=int((~warned & (g.unsafe == 1)).sum()),
+        false_alarms=int((warned & (g.unsafe == 0)).sum()),
+        quiet=int((~warned & (g.unsafe == 0)).sum()),
+    ))
+ops = pd.DataFrame(ops).set_index("beach")
+ops["right_share"] = ops.hits / (ops.hits + ops.false_alarms)
+ops["catch"] = ops.hits / (ops.hits + ops.misses)
+ops["false_rate"] = ops.false_alarms / (ops.false_alarms + ops.quiet)
+S, C = ops.loc["Sandpiper Beach"], ops.loc["Creekmouth Beach"]
+```
+
+Let's set the alert at each beach so that it catches the same share of unsafe days, about 7 in 10. Same model, same goal. Here is what each beach's `{python} md(f"{N_DAYS:,}")` days look like.
+
+::: {.panel-tabset}
+
+### Plain view
+
+```{python}
+#| label: fig-icons
+#| fig-cap: "Each square is one sampling day. Orange squares are unsafe days: filled if the model warned, outlined if it missed. Blue squares are false alarms. Grey squares are safe days with no alert."
+def icon_array(ax, row, title):
+    cols, rows_ = 40, 25
+    hits, misses = int(row.hits), int(row.misses)
+    false_alarms, quiet = int(row.false_alarms), int(row.quiet)
+    cats = (["hit"] * hits + ["miss"] * misses +
+            ["false"] * false_alarms + ["quiet"] * quiet)
+    for k, cat in enumerate(cats):
+        x, y = k % cols, rows_ - 1 - k // cols
+        if cat == "hit":
+            ax.add_patch(plt.Rectangle((x, y), 0.82, 0.82, color=ORANGE))
+        elif cat == "miss":
+            ax.add_patch(plt.Rectangle((x + 0.08, y + 0.08), 0.66, 0.66,
+                                       fill=False, ec=ORANGE, lw=1.3))
+        elif cat == "false":
+            ax.add_patch(plt.Rectangle((x, y), 0.82, 0.82, color=BLUE))
+        else:
+            ax.add_patch(plt.Rectangle((x, y), 0.82, 0.82, color=QUIET))
+    ax.set_xlim(-0.5, cols + 0.3); ax.set_ylim(-0.5, rows_ + 0.3)
+    ax.set_aspect("equal"); ax.axis("off")
+    ax.set_title(title, loc="left", fontsize=10, color=INK)
+
+fig, axes = plt.subplots(3, 1, figsize=(7, 10.5))
+for ax, (beach, row) in zip(axes, ops.iterrows()):
+    icon_array(ax, row,
+        f"{beach}: {int(row.hits + row.false_alarms)} alerts, of which {int(row.hits)} "
+        f"were right ({row.right_share:.0%})\n{int(row.hits)} caught · "
+        f"{int(row.misses)} missed · {int(row.false_alarms)} false alarms")
+plt.tight_layout()
+plt.show()
+```
+
+### Technical view
+
+```{python}
+#| label: fig-ppv
+#| fig-cap: "Share of alerts that are right (precision) as a function of the background rate, for a fixed alert setting that catches 70% of unsafe days with a false alarm rate equal to the three beaches' average. Dots are the three simulated beaches."
+bg = np.linspace(0.005, 0.6, 300)
+fpr = ops.false_rate.mean()
+precision = TARGET_CATCH * bg / (TARGET_CATCH * bg + fpr * (1 - bg))
+fig, ax = plt.subplots(figsize=(7, 3.8))
+ax.plot(bg, precision, color=INK2, lw=2)
+for beach, row in ops.iterrows():
+    ax.scatter(row.background, row.right_share, s=60, color=COLORS[beach],
+               edgecolor="white", linewidth=1.5, zorder=3)
+    ax.annotate(beach, (row.background, row.right_share), xytext=(8, -12),
+                textcoords="offset points", color=INK)
+ax.set_xlabel("Background rate (share of days that are unsafe)")
+ax.set_ylabel("Share of alerts that are right")
+ax.xaxis.set_major_formatter(plt.matplotlib.ticker.PercentFormatter(1))
+ax.yaxis.set_major_formatter(plt.matplotlib.ticker.PercentFormatter(1))
+ax.set_ylim(0, 1)
+plt.show()
+```
+
+:::
+
+At Sandpiper Beach the model raised `{python} md(int(S.hits + S.false_alarms))` alerts, and only `{python} md(int(S.hits))` of them were real: `{python} pct(S.right_share)`. At Creekmouth Beach, the same model at the same level of vigilance was right `{python} pct(C.right_share)` of the time. Notice that the number of false alarms is roughly the same at every beach. What changes is how many genuinely unsafe days there are for the alerts to land on.
+
+**Takeaway: the value of a warning is not a property of the model alone. It depends just as much on how often the water is unsafe at that particular site. At a clean site, even a good model will mostly cry wolf.**
+
+::: {.callout-tip collapse="true" title="For the technically inclined: terminology and Bayes' rule"}
+The plain-language terms in this post map onto standard ones:
+
+| In this post | Diagnostics | Machine learning |
+|---|---|---|
+| Share of unsafe days caught | Sensitivity | Recall, true positive rate |
+| Share of safe days that trigger an alert | 1 − specificity | False positive rate (FPR) |
+| Share of alerts that are right | Positive predictive value (PPV) | Precision |
+| Background rate | Prevalence | Class balance, base rate |
+
+Precision follows from Bayes' rule with the background rate $\pi$ as the prior:
+
+$$
+\text{precision} = \frac{\text{recall}\cdot \pi}{\text{recall}\cdot\pi + \text{FPR}\cdot(1-\pi)}
+$$
+
+Recall and FPR describe the model; precision describes the model *at a site*. This is why a precision-recall curve is only interpretable next to its baseline, which equals $\pi$: a model with no skill has precision $\pi$ at every threshold. When comparing sites with different background rates, report $\pi$ alongside any precision or PR-AUC figure.
+:::
+
+## One headline score can flatter
+
+Model performance is often summarized with a single score that measures how well the model *ranks* days: if you pick one unsafe day and one safe day at random, how often does the model give the unsafe one the higher risk? A score of 1 means it always does; 0.5 means it is guessing.
+
+```{python}
+#| label: auc
+#| code-summary: "Show code: ranking scores"
+auc_pooled = roc_auc_score(df.unsafe, df.p_model)
+auc_beach_only = roc_auc_score(df.unsafe, df.groupby("beach").unsafe.transform("mean"))
+auc_within = {b: roc_auc_score(g.unsafe, g.p_model) for b, g in df.groupby("beach", sort=False)}
+f2 = lambda x: md(f"{x:.2f}")
+```
+
+Computed across all three beaches together, our model scores `{python} f2(auc_pooled)`, which most people would call good. But a "model" that knows nothing except which beach a sample came from, and ranks every Creekmouth day above every Harbor Cove day above every Sandpiper day, already scores `{python} f2(auc_beach_only)`.
+
+```{python}
+#| label: fig-auc
+#| fig-cap: "Ranking score (0.5 = guessing, 1 = perfect). Pooling all beaches together rewards the model for knowing which beach is dirtier, which says nothing about tomorrow."
+labels = ["Knowing only which beach", "Model, all beaches pooled"] + \
+         [f"Model, within {b}" for b in BEACHES]
+values = [auc_beach_only, auc_pooled] + list(auc_within.values())
+colors = [QUIET, INK2] + [COLORS[b] for b in BEACHES]
+fig, ax = plt.subplots(figsize=(7, 2.8))
+y = np.arange(len(labels))[::-1]
+ax.barh(y, np.array(values) - 0.5, left=0.5, color=colors, height=0.6)
+for yi, v in zip(y, values):
+    ax.text(v + 0.006, yi, f"{v:.2f}", va="center", color=INK)
+ax.set_yticks(y, labels)
+ax.set_xlim(0.5, 1.0)
+ax.set_xlabel("Ranking score")
+ax.grid(axis="y", visible=False)
+plt.show()
+```
+
+Within each beach, which is where an alert is actually issued, the model scores between `{python} f2(min(auc_within.values()))` and `{python} f2(max(auc_within.values()))`. The pooled figure sits above all of them because part of what it rewards is the model having learned that Creekmouth is dirtier than Sandpiper. That is true, but a manager already knows it, and it does not help decide whether to post a warning *tomorrow*. The gap is modest here, with only three beaches, but it grows with the contrast between sites: a network mixing very clean and very dirty sites can post an impressive pooled score while doing little within any one of them.
+
+**Takeaway: when a model is evaluated across a whole network of sites, ask for its score within each site. A single network-wide figure can look impressive mostly because the sites differ from one another.**
+
+## Better calibrated is not the same as better
+
+Our model has a second, subtler flaw. Its probabilities run too low: on days when it says the risk is about 20%, the water turns out to be unsafe far more often than that.
+
+```{python}
+#| label: fig-reliability
+#| fig-cap: "When the model states a risk, how often is the water actually unsafe? A trustworthy model sits on the diagonal. The original model's stated risks are too low; after recalibration they match what happens."
+bins = [0, 0.05, 0.1, 0.2, 0.3, 0.45, 0.65, 1]
+fig, ax = plt.subplots(figsize=(5.2, 4.6))
+ax.plot([0, 1], [0, 1], color=INK2, lw=1, ls=":")
+for col, colr, name in [("p_model", BLUE, "Original model"), ("p_recal", ORANGE, "Recalibrated")]:
+    rel = df.groupby(pd.cut(df[col], bins), observed=True).agg(
+        stated=(col, "mean"), actual=("unsafe", "mean"), n=("unsafe", "size"))
+    rel = rel[rel.n >= 20]
+    ax.plot(rel.stated, rel.actual, color=colr, lw=2, marker="o", ms=7,
+            mec="white", mew=1.5, label=name)
+ax.set_xlabel("Risk stated by the model")
+ax.set_ylabel("How often it was actually unsafe")
+ax.xaxis.set_major_formatter(plt.matplotlib.ticker.PercentFormatter(1))
+ax.yaxis.set_major_formatter(plt.matplotlib.ticker.PercentFormatter(1))
+ax.set_xlim(0, 0.8); ax.set_ylim(0, 1)
+ax.legend(loc="upper left")
+plt.show()
+```
+
+That is a real problem, and it has a standard fix called *recalibration*: re-map the model's numbers so that a stated 20% really means 20%. It is tempting to expect this to make the alerts better. It doesn't, and seeing why is worth a minute.
+
+Think of the alert setting as a dial. Turning it down catches more unsafe days but triggers more false alarms; turning it up does the reverse. Recalibration changes the *numbers printed on the dial*, but not the trade-offs available as you turn it. Every combination of catches and false alarms the recalibrated model can offer, the original model could already offer at some other setting.
+
+```{python}
+#| label: dial
+#| code-summary: "Show code: the dial before and after recalibration"
+def at_setting(p, setting):
+    warned = p >= setting
+    caught = (warned & (df.unsafe == 1)).sum() / df.unsafe.sum()
+    false = (warned & (df.unsafe == 0)).sum() / (df.unsafe == 0).sum()
+    right = (warned & (df.unsafe == 1)).sum() / max(warned.sum(), 1)
+    return caught, false, right
+
+def setting_for_catch(p, target):
+    return np.quantile(p[df.unsafe == 1], 1 - target)
+
+rows = []
+for s in [0.1, 0.2, 0.3]:
+    for name, col in [("Original model", "p_model"), ("Recalibrated", "p_recal")]:
+        c, f, r = at_setting(df[col], s)
+        rows.append([name, f"{s:.0%}", f"{c:.0%}", f"{100 * f:.0f}", f"{r:.0%}"])
+for name, col in [("Recalibrated", "p_recal"), ("Better information", "p_better")]:
+    s = setting_for_catch(df[col], TARGET_CATCH)
+    c, f, r = at_setting(df[col], s)
+    rows.append([name, f"{s:.0%}", f"{c:.0%}", f"{100 * f:.0f}", f"{r:.0%}"])
+dial = pd.DataFrame(rows, columns=["Model", "Alert when risk ≥", "Unsafe days caught",
+                                  "False alarms per 100 safe days", "Alerts that are right"])
+
+c_rec, f_rec, r_rec = at_setting(df.p_recal, setting_for_catch(df.p_recal, TARGET_CATCH))
+c_bet, f_bet, r_bet = at_setting(df.p_better, setting_for_catch(df.p_better, TARGET_CATCH))
+fa_rec, fa_bet = md(f"{100 * f_rec:.0f}"), md(f"{100 * f_bet:.0f}")
+o10, r30 = at_setting(df.p_model, 0.1), at_setting(df.p_recal, 0.3)
+o10_c, o10_f = pct(o10[0]), md(f"{100 * o10[1]:.0f}")
+r30_c, r30_f = pct(r30[0]), md(f"{100 * r30[1]:.0f}")
+```
+
+```{python}
+#| label: tbl-dial
+#| tbl-cap: "All three beaches together. The first six rows show the same dial settings before and after recalibration. The last two rows set each model to catch 7 in 10 unsafe days."
+Markdown(dial.to_markdown(index=False))
+```
+
+After recalibration, the same setting catches more unsafe days, but it also raises more false alarms, and the combination is one the original model already offered at a lower setting. The recalibrated model alerting at 30% catches `{python} r30_c` of unsafe days with `{python} r30_f` false alarms per 100 safe days; the original model alerting at 10% catches `{python} o10_c` with `{python} o10_f`. Same trade-off, different label. The last two rows show what *does* change the trade-off: a model fed better information (here, more accurate measurements plus a data stream that captures part of what was previously unmeasured). Set to catch the same 7 in 10 unsafe days, it raises about `{python} fa_bet` false alarms per 100 safe days instead of `{python} fa_rec`.
+
+**Takeaway: recalibration makes a model's numbers honest, which matters for setting thresholds and comparing sites. It does not make the model better at telling safe days from unsafe ones. Only better information does that.**
+
+::: {.callout-tip collapse="true" title="For the technically inclined: the ROC curve"}
+The dial is the receiver operating characteristic (ROC) curve: recall plotted against false positive rate as the threshold sweeps from 1 to 0. The ranking score above is the area under it (AUC).
+
+```{python}
+#| label: fig-roc
+#| fig-cap: "ROC curves for all beaches pooled. Recalibration (a monotone remapping of probabilities) leaves the curve unchanged; the operating points at fixed thresholds simply slide along it. Better information lifts the whole curve."
+fig, ax = plt.subplots(figsize=(5.4, 5))
+for col, colr, name, ls in [("p_model", BLUE, "Original and recalibrated", "-"),
+                            ("p_better", AQUA, "Better information", "-")]:
+    f, t, _ = roc_curve(df.unsafe, df[col])
+    ax.plot(f, t, color=colr, lw=2, ls=ls,
+            label=f"{name} (AUC {roc_auc_score(df.unsafe, df[col]):.2f})")
+for s, mk in zip([0.1, 0.2, 0.3], ["o", "s", "D"]):
+    c0, f0, _ = at_setting(df.p_model, s)
+    c1, f1, _ = at_setting(df.p_recal, s)
+    ax.scatter(f0, c0, marker=mk, s=55, color=BLUE, edgecolor="white", lw=1.5, zorder=3)
+    ax.scatter(f1, c1, marker=mk, s=55, color=ORANGE, edgecolor="white", lw=1.5, zorder=3)
+    ax.annotate("", (f1, c1), (f0, c0), arrowprops=dict(arrowstyle="->", color=INK2, lw=1))
+    ax.annotate(f"τ = {s:g}", (f1, c1), xytext=(6, -10), textcoords="offset points", color=INK2)
+ax.plot([0, 1], [0, 1], color=INK2, lw=1, ls=":")
+ax.scatter([], [], color=BLUE, label="Thresholds, original")
+ax.scatter([], [], color=ORANGE, label="Same thresholds, recalibrated")
+ax.set_xlabel("False positive rate")
+ax.set_ylabel("Recall (true positive rate)")
+ax.set_xlim(0, 0.6); ax.set_ylim(0, 1)
+ax.legend(loc="lower right", fontsize=9)
+plt.show()
+```
+
+Two caveats apply in practice. Recalibration fitted separately per site is not a single monotone map, so pooled AUC can shift even when within-site ranking does not. And model changes aimed at calibration, such as a heavier-tailed likelihood, are not pure remappings and may move the curve in either direction. Here the recalibration is fitted on the same data it is evaluated on, purely for illustration; in practice it should be fitted out of sample.
+:::
+
+## Three questions to ask before trusting an alert model
+
+The lessons above boil down to three questions any decision maker can put to a modeling team or a vendor.
+
+1. **How often is the water actually unsafe at this site?** Without the background rate, no accuracy figure tells you what an alert is worth.
+2. **When the model raises an alert at this site, how often is it right, and what share of unsafe days does it catch?** Ask for these per site, at the alert setting you would actually use, not as a single network-wide score.
+3. **What does a miss cost us, and what does a false alarm cost us?** A missed unsafe day means people exposed; a false alarm means a closed beach, lost revenue, and an alert system the public learns to ignore. Weighing these is a policy decision, not a modeling one, and it is what should set the dial.
+
+## Back to our project
+
+In the NASA-funded beach project that motivated this post, we report model performance the way this post recommends: the background rate for each beach, how often alerts are right and how many unsafe days they catch at chosen settings, within-beach ranking scores alongside pooled ones, and a check of whether the model's stated risks match what actually happens. We hope to share real results once the work is complete.
+
+::: {.callout-note collapse="true" title="About the simulation"}
+Each fictional beach's daily bacteria level (log scale) is a beach-specific baseline plus a seasonal cycle, effects of antecedent rainfall and turbidity, and an unmeasured random component. The model sees noisy versions of rainfall and turbidity plus a per-beach baseline, and its probabilities are deliberately shifted too low to mimic a model with a too-thin upper tail. All parameters are invented for illustration and are not tuned to any real dataset. Expand any **Show code** toggle to see the details; the post renders with a fixed random seed.
+:::
